@@ -4,8 +4,8 @@ import React from 'react';
 
 const Projects: React.FC = () => {
   return (
-    <div>
-      <h2>My projects</h2>
+    <div className="projects">
+      <h1 className="primary">PROJECTS</h1>
       <p>Here are some of the projects I have worked on:</p>
       <ul>
         <li>Intrinsic (an Alphabet company) via Nelson Connects - contributing to a large-scale, enterprise-level project using Angular, HTML, SCSS, and JavaScript</li>

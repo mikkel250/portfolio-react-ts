@@ -1,0 +1,9 @@
+section {
+  margin-bottom: 2em;
+}
+
+.description__long {
+  @media (max-width: 1024px) {
+    display: none;
+  }
+}
