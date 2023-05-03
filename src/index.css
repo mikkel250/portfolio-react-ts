@@ -17,6 +17,14 @@ body {
   color: rgb(29, 221, 189);
 }
 
+.primary.link  {
+  color: rgb(29, 221, 189);
+}
+
+.primary.link:visited {
+  color: rgb(29, 221, 189);
+}
+
 .about,
 .contact,
 .experience,
