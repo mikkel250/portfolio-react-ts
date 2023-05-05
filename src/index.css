@@ -17,11 +17,20 @@ body {
   color: rgb(29, 221, 189);
 }
 
-.primary.link  {
+.link  {
   color: rgb(29, 221, 189);
+  text-decoration: none;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  display: inline-block;
 }
 
-.primary.link:visited {
+.link:hover {
+  transform: scale(1.05);
+  transition-delay: 0.1s;
+}
+
+.link:visited {
   color: rgb(29, 221, 189);
 }
 
