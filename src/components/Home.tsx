@@ -27,7 +27,7 @@ const Home = () => {
           </div>
           <div className="home__info">
             <h1 className='home__headline'>I'm a <span className="primary">Software Engineer</span></h1>
-            <p className='home__description'>Angular, React, JavaScript, HTML, CSS/ SCSS, Shopify, AWS, and Jekyll.</p>
+            <p className='home__description'>Tech: Angular, React, JavaScript, HTML, CSS/ SCSS, Shopify, AWS, and Jekyll.</p>
           </div>
           <div className='home__buttons'>
             <button className='home__button' onClick={handleDownload}>DOWNLOAD CV</button>
