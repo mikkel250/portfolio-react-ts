@@ -21,7 +21,7 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "node ./node_modules/react-scripts/bin/react-scripts.js start --config ./webpack.config.js",
+    "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "tailwind": "tailwindcss -i ./src/index.css -o ./public/tailwind.css",
