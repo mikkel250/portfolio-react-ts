@@ -20,9 +20,9 @@ const Projects: React.FC = () => {
           </p>
         </div>
         <div className='projects__item'>
-          <h2 className='projects__item-title primary'><a className="link" href='https://github.com/mikkel250/my_portfolio_website'>A personal site built in Svelte</a></h2>          
+          <h2 className='projects__item-title primary'><a className="link" target="_blank" rel="noreferrer" href='https://github.com/mikkel250/my_portfolio_website'>A personal site built in Svelte</a></h2>          
           <p className='projects__item-desc'>
-            I built this project to learn Svelte and see how it stacks up to Angular and React. You can view the deployed version at: <a className="link" href='https://mikkel250.codingconcepts.company'>https://mikkel250.codingconcepts.company</a>
+            I built this project to learn Svelte and see how it stacks up to Angular and React. You can view the deployed version at: <a className="link" target="_blank" rel="noreferrer" href='https://mikkel250.codingconcepts.company'>https://mikkel250.codingconcepts.company</a>
           </p>
         </div>
         <div className='projects__item'>
