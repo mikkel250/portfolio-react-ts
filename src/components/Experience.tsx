@@ -192,13 +192,14 @@ const jobs: Job[] = [
           management role and responsibilities in a total of 3 departments.
         </p>
         <p>
-          In addition to my duties as Tech Support Lead, I was the manager for all
-          employees in the production department (90% of the company's employee pool), hiring, firing, providing
-          technical training, oversight for orders, and acted as B2B liaison. As
-          a small company, I wore many hats and also took on oversight of the
-          ISO 9001 system of standards and practices. I administered and updated
-          ISO paperwork, performed, reviewed, and approved internal audits, and
-          collaborated with external auditors on an annual basis.
+          In addition to my duties as Tech Support Lead, I was the manager for
+          all employees in the production department (90% of the company's
+          employee pool), hiring, firing, providing technical training,
+          oversight for orders, and acted as B2B liaison. I wore many hats and
+          also managed the oversight of the ISO 9001 system of standards and
+          practices. I administered and updated ISO paperwork, performed,
+          reviewed, and approved internal audits, and collaborated with external
+          auditors on an annual basis.
         </p>
       </>
     ),
