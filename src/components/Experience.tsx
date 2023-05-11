@@ -9,8 +9,10 @@ const Experience: React.FC = () => {
       <h1 className='primary'>EXPERIENCE</h1>
       <section>
         <p>
-          <span className='primary'>UI/UX Developer</span> at Intrinsic (an
-          Alphabet company) via Nelson Connects - Jan 2023 - Present
+          <span className='primary'>UI/UX Developer</span> at <span className="bold">
+            Intrinsic (an
+            Alphabet company)
+          </span> via Nelson Connects - Jan 2023 - Present
         </p>
         <p>
           As a UI/UX Developer at Intrinsic (an Alphabet company) via Nelson
@@ -42,8 +44,10 @@ const Experience: React.FC = () => {
       </section>
       <section>
         <p>
-          <span className='primary'>Front End Engineer</span> at Jefferson
-          Health via TekSystems, Inc. - Nov 2021 - Jan 2023
+          <span className='primary'>Front End Engineer</span> at <span className="bold">
+            Jefferson
+            Health
+          </span> via TekSystems, Inc. - Nov 2021 - Jan 2023
         </p>
         <p>
           As a Front End Developer at Jefferson Health, I created pixel-perfect
@@ -79,17 +83,16 @@ const Experience: React.FC = () => {
       </section>
       <section>
         <p>
-          <span className='primary'>Front End Engineer</span> at Dental Game
-          Plan - Apr 2021 - Dec 2021
+          <span className='primary'>Front End Engineer</span> at <span className="bold">DGP</span> - Apr 2021 - Dec 2021
         </p>
-        <p>As a Front End Web Developer at Dental Game Plan, I owned all Jekyll front-end code for a website agency using HTML, CSS, JavaScript, Liquid, YAML, and Jekyll on AWS EC2 instances. Working closely with the Design team, I created custom theme templates which reduced developer time on site creation by 200%, collaborated with senior developers, and improved the existing tools and methods. In addition, I updated existing sites for performance and relevance, and built landing pages for specific clients to drive traffic to their sites.</p>
+        <p>As a Front End Web Developer at DGP, I owned all Jekyll front-end code for this website agency using HTML, CSS, JavaScript, Liquid, YAML, and Jekyll on AWS EC2 instances. Working closely with the Design team, I created custom theme templates which reduced developer time on site creation by 200%, collaborated with senior developers, and improved the existing tools and methods. In addition, I updated existing sites for performance and relevance, and built landing pages for specific clients to drive traffic to their sites.</p>
         <div className='description__long'>
-          <p>Through my work at Dental Game Plan, I developed a strong skill set in front end web development and Jekyll. I also honed my ability to collaborate effectively with many teams across different functions and skill sets, ensuring that client sites met their goals and exceeded expectations.</p>
+          <p>Through my work at DGP, I developed a strong skill set in front end web development and Jekyll. I also honed my ability to collaborate effectively with many teams across different functions and skill sets, ensuring that client sites met their goals and exceeded expectations.</p>
         </div>
       </section>
       <section>
         <p>
-          <span className='primary'>Front End Engineer</span> at Kul, Inc. - May
+          <span className='primary'>Front End Engineer</span> at <span className="bold">Kul, Inc.</span> - May
           2020 - Mar 2021
         </p>
         <p>As a Front End Web Developer at KUL, I built a Shopify ecommerce site using HTML, SCSS, Liquid, JavaScript, installed Shopify apps to enhance the site with advertising, reviews, coupons, and lead generation, set up version control system, a development store, and optimized the site resulting in a 75% decrease in load times.</p>
