@@ -1,42 +1,83 @@
-// Projects.tsx
-
 import React from 'react';
 import './Projects.scss';
+
 const Projects: React.FC = () => {
   return (
     <div className="projects">
       <h1 className="primary">PROJECTS</h1>
       <div className='projects__container'>
+
+        {/* New projects from resume */}
         <div className='projects__item'>
-          <h2 className='projects__item-title primary'><a className="link" target="_blank" rel="noreferrer" href='https://github.com/mikkel250/portfolio-react-ts'>React Portfolio Site</a></h2>
+          <h2 className='projects__item-title primary'><a className="link" target="_blank" rel="noreferrer" href='https://github.com/mikkel250/analysis_simple'>Market Analysis CLI (Python, In Progress)</a></h2>
           <p className='projects__item-desc'>
-            A portfolio site intended to demonstrate proficiency with React and Typescript. The styling is still a work in progress, and the deployed version can be viewed here: <a className="link" target="_blank" rel="noreferrer" href='https://graceful-cucurucho-be578d.netlify.app'>https://graceful-cucurucho-be578d.netlify.app</a>
+            Developing a Python CLI tool to analyze cryptocurrency data-because watching the market isn't stressful enough, might as well automate the panic.
           </p>
         </div>
+
         <div className='projects__item'>
-          <h2 className='projects__item-title primary'><a className="primary link" target="_blank" rel="noreferrer" href='https://github.com/mikkel250/uswds-jekyll'>Jekyll demo site</a></h2>          
+          <h2 className='projects__item-title primary'><a className="link" target="_blank" rel="noreferrer" href='https://github.com/mikkel250/optiride'>Bike-and-BART Transit Planner (React, paused)</a></h2>
           <p className='projects__item-desc'>
-            A demo project built for the Census Bureau, the deployed version can be viewed at: <a className="primary link" target="_blank" rel="noreferrer" href='https://gifted-stonebraker-95e99b.netlify.app/'>https://gifted-stonebraker-95e99b.netlify.app/</a>
+            Tried to make Bay Area commutes less confusing by integrating Google Maps and BART by stitching together biking directions and transit directions since you can't do that by default in Google Maps (just the way the transit directions are designed). The idea is to take the user's origin and destination, and then stitch together biking directions and transit directions based on the nearest BART stations to the origin and destination. Paused, but the dream lives on-like a zombie app refusing to die. I'll probably finish this once I replace my bike that was stolen, Freddie keeps me too busy to ride.
           </p>
         </div>
+
+        {/* Existing projects */}
         <div className='projects__item'>
-          <h2 className='projects__item-title primary'><a className="link" target="_blank" rel="noreferrer" href='https://github.com/mikkel250/my_portfolio_website'>A personal site built in Svelte</a></h2>          
+          <h2 className='projects__item-title primary'>
+            <a className="link" target="_blank" rel="noreferrer" href='https://github.com/mikkel250/portfolio-react-ts'>
+              React Portfolio Site
+            </a>
+          </h2>
           <p className='projects__item-desc'>
-            I built this project to learn Svelte and see how it stacks up to Angular and React. You can view the deployed version at: <a className="link" target="_blank" rel="noreferrer" href='https://mikkel250.codingconcepts.company'>https://mikkel250.codingconcepts.company</a>
+            The very site you're exploring right now! Built with React and Typescript to prove I can indeed build a working app without losing my sanity (just my sleep). Styled? Sure, it's got stylesheets. Polished? We'll call it “authentically styled.”
           </p>
         </div>
+
         <div className='projects__item'>
-          <h2 className='projects__item-title primary'><a className="link" target="_blank" rel="noreferrer" href='https://github.com/mikkel250/react-ecommerce'>React E-commerce store</a></h2>
+          <h2 className='projects__item-title primary'>
+            <a className="primary link" target="_blank" rel="noreferrer" href='https://github.com/mikkel250/uswds-jekyll'>
+              Jekyll Demo Site
+            </a>
+          </h2>          
           <p className='projects__item-desc'>
-            A React project built to learn the framework. This is a mock online clothing store built with React, and Redux on the frontend, Node/Express for the backend, Firebase for the database and User Authentication, and Stripe for mock payments.
+            A neat little demo project built for the Census Bureau. It's live and kicking here: <a className="primary link" target="_blank" rel="noreferrer" href='https://gifted-stonebraker-95e99b.netlify.app/'>Take a look</a>. Jekyll-powered and ready to serve static goodness. They asked me make specific changes to this template to demonstrate my Jekyll skills, but then they ghosted me after I turned it in :( but the project lives on!
           </p>
         </div>
+
         <div className='projects__item'>
-          <h2 className='projects__item-title primary'><a className="link" target="_blank" rel="noreferrer" href='https://github.com/mikkel250/face-recognition'>Face recognition app</a></h2>
+          <h2 className='projects__item-title primary'>
+            <a className="link" target="_blank" rel="noreferrer" href='https://github.com/mikkel250/my_portfolio_website'>
+              Personal Site Built in Svelte
+            </a>
+          </h2>          
           <p className='projects__item-desc'>
-            A Full stack web app that allows users to log in/out, and upload photos via links into the user-input field and will fetch, display the photo, recognize faces, and draw boxes around them. Uses React for the UI and front end (this repo) for its ability to update only the required parts of a page, React Router for efficient navigation in React, Express and Node for the backend (see the /face-recognition-api repo) to have REST APIs available for consumption on the frontend, PostgreSQL for the database, and the Clarifai face recognition API to analyze the photos. Technology used: React, Node, Express, REST APIs, PostgreSQL, and the Clarifai API.
+            My experiment to see if Svelte could dethrone Angular and React in my heart. Spoiler: it's pretty cool. 
           </p>
         </div>
+
+        <div className='projects__item'>
+          <h2 className='projects__item-title primary'>
+            <a className="link" target="_blank" rel="noreferrer" href='https://github.com/mikkel250/react-ecommerce'>
+              React E-commerce Store
+            </a>
+          </h2>
+          <p className='projects__item-desc'>
+            A mock online clothing store built to learn React and Redux. It's got Node/Express backend, Firebase for database & auth, and Stripe for pretend payments-because who doesn't want to shop without spending real money?
+          </p>
+        </div>
+
+        <div className='projects__item'>
+          <h2 className='projects__item-title primary'>
+            <a className="link" target="_blank" rel="noreferrer" href='https://github.com/mikkel250/face-recognition'>
+              Face Recognition App
+            </a>
+          </h2>
+          <p className='projects__item-desc'>
+            A full-stack app that lets users log in, upload photos, and watch the magic as faces get recognized and boxed in real-time. Built with React, Express, Node, PostgreSQL, and powered by the Clarifai API. It's like giving your photos a pair of glasses.
+          </p>
+        </div>
+
       </div>
     </div>
   );

@@ -55,6 +55,10 @@ h2 {
   font-weight: bold;
 }
 
+p, li {
+  font-size: 1.1em;
+}
+
 @media (min-width: 1025px) {
   h1 { font-size: 4em; }
   h2 { font-size: 2em;  }
