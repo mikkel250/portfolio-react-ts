@@ -14,9 +14,11 @@
 .home__link {
   color: rgb(29, 221, 189);
   text-decoration: none;
+  transition: transform 0.3s ease;
+  display: inline-block;
   &:hover {
     text-decoration: underline;
-    transform: scale(2);
+    transform: scale(1.05) !important;
   }
 }
 .subheadline {

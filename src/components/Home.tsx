@@ -40,7 +40,7 @@ const Home = () => {
       </div>
       <div className='home__full'>
         <p className='home__description'>
-        It all started with MUDs (Multi-User Dimensions) back in the mid-nineties, when I was just fifteen and the internet wasn't yet part of everyday life. Back then, finding MUDs wasn't as simple as a search—Google and other search engines didn't exist yet. You'd navigate a maze of university databases, gopher services, and Telnet before finally reaching the MUD listings. Those early digital adventures even got us featured in a <a href="https://www.pressdemocrat.com/article/news/a-meeting-of-the-muds/" className="home__link" target="_blank" rel="noopener noreferrer">local newspaper article</a>
+        It all started with MUDs (Multi-User Dimensions) back in the mid-nineties, when I was just fifteen and the internet wasn't yet part of everyday life. Back then, finding MUDs wasn't as simple as a search—Google and other search engines didn't exist yet. You'd navigate a maze of university databases, gopher services, and Telnet before finally reaching the MUD listings. Those early digital adventures even got us featured in a <a href="https://www.pressdemocrat.com/article/news/a-meeting-of-the-muds/" className="home__link" target="_blank" rel="noopener noreferrer">local newspaper article.</a>
         </p>
         <p className='home__description'>
           Since then, my journey has taken some twists and turns. From salmon fishing in Alaska to traveling and busking through Central America, I've explored more than just the typical tech world.
