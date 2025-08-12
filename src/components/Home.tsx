@@ -40,32 +40,31 @@ const Home = () => {
       </div>
       <div className='home__full'>
         <p className='home__description'>
-          Full Stack Engineer (mostly front-end, but with a few backend tricks
-          up my sleeve) with 5 years of experience building user-centered web
-          apps. My secret sauce? The classic web trifecta: JavaScript, HTML, and
-          (S)CSS-sprinkled with recent adventures in C#/.NET. I've also dabbled
-          in Angular and TypeScript during a brief contract with Intrinsic (a
-          GoogleX moonshot), where I learned to survive monorepos and code
-          reviews alike. With a good eye for UI/UX and a proven track record in
-          accessibility, I've built and shipped projects using React and the
-          MERN stack through bootcamp and personal projects. Currently, I'm
-          automating my crypto market anxiety with a Python analyzer-because why
-          just watch the market crash when you can script it? A self-sufficient
-          learner, I'm eager to contribute to front-end or full-stack solutions
-          that deliver intuitive, high-impact user experiences. Experienced in
-          agile teams and collaborating across product, design, and offshore
-          squads.
+        It all started with MUDs (Multi-User Dimensions) back in the mid-nineties, when I was just fifteen and the internet wasn't yet part of everyday life. Back then, finding MUDs wasn't as simple as a search—Google and other search engines didn't exist yet. You'd navigate a maze of university databases, gopher services, and Telnet before finally reaching the MUD listings. Those early digital adventures even got us featured in a local newspaper article: https://www.pressdemocrat.com/article/news/a-meeting-of-the-muds/
         </p>
         <p className='home__description'>
-          Before diving into software development, I spent five years managing a
-          local business and moonlighting as the IT department-so I bring a
-          well-rounded, “been-there-done-that” perspective to my dev work. When
-          I'm not coding, I'm an excellent cook, I'm usually walking or playing
-          with my Golden Retriever Freddie Mercury (he's a master of both Grunt
-          and Gulp), gaming, investing or coaching others in crypto, blasting
-          Mongolian heavy metal, cycling, geeking out over Neo-Futuristic
-          architecture, and traveling the globe-because variety is the spice of
-          life (and code).
+          Since then, my journey has taken some twists and turns. From salmon fishing in Alaska to traveling and busking through Central America, I've explored more than just the typical tech world.
+        </p>
+        <p className='home__description'>
+        During five years as a manager at a local business before I transitioned into software engineering, I wore many hats. I was the sole Help Desk and Tech Support Manager, spearheading key improvements that significantly boosted support efficiency. I also managed an entire department, provided training, and served as QA Manager. I was promoted quickly because I took initiative, identified and fixed key pain points, and stepped up to take increasing levels of responsibility. 
+        </p>
+        <p className='home__description'>
+        These experiences sharpened my leadership, process improvement, and collaboration skills—qualities I bring to every software project. Ultimately, I found my way to where I really want to be. Today, I'm a Software Engineer with 5 years of experience, primarily on the Front End and recently expanding into Full Stack.
+        </p>
+        <p className='home__description'>
+        I built a React-based ticket routing app at Jefferson Health that tripled the support team's response speed and boosted site performance with a 25% load time reduction. I modernized workflows by creating dev-to-prod pipelines and introducing modern version control to their Shopify store.
+        </p>
+        <p className='home__description'>
+        While contracting at Google, I developed Material UI components using Angular and TypeScript. I've also built multiple eCommerce stores using Shopify and Liquid. JavaScript (ES6+), HTML5, and CSS are my everyday tools.
+        </p>
+        <p className='home__description'>
+        I bring more than just coding skills—I not only thrive in agile, cross-functional teams, but I can lead and/or manage them, too. My management experience sharpened my leadership, adaptability, collaboration, and communication skills. I take initiative and get the job done right, and come at every task with a humble, growth mindset. My academic background in art gives me a good eye for UI and UX design, which naturally draws me toward front end work—where creativity and technology come together.
+        </p>
+        <p className='home__description'>
+        When I'm not coding, I'm an excellent cook, I'm usually walking or playing with my Golden Retriever Freddie Mercury (he's a master of both Grunt and Gulp), gaming, investing or coaching others in crypto, blasting Mongolian heavy metal, cycling, geeking out over Neo-Futuristic architecture, and traveling the globe-because variety is the spice of life (and code).
+        </p>
+        <p className='home__description'>
+        Feel free to reach out at mikkel250@gmail.com.
         </p>
       </div>
     </div>
