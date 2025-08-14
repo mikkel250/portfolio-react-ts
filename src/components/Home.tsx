@@ -52,7 +52,7 @@ const Home = () => {
         These experiences sharpened my leadership, process improvement, and collaboration skills—qualities I bring to every software project. Ultimately, I found my way to where I really want to be. Today, I'm a Software Engineer with 5 years of experience, primarily on the Front End and recently expanding into Full Stack.
         </p>
         <p className='home__description'>
-        I built a React-based ticket routing app at Jefferson Health that tripled the support team's response speed and boosted site performance with a 25% load time reduction. I modernized workflows by creating dev-to-prod pipelines and introducing modern version control to their Shopify store.
+        I built a React-based ticket routing app at Jefferson Health that tripled the support team's response speed and boosted their Shopify site performance with a 25% load time reduction. I modernized workflows by creating dev-to-prod pipelines and introducing modern version control to their Shopify store.
         </p>
         <p className='home__description'>
         While contracting at Google, I developed Material UI components using Angular and TypeScript. I've also built multiple eCommerce stores using Shopify and Liquid. JavaScript (ES6+), HTML5, and CSS are my everyday tools.
