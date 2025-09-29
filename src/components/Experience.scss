@@ -6,14 +6,30 @@ section {
   cursor: pointer;
 }
 
-.icon {
+.link .icon {
   display: inline-block;
   width: 20px;
   height: 20px;
   margin-left: 10px;
   vertical-align: middle;
-  background: url("../../public/images/external-link-svgrepo-com.svg") no-repeat center center;
-  background-size: contain;
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(45deg);
+    width: 8px;
+    height: 8px;
+    border-right: 3px solid rgb(29, 221, 189);
+    border-bottom: 3px solid rgb(29, 221, 189);
+    transition: transform 0.3s ease;
+  }
+  
+  &.expanded::after {
+    transform: translate(-50%, -50%) rotate(225deg);
+  }
 }
 
 // .label {
