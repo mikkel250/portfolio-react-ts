@@ -1,3 +1,8 @@
-.projects__item-title { margin-bottom: 0; }
+.projects__item-title { 
+  margin-bottom: 0;
+  @media (max-width: 600px) {
+    font-weight: bold;
+  }
+}
 
 .projects__item-desc { margin-top: 0; }
