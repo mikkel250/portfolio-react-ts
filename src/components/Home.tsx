@@ -4,8 +4,8 @@ import "./Home.scss";
 const Home = () => {
   const handleDownload = () => {
     const link = document.createElement("a");
-    link.download = "MikkelRidley2025.pdf";
-    link.href = "/MikkelRidley2025.pdf";
+    link.download = "MikkelRidley2025-tight.docx";
+    link.href = "/MikkelRidley2025-tight.docx";
     link.click();
     link.remove();
     return;
