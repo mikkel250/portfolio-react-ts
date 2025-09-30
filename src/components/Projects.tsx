@@ -53,8 +53,20 @@ const Projects: React.FC = () => {
             Created 4 Dune Analytics dashboards analyzing tens of thousands of Ethereum L1/L2 liquidity pools. Built complex data pipelines (28 background queries) for real-time comparative analysis.
           </p>
         </div>
-
         <div className='projects__item'>
+          <h2 className='projects__item-title primary'>
+            <a className="link" target="_blank" rel="noreferrer noopener" href='https://github.com/mikkel250/SoftwareDevSmartContract'>
+              Smart Contract For Freelance Work Agreements
+            </a>
+          </h2>
+          <p className='projects__item-desc'>
+            Live demo showcasing smart contract integration and blockchain technology implementation with modern React frontend architecture. 
+            <a className="link" style={{ margin: '0 0 0 5px' }} target="_blank" rel="noreferrer noopener" href='https://freelancersmartcontract.netlify.app'>
+              View Live Demo
+            </a>
+          </p>
+        </div>
+        {/* <div className='projects__item'>
           <h2 className='projects__item-title primary'>
             <a className="link" target="_blank" rel="noreferrer noopener" href='https://freelancersmartcontract.netlify.app/'>
               AI/ML Integration
@@ -63,7 +75,7 @@ const Projects: React.FC = () => {
           <p className='projects__item-desc'>
             Set up Model Context Protocol (MCP) servers for orchestrating AI workflows. Early Stable Diffusion adopter; run local instances for generative AI experiments.
           </p>
-        </div>
+        </div> */}
 
         <div className='projects__item'>
           <h2 className='projects__item-title primary'>
@@ -214,20 +226,6 @@ const Projects: React.FC = () => {
           </h2>
           <p className='projects__item-desc'>
             Healthcare client website showcasing custom Jekyll SSG framework architecture and optimized development workflows for healthcare marketing.
-          </p>
-        </div>
-
-        <div className='projects__item'>
-          <h2 className='projects__item-title primary'>
-            <a className="link" target="_blank" rel="noreferrer noopener" href='https://github.com/mikkel250/SoftwareDevSmartContract'>
-              Smart Contract For Freelance Work Agreements
-            </a>
-          </h2>
-          <p className='projects__item-desc'>
-            Live demo showcasing smart contract integration and blockchain technology implementation with modern React frontend architecture. 
-            <a className="link" style={{ margin: '0 0 0 5px' }} target="_blank" rel="noreferrer noopener" href='https://freelancersmartcontract.netlify.app'>
-              View Live Demo
-            </a>
           </p>
         </div>
       </div>
