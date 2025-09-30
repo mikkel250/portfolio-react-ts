@@ -53,7 +53,7 @@ const Projects: React.FC = () => {
               rel='noreferrer noopener'
               href='https://github.com/mikkel250/react-graphql'
             >
-              GraphQL implementation demo
+              | GraphQL implementation demo
             </a>
           </p>
         </div>
