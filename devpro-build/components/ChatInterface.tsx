@@ -27,68 +27,29 @@ export default function ChatInterface({ className }: ChatInterfaceProps) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const initializedRef = useRef(false);
 
-  // initialize session ID and restore messages from localStorage (only once)
+  // Initialize session ID and show welcome message (only once)
   useEffect(() => {
     // Prevent re-initialization if already done
     if (initializedRef.current) return;
     initializedRef.current = true;
 
-    let id = localStorage.getItem("ai-chat-session-id");
-    if (!id) {
-      id = generateSessionId();
-      localStorage.setItem("ai-chat-session-id", id);
-    }
-
+    // Generate session ID
+    const id = generateSessionId();
     setSessionId(id);
 
-    // Try to restore messages from localStorage
-    const savedMessages = localStorage.getItem("ai-chat-messages");
-    if (savedMessages) {
-      try {
-        const parsed = JSON.parse(savedMessages);
-        // Convert timestamp strings back to Date objects
-        const messagesWithDates = parsed.map((msg: any) => ({
-          ...msg,
-          timestamp: new Date(msg.timestamp),
-        }));
-        setMessages(messagesWithDates);
-      } catch (error) {
-        console.error("Failed to restore messages from localStorage:", error);
-        // Show welcome message if restore fails
-        setMessages([
-          {
-            role: "assistant",
-            content: `Hi! I'm Mikkel's AI assistant.
-        
-        **Paste a full job description** for a detailed match analysis with scoring and relevant experience.
-        
-        Or **ask me anything** about Mikkel's experience, projects, skills, or background!`,
-            timestamp: new Date(),
-          },
-        ]);
-      }
-    } else {
-      // Show welcome message for new users
-      setMessages([
-        {
-          role: "assistant",
-          content: `Hi! I'm Mikkel's AI assistant.
-        
-        **Paste a full job description** for a detailed match analysis with scoring and relevant experience.
-        
-        Or **ask me anything** about Mikkel's experience, projects, skills, or background!`,
-          timestamp: new Date(),
-        },
-      ]);
-    }
-  }, []);
+    // Show welcome message
+    setMessages([
+      {
+        role: "assistant",
+        content: `Hi! I'm Mikkel's AI assistant.
 
-  // Save messages to localStorage whenever they change
-  useEffect(() => {
-    if (messages.length > 0) {
-      localStorage.setItem("ai-chat-messages", JSON.stringify(messages));
-    }
-  }, [messages]);
+**Paste a full job description** for a detailed match analysis with scoring and relevant experience.
+
+Or **ask me anything** about Mikkel's experience, projects, skills, or background!`,
+        timestamp: new Date(),
+      },
+    ]);
+  }, []);
 
   // auto-scroll to the bottom when new messages arrive
   useEffect(() => {

@@ -9,6 +9,18 @@ export default function ChatWidget() {
   const [widgetState, setWidgetState] = useState<WidgetState>('minimized');
   const [mounted, setMounted] = useState(false);
 
+  useEffect(() => {
+    if (widgetState === 'maximized') {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [widgetState]);
+
   // Only render on client to avoid hydration errors
   useEffect(() => {
     setMounted(true);
@@ -44,52 +56,53 @@ export default function ChatWidget() {
       {/* Overlay for maximized state */}
       {isMaximized && <div className="chat-widget-overlay" onClick={handleCompact} />}
 
-      {/* Chat container - changes styling based on state */}
-      {isOpen && (
-        <div className={isMaximized ? "chat-widget-modal" : "chat-widget-panel"}>
-          <div className={isMaximized ? "chat-widget-modal__header" : "chat-widget-panel__header"}>
-            <div className={isMaximized ? "chat-widget-modal__title" : "chat-widget-panel__title"}>
-              <span className={isMaximized ? "chat-widget-modal__title-icon" : "chat-widget-panel__title-icon"}>🤖</span>
-              <h2 className={isMaximized ? "chat-widget-modal__title-text" : "chat-widget-panel__title-text"}>
-                Chat with Mikkel's AI
-              </h2>
-            </div>
-            <div className={isMaximized ? "chat-widget-modal__controls" : "chat-widget-panel__controls"}>
-              {isCompact && (
-                <button
-                  className="chat-widget-panel__control-btn"
-                  onClick={handleMaximize}
-                  aria-label="Maximize chat"
-                  title="Maximize"
-                >
-                  ⛶
-                </button>
-              )}
-              {isMaximized && (
-                <button
-                  className="chat-widget-modal__control-btn"
-                  onClick={handleCompact}
-                  aria-label="Restore chat"
-                  title="Restore Down"
-                >
-                  ◱
-                </button>
-              )}
-              <button
-                className={isMaximized ? "chat-widget-modal__control-btn chat-widget-modal__control-btn--close" : "chat-widget-panel__control-btn"}
-                onClick={handleMinimize}
-                aria-label="Close chat"
-                title={isMaximized ? "Close" : "Minimize"}
-              >
-                {isMaximized ? "✕" : "➖"}
-              </button>
-            </div>
+      {/* Chat container - always rendered but hidden when minimized */}
+      <div 
+        className={isMaximized ? "chat-widget-modal" : "chat-widget-panel"}
+        style={{ display: isOpen ? 'flex' : 'none' }}
+      >
+        <div className={isMaximized ? "chat-widget-modal__header" : "chat-widget-panel__header"}>
+          <div className={isMaximized ? "chat-widget-modal__title" : "chat-widget-panel__title"}>
+            <span className={isMaximized ? "chat-widget-modal__title-icon" : "chat-widget-panel__title-icon"}>🤖</span>
+            <h2 className={isMaximized ? "chat-widget-modal__title-text" : "chat-widget-panel__title-text"}>
+              Chat with Mikkel's AI
+            </h2>
           </div>
-          <div className={isMaximized ? "chat-widget-modal__content" : "chat-widget-panel__content"}>
-            <ChatInterface />
+          <div className={isMaximized ? "chat-widget-modal__controls" : "chat-widget-panel__controls"}>
+            {isCompact && (
+              <button
+                className="chat-widget-panel__control-btn"
+                onClick={handleMaximize}
+                aria-label="Maximize chat"
+                title="Maximize"
+              >
+                ⛶
+              </button>
+            )}
+            {isMaximized && (
+              <button
+                className="chat-widget-modal__control-btn"
+                onClick={handleCompact}
+                aria-label="Restore chat"
+                title="Restore Down"
+              >
+                ◱
+              </button>
+            )}
+            <button
+              className={isMaximized ? "chat-widget-modal__control-btn chat-widget-modal__control-btn--close" : "chat-widget-panel__control-btn"}
+              onClick={handleMinimize}
+              aria-label="Close chat"
+              title={isMaximized ? "Close" : "Minimize"}
+            >
+              {isMaximized ? "✕" : "➖"}
+            </button>
           </div>
         </div>
-      )}
+        <div className={isMaximized ? "chat-widget-modal__content" : "chat-widget-panel__content"}>
+          <ChatInterface />
+        </div>
+      </div>
     </>
   );
 }

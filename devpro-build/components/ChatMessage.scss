@@ -130,6 +130,8 @@
     border-radius: 0.5rem;
     overflow-x: auto;
     margin: 0.75rem 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
 
     code {
       font-family: 'Courier New', monospace;
