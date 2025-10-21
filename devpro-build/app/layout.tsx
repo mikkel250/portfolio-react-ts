@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar/Navbar";
 import { Footer } from "@/components/Footer";
 import { Contact } from "@/components/Contact";
 import Script from "next/script";
+import ChatWidget from "@/components/ChatWidget";
 
 export const metadata: Metadata = {
   title: "Devpro | Portfolio Template",
