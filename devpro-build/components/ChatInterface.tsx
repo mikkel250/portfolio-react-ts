@@ -41,11 +41,14 @@ export default function ChatInterface({ className }: ChatInterfaceProps) {
     setMessages([
       {
         role: "assistant",
-        content: `Hi! I'm Mikkel's AI assistant.
+        content: `Hi! I'm Mikkel's AI assistant—your interactive way to learn about his background and experience.
 
-**Paste a full job description** for a detailed match analysis with scoring and relevant experience.
+**How to use me:**
+- **Paste a full job description** for a detailed match analysis with scoring
+- **Ask me anything** about Mikkel's experience, projects, skills, or technical background
+- **Close this chat** (✕ button above) to view his traditional portfolio site
 
-Or **ask me anything** about Mikkel's experience, projects, skills, or background!`,
+Try asking: "What's Mikkel's experience with React?" or "Tell me about his most impactful project."`,
         timestamp: new Date(),
       },
     ]);

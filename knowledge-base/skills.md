@@ -444,6 +444,40 @@ Technologies explored through unpaid side projects, demonstrating initiative and
 
 ---
 
+## Education & Background
+
+### Technical Training
+- **Full-Stack Web Development Bootcamp** (HyperionDev, 2019)
+  - Intensive program covering full stack web development such as: HTML/CSS/JavaScript, React, Node.js, and databases
+  - Built multiple full-stack projects from scratch
+  - Learned collaborative development workflows (Git, code review, agile)
+
+### Self-Taught Path
+- **Primary Learning Method:** Self-directed learning through documentation, online courses, and building projects
+- **Notable Achievement:** Learned Angular from scratch and was shipping production code at Google within 2 weeks
+- **Continuous Learning:** Actively expanding skills (currently: OpenAI API integration, Next.js 14, Aceternity UI)
+- **Philosophy:** Strong believer in learning by doing - most skills gained through building real applications
+
+### Why This Background Is a Strength
+1. **Proven Learning Ability:** Track record of rapid technology adoption (Angular in 2 weeks, TypeScript mastery, etc.)
+2. **Self-Motivation:** Drove own career transition into software engineering without formal CS degree
+3. **Problem-Solving Focus:** Non-traditional path developed strong debugging and research skills
+4. **Adaptability:** Comfortable with ambiguity and figuring things out independently
+5. **Practical Orientation:** Focus on shipping working code, not just theory
+
+### Addressing the "No CS Degree" Question
+**Key Points:**
+- 5 years of professional production experience across multiple companies
+- Bootcamp + self-taught path is increasingly common in tech (and valued for demonstrating initiative)
+- Many successful engineers are self-taught (examples: David Heinemeier Hansson, John Carmack started young)
+- What matters: Can you ship reliable, maintainable code? (Yes - 5 years of evidence)
+- Non-CS backgrounds bring diverse problem-solving approaches
+
+**If Asked Directly:**
+> "I took a non-traditional path into software engineering through a bootcamp and extensive self-teaching. What I may lack in formal CS theory, I make up for with 5 years of professional production experience, rapid learning ability, and a track record of shipping reliable code. I've learned algorithms and data structures through practical application, and I'm always eager to deepen my theoretical knowledge when it benefits the work."
+
+---
+
 ## Guidance for Discussing Skills
 
 ### When Asked About Professional Experience With a Technology

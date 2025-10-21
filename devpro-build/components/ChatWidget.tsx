@@ -6,7 +6,7 @@ import ChatInterface from './ChatInterface';
 type WidgetState = 'minimized' | 'compact' | 'maximized';
 
 export default function ChatWidget() {
-  const [widgetState, setWidgetState] = useState<WidgetState>('minimized');
+  const [widgetState, setWidgetState] = useState<WidgetState>('maximized');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {

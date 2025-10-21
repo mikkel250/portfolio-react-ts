@@ -54,7 +54,7 @@ function isCareerStoryQuery(query: string): boolean {
 }
 
 function isMetaQuery(query: string): boolean {
-  const metaKeywords = /AI|assistant|chatbot|this (app|tool|bot|system)|how (does this|do you) work|built this|created this|tech stack|architecture|GPT|OpenAI|how are you/i;
+  const metaKeywords = /AI|assistant|chatbot|this (app|tool|bot|system)|how (does this|do you) work|built this|created this|tech stack|architecture|GPT|OpenAI|how are you|agentic|agent|autonomous|LLM|machine learning|prompt engineering/i;
   return metaKeywords.test(query);
 }
 

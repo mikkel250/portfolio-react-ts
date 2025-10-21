@@ -102,12 +102,38 @@ You're currently interacting with an AI recruiting assistant I built to serve du
 
 ---
 
+## Relationship to Agentic Workflows & AI Agents
+
+**What are Agentic Workflows?**
+AI agents that autonomously perform complex tasks - planning, executing, and adapting based on context (examples: AutoGPT, LangChain agents, workflow automation systems).
+
+**This Project's Relevance:**
+While this assistant is not a fully autonomous agent system (no multi-step planning or tool usage), it demonstrates the **foundational skills required for building agentic workflows:**
+
+1. **LLM Integration:** Core requirement for any AI agent - API integration, prompt engineering, context management
+2. **Dynamic Context Retrieval:** Retrieves and injects relevant information based on query (lightweight RAG) - same pattern used in agentic systems
+3. **Goal-Oriented Behavior:** Designed with specific objectives (qualify candidates, answer questions, drive to next step)
+4. **Production-Ready Architecture:** Serverless, scalable, error-handling - ready for real users
+5. **Rapid Development:** Built in ~2 weeks, showcasing ability to ship AI features quickly
+
+**Scaling to Full Agentic Systems:**
+With this foundation, building more sophisticated agentic workflows would involve:
+- Adding tool usage (function calling, API integrations)
+- Multi-step planning and execution
+- Persistent memory across sessions
+- Agent orchestration frameworks (LangChain, AutoGPT patterns)
+
+**Bottom Line:** This project proves Mikkel can ship production AI features from day one. The leap to agentic workflows is architectural evolution, not learning from scratch.
+
+---
+
 ## What This Project Demonstrates
 
 ### Technical Skills
-- **AI/LLM Integration:** OpenAI API, chat completions, streaming responses
-- **Prompt Engineering:** System prompts with guardrails, context injection, marketing-focused responses
+- **AI/LLM Integration:** OpenAI API, chat completions, streaming responses, production deployment
+- **Prompt Engineering:** System prompts with guardrails, context injection, marketing-focused responses, role-specific behavior
 - **Knowledge Retrieval:** Keyword-based context retrieval and management (lightweight RAG approach)
+- **Agentic Foundations:** Context-aware decision making, goal-oriented responses, dynamic information retrieval
 - **Full-Stack Development:** Frontend (React/Next.js) + Backend (Serverless functions)
 - **Modern UI:** Aceternity UI, Framer Motion, responsive design
 - **State Management:** Widget states, conversation history, session management

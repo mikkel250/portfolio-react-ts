@@ -2,7 +2,7 @@ export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
 import { checkRateLimit } from '../lib/rate-limit';
 import { getRelevantContext, extractJobTitle } from '../lib/knowledge-base';
-import { buildSystemPrompt } from '../lib/prompts';
+import { buildChatSystemPrompt } from '../lib/prompts';
 import { chat, ChatMessage } from '../lib/llm';
 
 console.log('Chat route Loaded!');
@@ -78,17 +78,15 @@ export async function POST(request: NextRequest) {
     const jobTitle = extractJobTitle(query);
 
     // build system prompt with context and optional job title
-    const systemPrompt = buildSystemPrompt(query, context, {
-      jobTitle: jobTitle || undefined,
+    const systemPrompt = buildChatSystemPrompt(context, {
       calendlyLink: process.env.NEXT_PUBLIC_CALENDLY_LINK,
-      recruiterName: undefined // placeholder in case we want to add later
     });
 
     // call LLM with conversation history
     const llmResponse = await chat(messages, systemPrompt, {
       temperature: 0.7,
       maxTokens: 1000,
-      model: 'gpt-4o-mini'
+      model: process.env.AI_MODEL || 'gpt-4o-mini', // Easy model switching via env var
     });
 
     // return successful response

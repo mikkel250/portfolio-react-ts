@@ -204,10 +204,10 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 90vw;
-  height: 85vh;
-  max-width: 1000px;
-  max-height: 800px;
+  width: 96vw;
+  height: 92vh;
+  max-width: 1600px;
+  max-height: none;
   background: white;
   border-radius: 1.25rem;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25),
@@ -222,7 +222,6 @@
     width: 100vw;
     height: 100vh;
     max-width: 100vw;
-    max-height: 100vh;
     border-radius: 0;
   }
 }
