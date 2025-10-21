@@ -1,3 +1,5 @@
+'use client';
+import './ChatMessage.scss';
 import React from "react";
 import ReactMarkdown from "react-markdown";
 

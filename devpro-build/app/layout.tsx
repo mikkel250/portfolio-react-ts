@@ -23,7 +23,8 @@ export default function RootLayout({
         <Navbar />
         {children}
         <Footer />
-        <Contact />
+        {/* <Contact /> */}
+        <ChatWidget />
       </body>
     </html>
   );

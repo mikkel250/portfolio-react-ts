@@ -1,3 +1,4 @@
+export const runtime = 'nodejs';
 import { JD_ANALYSIS_SYSTEM_PROMPT } from './../lib/jd-prompt';
 import { NextRequest, NextResponse } from 'next/server';
 import { checkRateLimit } from '../lib/rate-limit';
