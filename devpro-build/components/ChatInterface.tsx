@@ -2,6 +2,7 @@
 import './ChatInterface.scss';
 import React, { useState, useEffect, useRef } from "react";
 import ChatMessage from "./ChatMessage";
+import { filterInput } from '../lib/input-filter';
 
 interface Message {
   role: "user" | "assistant" | "system";
@@ -75,6 +76,13 @@ Try asking: "What's Mikkel's experience with React?" or "Tell me about his most 
       content: input.trim(),
       timestamp: new Date(),
     };
+
+    // check for input that should not be sent to the API
+    const filterResult = filterInput(input);
+    if (!filterResult.shouldCallAPI) {
+      // add both user message and return canned reponse with it, skipping API call
+
+    }
 
     // add user message immediately
     setMessages((prev) => [...prev, userMessage]);
