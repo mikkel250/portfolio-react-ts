@@ -78,13 +78,28 @@ Try asking: "What's Mikkel's experience with React?" or "Tell me about his most 
     };
 
     // check for input that should not be sent to the API
-    const filterResult = filterInput(input);
+    const filterResult = filterInput(input.trim());
     if (!filterResult.shouldCallAPI) {
       // add both user message and return canned reponse with it, skipping API call
+      setMessages((prev) => [
+        ...prev,
+        userMessage,
+        {
+          role: 'assistant',
+          content: filterResult.response || "Invalid input, sorry, try again.",
+          timestamp: new Date(),
+        }
+      ]);
 
+      setInput('');
+
+      // optional: log that we filtered this
+      console.log(`Filtered query (${filterResult.reason}):`, input.trim());
+
+      return; // early return to prevent API call further down in the function
     }
 
-    // add user message immediately
+    // add user message, continue with API call 
     setMessages((prev) => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);

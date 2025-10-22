@@ -1,11 +1,12 @@
+/* eslint-disable import/first */
 export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
 import { checkRateLimit } from '../lib/rate-limit';
 import { getRelevantContext, extractJobTitle } from '../lib/knowledge-base';
 import { buildChatSystemPrompt } from '../lib/prompts';
 import { chat, ChatMessage } from '../lib/llm';
+/* eslint-disable import/first */
 
-console.log('Chat route Loaded!');
 /*
 Main Chat API Endpoint
 
