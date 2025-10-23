@@ -2,49 +2,49 @@ export const timeline = [
   {
     year: 2023,
     points: [
-      "Building a new startup, this time it's going to be a big one",
-      "Started writing blogs as a daily habit. Won the nobel prize for literature",
-      "My brother went on to pursue a career in music, he's now a famous singer",
+      "Started as Software Engineer - Full Stack at San Francisco Museum of Modern Art",
+      "Completed contract work at Intrinsic (Alphabet/Google X) as UI/UX Developer",
+      "Led WCAG 2.1 AA compliance sprint achieving zero critical defects",
     ],
   },
   {
     year: 2022,
     points: [
-      "Bought a new M2 chip macbook pro wow this is crazy!",
-      "Broke the chip as soon as I got it, had to buy a new one",
-      "Bought a new M2 chip macbook pro and started living on the streets.",
+      "Continued work at Jefferson Health, modernizing Shopify development workflows",
+      "Migrated Shopify 1.x to 2.0, doubling admin panel speed",
+      "Reduced storefront load time by 25% through performance optimization",
     ],
   },
   {
     year: 2021,
     points: [
-      "Won the interstate merathon, died 4 times on the way.",
-      "Built a side project to help the people of my country win the war against covid",
-      "Started a podcast with my brother, we talk about the latest tech news",
+      "Built React/TypeScript/Next.js IT support ticket routing tool at Jefferson Health",
+      "Improved support ticket response times by 3X",
+      "Shipped 6 Jekyll Static Site Generator sites for healthcare clients at Dental Game Plan",
     ],
   },
   {
     year: 2020,
     points: [
-      "Back at it again, this time joined facebook as a software engineer",
-      "Went on to jump right in the metaverse, and joined Oculus as a software engineer",
-      "Champion of international tetris competition held between me and my brother",
+      "Joined Kul Inc. as second technical hire, owned entire Shopify storefront",
+      "Led full rebranding and migration over 3 weeks with zero downtime",
+      "Built front end for rewards system with data visualization (c3.js, d3.js, Three.js)",
     ],
   },
   {
     year: 2019,
     points: [
-      "Mid life crisis and decided to change career",
-      "Went on to do a Masters in Data Science",
-      "Ended up owning a farm and a small business",
+      "Transitioned from management to software engineering",
+      "Started learning modern web development technologies",
+      "Began building personal projects and portfolio",
     ],
   },
   {
-    year: 2018,
+    year: 2015,
     points: [
-      "Graduate with a Bachelor of Mathematics",
-      "Graduate with a Bachelor of Computer Science",
-      "Graduate with a Bachelor of Statistics",
+      "Started as Manager at Marathon Products",
+      "Implemented Help Desk system achieving 50% faster response times",
+      "Administered ISO 9001 compliance program and process improvements",
     ],
   },
 ];

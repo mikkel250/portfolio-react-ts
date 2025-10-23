@@ -2,12 +2,15 @@
 import './ChatWidget.scss';
 import React, { useState, useEffect } from 'react';
 import ChatInterface from './ChatInterface';
-
-type WidgetState = 'minimized' | 'compact' | 'maximized';
+import { useChatWidget } from '@/contexts/AppContext';
 
 export default function ChatWidget() {
-  const [widgetState, setWidgetState] = useState<WidgetState>('maximized');
+  const { state: widgetState, setState: setWidgetState } = useChatWidget();
   const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (widgetState === 'maximized') {
@@ -20,11 +23,6 @@ export default function ChatWidget() {
       document.body.style.overflow = '';
     };
   }, [widgetState]);
-
-  // Only render on client to avoid hydration errors
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   if (!mounted) {
     return null;

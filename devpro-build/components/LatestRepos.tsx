@@ -21,6 +21,8 @@ export const LatestRepos = ({
         {repos.map((repo: Repository, idx: number) => (
           <a
             href={repo.html_url}
+            target="_blank"
+            rel="noopener noreferrer"
             onMouseEnter={() => setHoveredIndex(idx)}
             key={repo?.html_url}
             onMouseLeave={() => setHoveredIndex(null)}

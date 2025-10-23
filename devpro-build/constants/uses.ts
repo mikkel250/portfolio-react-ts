@@ -1,20 +1,30 @@
 export const uses = [
   {
-    name: "16 Inch M2 MacBook Pro",
-    description: `My main machine for development that I've been using for over 6 months now. Such a beast of a machine. I love it.`,
+    name: "MacBook Pro M2",
+    description: `My main development machine. Perfect for React, TypeScript, and full-stack development. The M2 chip handles everything I throw at it.`,
   },
   {
-    name: "iPad Pro 12.9",
-    description: `Overrated in my opinion. I use it for reading books and watching movies. I don't use it for development.`,
+    name: "VS Code",
+    description: `My primary code editor with extensions for React, TypeScript, and Tailwind CSS. I love the integrated terminal and Git support.`,
   },
   {
-    name: "Keychron K2",
+    name: "React & TypeScript",
     description:
-      "My main keyboard for development. I love the clicky keys and the compact size. I use it with a Logitech MX Master 3 mouse.",
+      "My go-to stack for frontend development. I use React for UI components and TypeScript for type safety and better developer experience.",
   },
   {
-    name: "Logitech MX Master 3",
+    name: "Shopify & Liquid",
     description:
-      "My main mouse for development. I love the scroll wheel and the thumb buttons. I use it with a Keychron K2 keyboard.",
+      "For e-commerce projects, I work extensively with Shopify and Liquid templating. I've modernized development workflows and migrated stores from 1.x to 2.0.",
+  },
+  {
+    name: "Git & GitHub",
+    description:
+      "Version control is essential. I've set up CI/CD pipelines and modernized development workflows for multiple teams.",
+  },
+  {
+    name: "Node.js & Express",
+    description:
+      "For backend development and API integration. I've built full-stack applications with React frontends and Node.js backends.",
   },
 ];

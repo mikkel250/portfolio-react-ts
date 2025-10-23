@@ -2,7 +2,7 @@
 
 ## Overview
 
-Software Engineer with 5 years of hands-on experience shipping production-ready features across diverse technology stacks, from React/TypeScript at startups to Angular at Google scale to ASP.NET at cultural institutions. Proven track record of rapidly adapting to new technologies, optimizing performance by 25-50%, and delivering user-facing features that drive measurable business impact.
+Software Engineer with 5 years of hands-on experience shipping production-ready features across diverse technology stacks, from React/TypeScript at startups to Angular at Google scale to ASP.NET at cultural institutions. Proven track record of rapidly adapting to new technologies, optimizing performance by 18%-25%, and delivering user-facing features that drive measurable business impact.
 
 ---
 
@@ -117,7 +117,7 @@ Dental Game Plan, a specialized web agency serving dental practices nationwide, 
 
 ### Key Accomplishments
 
-- **Built 6 Large-Scale Client Sites:** Delivered 6 major client websites (40+ pages each) from designer mockups to production deployment. Translated Adobe XD designs into Jekyll templates using React components, HTML, SCSS, Liquid, and YAML, then collaborated with team to populate client-specific content and launch sites on AWS infrastructure.
+- **Built 6 Large-Scale Client Sites:** Delivered 6 major client websites (40+ pages each) from designer mockups to production deployment. Translated Adobe XD designs into Jekyll templates using HTML, SCSS, Liquid, and YAML, then collaborated with team to populate client-specific content and launch sites on AWS infrastructure.
 
 - **Created Reusable Template System:** Architected templates that could be reused across multiple clients with the same design. Initial template development took 2-3 weeks, but once built, could deploy identical design for new clients in 1-2 hours - dramatically reducing delivery time for subsequent clients choosing existing designs.
 
@@ -188,9 +188,9 @@ This diverse background gives me a unique perspective on how software impacts bu
 
 ### Technical Expertise
 
-- **Front End:** Deep expertise in web fundamentals (HTML5, CSS3, SCSS, JavaScript ES6+), with experience in the React ecosystem (React 18, Next.js 14, TypeScript 5),Angular, Jekyll, and ASP.NET Razor Pages. Passionate about performance optimization, achieving 25-50% improvements across multiple projects.
+- **Front End:** Deep expertise in web fundamentals (HTML5, CSS3, SCSS, JavaScript ES6+), with experience in the React ecosystem (React, TypeScript, Next.js), Angular, Jekyll, Shopify (Liquid), and ASP.NET Razor Pages. Passionate about performance optimization, achieving 18%-25% improvements across multiple projects.
 
-- **Full-Stack:** Comfortable across the stack with Node.js, Express, ASP.NET, and various databases. Can own features end-to-end and understand backend constraints when designing front end solutions.
+- **Full-Stack:** Comfortable across the stack with Node.js, ASP.NET, Next.js, and various databases. Can own features end-to-end and understand backend constraints when designing front end solutions.
 
 - **AI/ML Integration:** Early adopter integrating LLMs and generative AI into applications. Experience with prompt engineering, MCP orchestration, and practical ML applications in production (this AI agent you are speaking to is an example).
 

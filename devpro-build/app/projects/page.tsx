@@ -1,7 +1,7 @@
 import { Container } from "@/components/Container";
 import { Projects } from "@/components/Projects";
 
-export const metadata = { title: "Projects | Devpro" };
+export const metadata = { title: "Projects | Mikkel Ridley" };
 
 export default function ProjectsPage() {
   return (

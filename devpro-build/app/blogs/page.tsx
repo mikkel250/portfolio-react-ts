@@ -3,7 +3,7 @@ import AllBlogs from "@/components/AllBlogs";
 import { getAllBlogs } from "@/lib/getAllBlogs";
 
 export const metadata = {
-  title: "Blogs | Tyler Durden",
+  title: "Blogs | Mikkel Ridley",
 };
 
 export default async function BlogsPage() {

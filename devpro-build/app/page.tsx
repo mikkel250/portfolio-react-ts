@@ -9,7 +9,7 @@ import { getAllBlogs } from "@/lib/getAllBlogs";
 import { Experience } from "@/components/Experience";
 
 export default async function Page() {
-  const repos = await getUserRepositories("manuarora700");
+  const repos = await getUserRepositories("mikkel250");
   const blogs = (await getAllBlogs())
     .slice(0, 4)
     .map(({ component, ...meta }) => meta);

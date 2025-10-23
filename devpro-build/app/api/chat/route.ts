@@ -1,3 +1,4 @@
+import { FilterResult } from './../../../lib/input-filter';
 /* eslint-disable import/first */
 export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
@@ -5,6 +6,7 @@ import { checkRateLimit } from '../lib/rate-limit';
 import { getRelevantContext, extractJobTitle } from '../lib/knowledge-base';
 import { buildChatSystemPrompt } from '../lib/prompts';
 import { chat, ChatMessage } from '../lib/llm';
+import {filterInput} from '@/lib/input-filter';
 /* eslint-disable import/first */
 
 /*
@@ -72,11 +74,30 @@ export async function POST(request: NextRequest) {
 
     const query = latestMessage.content;
 
+    // filter input before hitting API to prevent garbage and spam
+    const filterResult = filterInput(query);
+    
+    if (!filterResult.shouldCallAPI) {
+      // return canned response instead of calling API
+      console.log(`[Filter] Blocked query (${filterResult.reason}): ${query.substring(0, 50)}...`);
+      
+      return NextResponse.json({
+        content: filterResult.response || 'Invalid input',
+        usage: {
+          promptTokens: 0,
+          completionTokens: 0,
+          totalTokens: 0,
+        },
+        model: 'filtered',
+        remaining: null, // don't count filtered results against rate limit
+      });
+    }
+
     // retrieve relevant KB context
     const context = getRelevantContext(query);
 
-    // extract job title if present
-    const jobTitle = extractJobTitle(query);
+    // extract job title if present -- leaving here if we want to implement later to better tailor LLM responses, but not used RN
+    // const jobTitle = extractJobTitle(query);
 
     // build system prompt with context and optional job title
     const systemPrompt = buildChatSystemPrompt(context, {

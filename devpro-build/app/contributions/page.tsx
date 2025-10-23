@@ -3,10 +3,10 @@ import { LatestRepos } from "@/components/LatestRepos";
 import { getUserRepositories } from "@/lib/github";
 import { user } from "@/constants/user";
 
-export const metadata = { title: "GitHub Contributions | Devpro" };
+export const metadata = { title: "GitHub Contributions | Mikkel Ridley" };
 
 export default async function Contributions() {
-  const repos = await getUserRepositories("manuarora700");
+  const repos = await getUserRepositories("mikkel250");
   return (
     <Container>
       <div className="max-w-5xl mx-auto px-8 mt-10 md:mt-20 relative">

@@ -15,6 +15,8 @@ export const Projects = () => {
         {projects.map((project, idx) => (
           <a
             href={project.link}
+            target="_blank"
+            rel="noopener noreferrer"
             key={project?.link}
             className="relative group  block p-2"
             onMouseEnter={() => setHoveredIndex(idx)}

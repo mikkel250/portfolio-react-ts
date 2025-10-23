@@ -2,7 +2,7 @@ import { Container } from "@/components/Container";
 import Talks from "@/components/Talks";
 import { talks } from "@/constants/events";
 
-export const metadata = { title: "Events | Devpro" };
+export const metadata = { title: "Events | Mikkel Ridley" };
 
 export default function EventsPage() {
   return (

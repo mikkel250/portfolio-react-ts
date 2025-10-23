@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@acebuilder/component-tagger": "^0.0.1",
+    "@anthropic-ai/sdk": "^0.67.0",
+    "@google/generative-ai": "^0.24.1",
     "@headlessui/react": "^1.7.13",
     "@mapbox/rehype-prism": "^0.8.0",
     "@mdx-js/loader": "^2.3.0",
