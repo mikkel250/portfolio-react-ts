@@ -49,7 +49,9 @@ export default function ChatInterface({ className }: ChatInterfaceProps) {
 - **Ask me anything** about Mikkel's experience, projects, skills, or technical background
 - **Close this chat** (✕ button above) to view his traditional portfolio site
 
-Try asking: "What's Mikkel's experience with React?" or "Tell me about his most impactful project."`,
+Try asking: "What's Mikkel's experience with React?" or "Tell me about his most impactful project."
+
+**Bonus:** English not your first language? In your message, say: "Give me the answer in Hindi" and I'll translate it for you, or just write your message in your preferred language and I'll respond in that language!`,
         timestamp: new Date(),
       },
     ]);

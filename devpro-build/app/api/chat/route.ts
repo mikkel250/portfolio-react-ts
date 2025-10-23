@@ -6,7 +6,7 @@ import { checkRateLimit } from '../lib/rate-limit';
 import { getRelevantContext, extractJobTitle } from '../lib/knowledge-base';
 import { buildChatSystemPrompt } from '../lib/prompts';
 import { chat, ChatMessage } from '../lib/llm';
-import {filterInput} from '@/lib/input-filter';
+import { filterInput } from '@/lib/input-filter';
 /* eslint-disable import/first */
 
 /*
@@ -76,11 +76,11 @@ export async function POST(request: NextRequest) {
 
     // filter input before hitting API to prevent garbage and spam
     const filterResult = filterInput(query);
-    
+
     if (!filterResult.shouldCallAPI) {
       // return canned response instead of calling API
       console.log(`[Filter] Blocked query (${filterResult.reason}): ${query.substring(0, 50)}...`);
-      
+
       return NextResponse.json({
         content: filterResult.response || 'Invalid input',
         usage: {
@@ -104,6 +104,30 @@ export async function POST(request: NextRequest) {
       calendlyLink: process.env.NEXT_PUBLIC_CALENDLY_LINK,
     });
 
+    //=======
+    // Enhanced environment debugging
+    console.log('🔧 Environment Debug:');
+    console.log('🔧 process.env.AI_MODEL:', process.env.AI_MODEL);
+    console.log('🔧 process.env.NODE_ENV:', process.env.NODE_ENV);
+    console.log('🔧 process.env.RATE_LIMIT_MAX:', process.env.RATE_LIMIT_MAX);
+    console.log('🔧 process.cwd():', process.cwd());
+
+    // Check if the file exists
+    const fs = require('fs');
+    const path = require('path');
+    const envPath = path.join(process.cwd(), '.env.local');
+    console.log('🔧 .env.local path:', envPath);
+    console.log('🔧 .env.local exists:', fs.existsSync(envPath));
+
+    // Try to read the file directly
+    try {
+      const envContent = fs.readFileSync(envPath, 'utf8');
+      console.log('🔧 .env.local content preview:', envContent.substring(0, 200));
+      console.log('🔧 Contains AI_MODEL:', envContent.includes('AI_MODEL'));
+    } catch (error) {
+      console.log('🔧 Error reading .env.local:', error.message);
+    }
+    //=========
     // call LLM with conversation history
     const llmResponse = await chat(messages, systemPrompt, {
       temperature: 0.7,

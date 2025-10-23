@@ -5,14 +5,27 @@ export interface FilterResult {
   reason?: string;
 }
 
-export function filterInput(query: string): FilterResult {
+export function filterInput(query: string, conversationHistory: string[]): FilterResult {
   const trimmed = query.trim();
   
+  // first, check if it's an answer to a question/CTA from the LLM 
+  if (conversationHistory && conversationHistory.length > 0) {
+    const lastMessage = conversationHistory[conversationHistory.length - 1];
+
+    // if the last message was a question and this is a short response, allow it
+    if (lastMessage.includes('?') && trimmed.length <= 10) {
+      return {
+        shouldCallAPI: true,
+        reason: 'valid_follow_up'
+      }
+    }
+  }
+
   // too short
   if (trimmed.length <= 10) {
     return {
       shouldCallAPI: false,
-      response: "This doesn't seem like enough characters to have asked a useful question. Please try to formulate a complete and valid question and I'll be happy to provide you with a complete answer!",
+      response: "Sorry, I don't understand the question or message. Please try to formulate a complete and valid question or message (ideally a full sentence) and I'll be happy to provide you with a complete answer!",
       reason: "too_short"
     };
   }
