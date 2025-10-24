@@ -29,6 +29,8 @@ export const getUserRepositories = async (username: string) => {
       topics: ["react", "redux", "nodejs", "firebase", "stripe", "ecommerce"],
       owner: {
         login: "mikkel250",
+        id: 12345678,
+        node_id: "MDQ6VXNlcjEyMzQ1Njc4",
         avatar_url: "https://avatars.githubusercontent.com/u/your-avatar-url"
       }
     },
@@ -63,6 +65,8 @@ export const getUserRepositories = async (username: string) => {
       topics: ["react", "blockchain", "smart-contracts", "web3"],
       owner: {
         login: "mikkel250",
+        id: 12345678,
+        node_id: "MDQ6VXNlcjEyMzQ1Njc4",
         avatar_url: "https://avatars.githubusercontent.com/u/your-avatar-url"
       }
     },
@@ -80,6 +84,8 @@ export const getUserRepositories = async (username: string) => {
       topics: ["react", "nodejs", "postgresql", "clarifai", "face-recognition"],
       owner: {
         login: "mikkel250",
+        id: 12345678,
+        node_id: "MDQ6VXNlcjEyMzQ1Njc4",
         avatar_url: "https://avatars.githubusercontent.com/u/your-avatar-url"
       }
     },
@@ -97,6 +103,8 @@ export const getUserRepositories = async (username: string) => {
       topics: ["react", "api", "filtering", "state-management"],
       owner: {
         login: "mikkel250",
+        id: 12345678,
+        node_id: "MDQ6VXNlcjEyMzQ1Njc4",
         avatar_url: "https://avatars.githubusercontent.com/u/your-avatar-url"
       }
     },
@@ -114,6 +122,8 @@ export const getUserRepositories = async (username: string) => {
       topics: ["html", "css", "javascript", "calculator", "ui"],
       owner: {
         login: "mikkel250",
+        id: 12345678,
+        node_id: "MDQ6VXNlcjEyMzQ1Njc4",
         avatar_url: "https://avatars.githubusercontent.com/u/your-avatar-url"
       }
     },
@@ -131,6 +141,8 @@ export const getUserRepositories = async (username: string) => {
       topics: ["bootstrap", "javascript", "ecommerce", "session-storage"],
       owner: {
         login: "mikkel250",
+        id: 12345678,
+        node_id: "MDQ6VXNlcjEyMzQ1Njc4",
         avatar_url: "https://avatars.githubusercontent.com/u/your-avatar-url"
       }
     },
@@ -148,6 +160,8 @@ export const getUserRepositories = async (username: string) => {
       topics: ["twilio", "api", "sms", "communication", "nodejs"],
       owner: {
         login: "mikkel250",
+        id: 12345678,
+        node_id: "MDQ6VXNlcjEyMzQ1Njc4",
         avatar_url: "https://avatars.githubusercontent.com/u/your-avatar-url"
       }
     },
@@ -165,6 +179,8 @@ export const getUserRepositories = async (username: string) => {
       topics: ["react", "graphql", "api", "modern-web"],
       owner: {
         login: "mikkel250",
+        id: 12345678,
+        node_id: "MDQ6VXNlcjEyMzQ1Njc4",
         avatar_url: "https://avatars.githubusercontent.com/u/your-avatar-url"
       }
     },
@@ -182,6 +198,8 @@ export const getUserRepositories = async (username: string) => {
       topics: ["react", "typescript", "portfolio", "responsive", "modern-web"],
       owner: {
         login: "mikkel250",
+        id: 12345678,
+        node_id: "MDQ6VXNlcjEyMzQ1Njc4",
         avatar_url: "https://avatars.githubusercontent.com/u/your-avatar-url"
       }
     }

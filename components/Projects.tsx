@@ -13,13 +13,16 @@ export const Projects = () => {
     <div className="max-w-5xl mx-auto px-8">
       <div className="grid grid-cols-1 md:grid-cols-2  lg:grid-cols-3 gap-10 mt-20">
         {projects.map((project, idx) => (
-          <LinkPreview
+          <div
             key={idx}
-            url={project.link}
             className="relative group block p-2"
             onMouseEnter={() => setHoveredIndex(idx)}
             onMouseLeave={() => setHoveredIndex(null)}
           >
+            <LinkPreview
+              url={project.link}
+              className=""
+            >
             <AnimatePresence>
               {hoveredIndex === idx && (
                 <motion.span
@@ -70,7 +73,8 @@ export const Projects = () => {
                 </div>
               </div>
             </div>
-          </LinkPreview>
+            </LinkPreview>
+          </div>
         ))}
       </div>
     </div>

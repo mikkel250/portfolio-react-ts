@@ -80,7 +80,8 @@ Try asking: "What's Mikkel's experience with React?" or "Tell me about his most 
     };
 
     // check for input that should not be sent to the API
-    const filterResult = filterInput(input.trim());
+    const conversationHistory = messages.map(m => m.content);
+    const filterResult = filterInput(input.trim(), conversationHistory);
     if (!filterResult.shouldCallAPI) {
       // add both user message and return canned reponse with it, skipping API call
       setMessages((prev) => [

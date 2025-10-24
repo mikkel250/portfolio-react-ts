@@ -3,16 +3,11 @@ import { Hero } from "@/components/Hero";
 import { Projects } from "@/components/Projects";
 import { getUserRepositories } from "@/lib/github";
 import { LatestRepos } from "@/components/LatestRepos";
-import AllBlogs from "@/components/AllBlogs";
 import { Uses } from "@/components/Uses";
-import { getAllBlogs } from "@/lib/getAllBlogs";
 import { Experience } from "@/components/Experience";
 
 export default async function Page() {
   const repos = await getUserRepositories("mikkel250");
-  const blogs = (await getAllBlogs())
-    .slice(0, 4)
-    .map(({ component, ...meta }) => meta);
 
   const shouldShowMore = () => {
     if (repos && repos.length > 9) {
@@ -35,10 +30,7 @@ export default async function Page() {
       </h1>
       <LatestRepos repos={repos.slice(0, 9)} showMore={shouldShowMore()} />
 
-      <div className="max-w-5xl mx-auto px-8 grid grid-cols-1 lg:grid-cols-3 gap-10 mt-40 ">
-        <div className="col-span-2">
-          <AllBlogs blogs={blogs} />
-        </div>
+      <div className="max-w-5xl mx-auto px-8 mt-40">
         <Uses />
       </div>
     </Container>

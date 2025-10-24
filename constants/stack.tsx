@@ -4,11 +4,11 @@ import {
   TbBrandTailwind,
   TbBrandTypescript,
   TbBrandJavascript,
-  TbBrandShopify,
   TbBrandAngular,
   TbBrandNodejs,
   TbBrandFirebase,
-  TbBrandPostgresql,
+  TbShoppingCart,
+  TbDatabase,
 } from "react-icons/tb";
 
 export const stack = {
@@ -40,7 +40,7 @@ export const stack = {
   shopify: {
     name: "Shopify",
     id: "shopify",
-    icon: <TbBrandShopify className="h-5 w-5 stroke-1" />,
+    icon: <TbShoppingCart className="h-5 w-5 stroke-1" />,
   },
   angular: {
     name: "Angular",
@@ -60,6 +60,6 @@ export const stack = {
   postgresql: {
     name: "PostgreSQL",
     id: "postgresql",
-    icon: <TbBrandPostgresql className="h-5 w-5 stroke-1" />,
+    icon: <TbDatabase className="h-5 w-5 stroke-1" />,
   },
 };

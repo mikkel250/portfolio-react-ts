@@ -460,7 +460,7 @@ const COST_PER_1K_TOKENS = {
 };
 
 function calculateCost(model: string, tokens: number): number {
-  const costPer1K = COST_PER_1K_TOKENS[model] || 0.001; // Default fallback
+  const costPer1K = (COST_PER_1K_TOKENS as Record<string, number>)[model] || 0.001; // Default fallback
   return (tokens / 1000) * costPer1K;
 }
 

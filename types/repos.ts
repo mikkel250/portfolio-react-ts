@@ -1,9 +1,9 @@
 export type Repository = {
   id: number;
-  node_id: string;
+  node_id?: string;
   name: string;
   full_name: string;
-  private: boolean;
+  private?: boolean;
   owner: {
     login: string;
     id: number;
@@ -12,10 +12,14 @@ export type Repository = {
   };
   html_url: string;
   description: string;
-  forks_count: boolean;
-  url: string;
-  forks_url: string;
-  keys_url: string;
-  collaborators_url: string;
+  forks_count: number;
+  url?: string;
+  forks_url?: string;
+  keys_url?: string;
+  collaborators_url?: string;
   stargazers_count: number;
+  language?: string;
+  updated_at?: string;
+  created_at?: string;
+  topics?: string[];
 };

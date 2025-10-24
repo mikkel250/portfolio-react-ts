@@ -75,7 +75,8 @@ export async function POST(request: NextRequest) {
     const query = latestMessage.content;
 
     // filter input before hitting API to prevent garbage and spam
-    const filterResult = filterInput(query);
+    const conversationHistory = messages.map(m => m.content);
+    const filterResult = filterInput(query, conversationHistory);
 
     if (!filterResult.shouldCallAPI) {
       // return canned response instead of calling API
@@ -125,7 +126,7 @@ export async function POST(request: NextRequest) {
       console.log('🔧 .env.local content preview:', envContent.substring(0, 200));
       console.log('🔧 Contains AI_MODEL:', envContent.includes('AI_MODEL'));
     } catch (error) {
-      console.log('🔧 Error reading .env.local:', error.message);
+      console.log('🔧 Error reading .env.local:', error instanceof Error ? error.message : String(error));
     }
     //=========
     // call LLM with conversation history
