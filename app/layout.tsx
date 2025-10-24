@@ -9,8 +9,16 @@ import { AppProvider } from "@/contexts/AppContext";
 
 export const metadata: Metadata = {
   title: "Mikkel Ridley | Software Engineer",
-  description: "A portfolio template for developers and designers.",
-  metadataBase: new URL("https://yourwebsite.com"),
+  description: "A portfolio site showcasing my work and skills as a software engineer.",
+  metadataBase: new URL("https://portfolio-react-ts-mocha.vercel.app/"),
+  icons: {
+    icon: [
+    { url: "/images/my-profile.png", sizes: "32x32", type: "image/png" },
+    { url: "/images/my-profile.png", sizes: "16x16", type: "image/png" },
+    ],
+    shortcut: "/images/my-profile.png",
+    apple: "/images/my-profile.png",
+    },
 };
 
 export default function RootLayout({
