@@ -58,4 +58,4 @@ Thumbs.db
 
 # Task Manager (if you want to keep it private)
 AI_ASSISTANT_TASKS.md
-.mcp-data/
+.mcp-data/devpro-build/.env.local.backup
