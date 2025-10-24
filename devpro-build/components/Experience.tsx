@@ -19,7 +19,7 @@ export const Experience = () => {
         Work Experience
       </h1>
       <p className="text-zinc-400 text-sm md:text-base max-w-2xl mt-4 leading-loose tracking-wide ">
-        I switch a lot of companies. It's mostly about the culture.
+        I've worked across diverse industries - from healthcare and robotics to art and fintech. Each role has taught me something unique about building software that matters.
       </p>
       <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-2 mt-20 max-w-2xl mx-auto">
         <div className="flex flex-row md:flex-col relative overflow-x-auto md:overflow-x-visible">
@@ -60,7 +60,11 @@ export const Experience = () => {
                     : null
                 )}
               >
-                <div className="bg-red-500 p-1 h-6 w-6 flex items-center justify-center rounded-full bg-gradient-to-br from-zinc-700 to-zinc-800">
+                <div className={`p-1 h-6 w-6 flex items-center justify-center rounded-full ${
+                  exp.company === "Dental Game Plan" || exp.company === "Jefferson Health"
+                    ? "bg-white"
+                    : "bg-gradient-to-br from-zinc-700 to-zinc-800"
+                }`}>
                   <Image
                     src={exp.logo}
                     width={12}

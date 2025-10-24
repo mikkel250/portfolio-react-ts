@@ -5,6 +5,7 @@ import {
   AiOutlineGithub,
   AiOutlineLinkedin,
   AiOutlineTwitter,
+  AiOutlineMail,
 } from "react-icons/ai";
 import { navItems } from "@/constants/navItems";
 import { Logo } from "./Logo";
@@ -13,7 +14,14 @@ import { user } from "@/constants/user";
 export const Footer = () => {
   const socials = [
     {
-      name: "twitter",
+      name: "Email",
+      icon: (
+        <AiOutlineMail className="h-5 w-5 hover:text-primary transition duration-150" />
+      ),
+      link: `mailto:${user.email}`,
+    },
+    {
+      name: "Twitter",
       icon: (
         <AiOutlineTwitter className="h-5 w-5 hover:text-primary transition duration-150" />
       ),

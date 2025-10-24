@@ -26,7 +26,7 @@ export default async function Page() {
       <Hero />
       <Experience />
       <h1 className="text-2xl md:text-3xl text-white font-bold max-w-5xl mx-auto px-8  mt-40">
-        I've been building a lot of things
+        From AI assistants to e-commerce platforms
       </h1>
 
       <Projects />

@@ -11,11 +11,11 @@ export const Hero = () => {
       <p className="text-zinc-400 text-sm md:text-base max-w-2xl mt-8 leading-loose tracking-wide">
         Meet Mikkel Ridley, a Software Engineer with 5 years of experience primarily 
         on the Front End and recently expanding into Full Stack. From building ticketing 
-        platforms at SFMOMA to developing Angular components at Google, I bring both 
+        platforms at SFMOMA to developing Angular components at Intrinsic (an Alphabet/GoogleX company), I bring both 
         technical expertise and leadership experience to every project.
       </p>
       <div className="mt-8 text-zinc-400 text-sm md:text-base max-w-2xl leading-loose tracking-wide">
-        Currently working on{" "}
+        Recently worked on{" "}
         <LinkPreview
           className={
             "text-zinc-200 font-bold hover:text-cyan-500 transition duration-150 outline-none"
@@ -24,16 +24,16 @@ export const Hero = () => {
         >
           SFMOMA Ticketing Platform
         </LinkPreview>{" "}
-        and{" "}
+        and a {" "}
         <LinkPreview
           className={
             "text-zinc-200 font-bold hover:text-cyan-500 transition duration-150"
           }
           url="https://freelancersmartcontract.netlify.app"
         >
-          Smart Contract Projects
+          Smart Contract Project
         </LinkPreview>{" "}
-        when I'm not working on my day job.
+        , and currently working on iterating on the AI Recruiting Assistant, is integrated into this very portfolio website (accessible via the chat widget in the bottom right corner)!
       </div>
     </div>
   );

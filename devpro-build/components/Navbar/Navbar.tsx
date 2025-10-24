@@ -14,7 +14,7 @@ const Navbar = () => {
         <DesktopNav navItems={navItems} />
 
         <a
-          href="/cv.pdf"
+          href="/MikkelRidley2025-SWE-portfolioSite.pdf"
           target="__blank"
           className="font-medium text-white inline-flex items-center justify-center rounded-[10px] bg-gradient-to-b from-[#464d55] to-[#25292e] text-sm px-4 py-2 transition duration-150 shadow-[0_10px_20px_rgba(0,_0,_0,_.1),0_3px_6px_rgba(0,_0,_0,_.05)] hover:shadow-[rgba(0,_1,_0,_.2)_0_2px_8px] active:outline-none hover:opacity-80 "
         >

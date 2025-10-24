@@ -52,7 +52,7 @@ export const workExperience = [
       "Extended custom SSG framework architecture; reduced developer time 50% for future site launches",
     ],
     location: "Remote",
-    logo: "/images/logos/dentalgameplan.png",
+    logo: "/images/logos/dgp.png",
   },
   {
     company: "Kul Inc.",

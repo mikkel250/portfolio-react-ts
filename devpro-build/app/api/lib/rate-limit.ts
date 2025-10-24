@@ -4,7 +4,7 @@
 const sessionStore = new Map<string, SessionData>();
 
 // Rate limiting configuration
-const RATE_LIMIT_MAX = parseInt(process.env.RATE_LIMIT_MAX || '25');
+const RATE_LIMIT_MAX = parseInt(process.env.RATE_LIMIT_MAX || '15');
 const RATE_LIMIT_WINDOW = parseInt(process.env.RATE_LIMIT_WINDOW || '3600'); // 1 hour in seconds
 const BURST_LIMIT = 3;           // Max messages...
 const BURST_WINDOW = 1000;       // ...within 1 second (1000ms)

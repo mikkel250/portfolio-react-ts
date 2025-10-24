@@ -78,11 +78,11 @@ export const LinkPreview = ({
           setOpen(open);
         }}
       >
-        <HoverCardPrimitive.Trigger className={className} href={url}>
+        <HoverCardPrimitive.Trigger className={className} href={url} target="_blank" rel="noopener noreferrer">
           {children}
         </HoverCardPrimitive.Trigger>
 
-        <HoverCardPrimitive.Content side="top" align="center" sideOffset={10}>
+        <HoverCardPrimitive.Content side="top" align="center" sideOffset={10} className="z-[9999]">
           <Transition
             show={isOpen}
             appear={true}

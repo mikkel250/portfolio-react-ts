@@ -120,7 +120,7 @@ export const Contact = () => {
                 value={formState.email.value}
                 onChange={(e) => onChangeHandler("email", e.target.value)}
                 className="text-zinc-400 rounded-md border bg-zinc-800 border-zinc-700 py-1 px-2 focus:outline-none focus:border-gray-400 placeholder:text-sm  mb-1"
-                placeholder="johndoe@xyz.com"
+                placeholder="your.email@example.com"
               />
 
               <small className="h-4 min-h-4 text-red-500 font-semibold">
@@ -135,7 +135,7 @@ export const Contact = () => {
                 value={formState.message.value}
                 onChange={(e) => onChangeHandler("message", e.target.value)}
                 className="text-zinc-400 rounded-md border border-zinc-700 py-1 px-2 bg-zinc-800 focus:outline-none focus:border-gray-400 placeholder:text-sm   mb-1"
-                placeholder="I'd love a compliment from you."
+                placeholder="Tell me about your project or opportunity..."
               />
               <small className="h-4 min-h-4 text-red-500 font-semibold mb-4">
                 {formState.message.error && formState.message.error}

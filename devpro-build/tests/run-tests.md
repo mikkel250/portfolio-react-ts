@@ -100,7 +100,7 @@ npx tsx tests/test-context-routing.ts
 ---
 
 #### Test: Rate Limiting
-1. Send 25 messages rapidly
+1. Send 15 messages rapidly
 2. Message 26 should be rejected with rate limit error
 3. Check that error displays nicely in UI
 
