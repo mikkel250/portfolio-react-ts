@@ -215,6 +215,10 @@ async function callGoogle(
     generationConfig: {
       temperature,
       maxOutputTokens: maxTokens,
+      thinkingConfig: {
+        includeThoughts: false,
+        thinkingBudget: Math.min(maxTokens * 0.1, 1000), // 10% of max tokens, capped at 1000
+      },
     },
   });
 
