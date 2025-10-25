@@ -132,7 +132,7 @@ export async function POST(request: NextRequest) {
     // call LLM with conversation history
     const llmResponse = await chat(messages, systemPrompt, {
       temperature: 0.7,
-      maxTokens: 1000,
+      maxTokens: 8192,
       model: process.env.AI_MODEL || 'gpt-4o-mini', // Easy model switching via env var
     });
 

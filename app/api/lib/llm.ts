@@ -63,7 +63,7 @@ async function callOpenAI(
   // Default options
   const {
     temperature = 0.7,
-    maxTokens = 1000,
+    maxTokens = 8192,
     model = 'gpt-4o-mini',
   } = options;
 
@@ -117,7 +117,7 @@ async function callAnthropic(
   systemPrompt: string,
   options: ChatOptions
 ): Promise<ChatResponse> {
-  const { temperature = 0.7, maxTokens = 1000, model = 'claude-haiku-4-5-20251001' } = options;
+  const { temperature = 0.7, maxTokens = 8192, model = 'claude-haiku-4-5-20251001' } = options;
 
   // format messages
   const formattedMessages: ChatMessage[] = messages.map((msg) => {
@@ -174,7 +174,7 @@ async function callGoogle(
   systemPrompt: string,
   options: ChatOptions
 ): Promise<ChatResponse> {
-  const { temperature = 0.7, maxTokens = 4000, model = 'gemini-2.5-pro' } = options;
+  const { temperature = 0.7, maxTokens = 8192, model = 'gemini-2.5-pro' } = options;
 
   // format messages
   const formattedMessages: ChatMessage[] = messages.map((msg) => {
