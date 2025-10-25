@@ -8,10 +8,10 @@
   width: 4rem;
   height: 4rem;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); // cyan gradient
   border: none;
-  box-shadow: 0 10px 25px -5px rgba(102, 126, 234, 0.4),
-              0 8px 10px -6px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 10px 25px -5px rgba(6, 182, 212, 0.4),
+              0 8px 10px -6px rgba(6, 182, 212, 0.3);
   cursor: pointer;
   z-index: 9998;
   transition: transform 0.3s, box-shadow 0.3s;
@@ -19,8 +19,8 @@
 
   &:hover {
     transform: scale(1.1);
-    box-shadow: 0 20px 35px -10px rgba(102, 126, 234, 0.5),
-                0 10px 15px -8px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 20px 35px -10px rgba(6, 182, 212, 0.5),
+                0 10px 15px -8px rgba(6, 182, 212, 0.4);
   }
 
   &:active {
@@ -86,11 +86,11 @@
   width: 420px;
   height: 600px;
   max-height: calc(100vh - 4rem);
-  background: white;
+  background: #18181b; // zinc-900
   border-radius: 1.25rem;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
-              0 10px 10px -5px rgba(0, 0, 0, 0.04),
-              0 0 0 1px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3),
+              0 10px 10px -5px rgba(0, 0, 0, 0.2),
+              0 0 0 1px rgba(39, 39, 42, 0.5); // zinc-800 border
   z-index: 9999;
   display: flex;
   flex-direction: column;
@@ -126,7 +126,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 1rem 1.25rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); // cyan gradient
   color: white;
   border-radius: 1.25rem 1.25rem 0 0;
 
@@ -208,10 +208,10 @@
   height: 92vh;
   max-width: 1600px;
   max-height: none;
-  background: white;
+  background: #18181b; // zinc-900
   border-radius: 1.25rem;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25),
-              0 0 0 1px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5),
+              0 0 0 1px rgba(39, 39, 42, 0.5); // zinc-800 border
   z-index: 9999;
   display: flex;
   flex-direction: column;
@@ -252,7 +252,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 1.25rem 1.5rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); // cyan gradient
   color: white;
   border-radius: 1.25rem 1.25rem 0 0;
 
