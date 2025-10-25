@@ -25,7 +25,7 @@ const KB_CONFIG: KnowledgeBaseConfig = {
 
 function loadKBFile(fileName: string): string {
   try {
-    const kbPath = path.join(process.cwd(), '..', KB_CONFIG.basePath, fileName);
+    const kbPath = path.join(process.cwd(), KB_CONFIG.basePath, fileName);
     return fs.readFileSync(kbPath, 'utf-8');
   } catch (error) {
     console.error(`Error loading KB file ${fileName}:`, error);

@@ -217,7 +217,7 @@ async function callGoogle(
       maxOutputTokens: maxTokens,
       thinkingConfig: {
         includeThoughts: false,
-        thinkingBudget: Math.min(maxTokens * 0.1, 1000), // 10% of max tokens, capped at 1000
+        thinkingBudget: Math.floor(Math.min(maxTokens * 0.1, 1000)), // 10% of max tokens, capped at 1000, must be integer
       },
     },
   });
