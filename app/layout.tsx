@@ -11,6 +11,13 @@ export const metadata: Metadata = {
   title: "Mikkel Ridley | Software Engineer",
   description: "A portfolio site showcasing my work and skills as a software engineer.",
   metadataBase: new URL("https://portfolio-react-ts-mocha.vercel.app/"),
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+    viewportFit: "cover", // Enables safe area insets
+  },
   icons: {
     icon: [
     { url: "/images/my-profile.png", sizes: "32x32", type: "image/png" },
