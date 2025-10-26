@@ -1,6 +1,6 @@
 import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 
 // Types for our chat interface
 export interface ChatMessage {
@@ -34,9 +34,9 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
-const google = new GoogleGenerativeAI(
-  process.env.GOOGLE_API_KEY || ''
-);
+const google = new GoogleGenAI({
+  apiKey: process.env.GOOGLE_API_KEY || ''
+});
 
 // detect which provider to use based on model name 
 type Provider = 'openai' | 'anthropic' | 'google';
@@ -190,91 +190,47 @@ async function callGoogle(
   });
 
   // google doesn't use a system prompt, inject it as first user message
-  const googleMessages = [
-    {
-      role: 'user' as const,
-      parts: [{ text: `${systemPrompt}\n\n${formattedMessages[0]?.content || ''}` }]
-    },
-    // add remaining messages (skip first since first is system prompt)
-    ...formattedMessages.slice(1).map(msg => ({
-      role: msg.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: msg.content }]
-    }))
-  ];
+  const combinedMessage = `${systemPrompt}\n\n${formattedMessages[0]?.content || ''}`;
+  
+  // For @google/genai, we need to format messages as a single content string
+  const contents = formattedMessages.length > 1 
+    ? formattedMessages.map(msg => msg.content).join('\n\n')
+    : combinedMessage;
 
-  // Debugging
-  // console.log('🔧 Google API Debug:');
-  // console.log('🔧 System prompt length:', systemPrompt.length);
-  // console.log('🔧 System prompt preview:', systemPrompt.substring(0, 200));
-  // console.log('🔧 Messages count:', googleMessages.length);
-  // console.log('🔧 Total context length:', JSON.stringify(googleMessages).length);
-  // console.log('🔧 First message length:', googleMessages[0]?.parts[0]?.text.length);
-
-  const response = await google.getGenerativeModel({ model }).generateContent({
-    contents: googleMessages,
+  // Call the new @google/genai API
+  const response = await google.models.generateContent({
+    model: model,
+    contents: contents,
     config: {
       thinkingConfig: {
         thinkingBudget: -1, // Dynamic: model adjusts based on prompt complexity
       },
-    },
-    generationConfig: {
       temperature,
       maxOutputTokens: maxTokens,
     },
-  } as any);
+  });
 
-  // extract response (google returns nested objects)
-  const candidate = response.response.candidates?.[0];
-  if (!candidate) {
-    console.log('🔧 Google response structure:', JSON.stringify(response.response, null, 2));
-    throw new Error('No response from Google');
-  }
-
-  const content = candidate.content.parts?.[0]?.text;
+  // Extract response - @google/genai returns text directly
+  const content = response.text;
   if (!content) {
-    console.log('🔧 Candidate content structure:', JSON.stringify(candidate.content, null, 2));
-    console.log('🔧 Candidate finish reason:', candidate.finishReason);
-    
-    // Specific handling for common Google Gemini issues
-    if (candidate.finishReason === 'MAX_TOKENS') {
-      throw new Error('Google Gemini: Response truncated due to token limit. Try reducing maxTokens or using a different model.');
-    }
-    
-    if (candidate.finishReason === 'SAFETY') {
-      throw new Error('Google Gemini: Response blocked by safety filters. Try adjusting the prompt or temperature.');
-    }
-    
-    if (candidate.finishReason === 'RECITATION') {
-      throw new Error('Google Gemini: Response blocked due to recitation concerns. Try rephrasing the prompt.');
-    }
-    
-    // Generic empty content error with diagnostic info
-    throw new Error(`Google Gemini: No text content in response. Finish reason: ${candidate.finishReason || 'unknown'}. This usually indicates token limits, safety filters, or API issues.`);
+    console.log('🔧 Response structure:', JSON.stringify(response, null, 2));
+    throw new Error('No text content in response from Google');
   }
 
-  // In callGoogle function, after getting the response:
-  // console.log('🔧 Google response debug:');
-  // console.log('🔧 Response length:', content.length);
-  // console.log('🔧 Finish reason:', candidate.finishReason);
-  // console.log('🔧 Safety ratings:', candidate.safetyRatings);
-  // console.log('🔧 Usage metadata:', response.response.usageMetadata);
-  // console.log('🔧 Model:', model);
-  // console.log('🔧 Temperature:', temperature);
-  // console.log('🔧 Max tokens:', maxTokens);
-  // console.log('🔧 Messages:', messages);
-  // // console.log('🔧 System prompt:', systemPrompt);
-  // console.log('🔧 Options:', options);
-
+  // @google/genai might not have usage stats in the same structure
+  // Default to 0 if not available
+  const usage = (response as any).usage || {};
+  
   // normalize to standard ChatResponse format
   return {
     content,
     usage: {
-      promptTokens: response.response.usageMetadata?.promptTokenCount || 0,
-      completionTokens: response.response.usageMetadata?.candidatesTokenCount || 0,
-      totalTokens: response.response.usageMetadata?.totalTokenCount || 0,
+      promptTokens: usage.promptTokens || 0,
+      completionTokens: usage.completionTokens || 0,
+      totalTokens: usage.totalTokens || (usage.promptTokens || 0) + (usage.completionTokens || 0),
     },
     model: model,
-    finishReason: candidate.finishReason || null,
+    finishReason: (response as any).finishReason || null,
   };
 };
 
