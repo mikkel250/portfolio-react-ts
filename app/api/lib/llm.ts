@@ -215,10 +215,6 @@ async function callGoogle(
     generationConfig: {
       temperature,
       maxOutputTokens: maxTokens,
-      thinkingConfig: {
-        includeThoughts: false,
-        thinkingBudget: -1, // Dynamic: model adjusts based on prompt complexity
-      },
     },
   });
 
