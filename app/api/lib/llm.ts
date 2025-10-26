@@ -212,11 +212,16 @@ async function callGoogle(
 
   const response = await google.getGenerativeModel({ model }).generateContent({
     contents: googleMessages,
+    config: {
+      thinkingConfig: {
+        thinkingBudget: -1, // Dynamic: model adjusts based on prompt complexity
+      },
+    },
     generationConfig: {
       temperature,
       maxOutputTokens: maxTokens,
     },
-  });
+  } as any);
 
   // extract response (google returns nested objects)
   const candidate = response.response.candidates?.[0];
