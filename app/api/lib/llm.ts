@@ -64,7 +64,7 @@ async function callOpenAI(
   const {
     temperature = 0.7,
     maxTokens = 8192,
-    model = 'gpt-4o-mini',
+    model = process.env.AI_MODEL || process.env.AI_MODEL_FALLBACKS,
   } = options;
 
   // Format messages - handle both user strings and full message objects
@@ -416,8 +416,8 @@ const COST_PER_1K_TOKENS = {
   'gemini-2.5-flash': 0.0, // Free tier
   'gemini-2.5-pro': 0.0, // Free tier (100 requests/day)
   'claude-haiku-4-5-20251001': 0.00025, // $0.25 per 1M tokens
-  'gpt-4o-mini': 0.00015, // $0.15 per 1M tokens
   'gpt-4o': 0.005, // $5 per 1M tokens
+  'gpt-4o-mini': 0.00015, // $0.15 per 1M tokens
 };
 
 function calculateCost(model: string, tokens: number): number {

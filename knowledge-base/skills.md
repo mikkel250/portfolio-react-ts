@@ -74,7 +74,7 @@ Software engineer with 5 years of professional experience across diverse technol
 - **Communication:** Twilio (calls, SMS, webhooks)
 - **Maps & Location:** Google Maps API, directions, geocoding
 - **Machine Learning:** Clarifai API (image recognition)
-- **AI/LLM:** OpenAI GPT-4, GPT-4o-mini, chat completions, embeddings
+- **AI/LLM:** Google Gemini 2.5, Anthropic Claude, OpenAI GPT-4, GPT-4o-mini, chat completions, embeddings
 - **CRM Systems:** Tessitura CRM API (ticketing, memberships, donations)
 - **eCommerce:** Shopify APIs, Liquid templating, theme development
 
@@ -83,7 +83,7 @@ Software engineer with 5 years of professional experience across diverse technol
 ## AI & Machine Learning
 
 ### LLM Integration & Generative AI
-- **OpenAI API:** GPT-4o-mini, chat completions, streaming responses, token optimization
+- **OpenAI API:** Google Gemini 2.5, Anthropic Claude, OpenAI GPT-4, GPT-4o-mini, chat completions, streaming responses, token optimization
 - **Prompt Engineering:** System prompts, context injection, guardrails, few-shot examples
 - **RAG Systems:** Knowledge base retrieval, semantic search concepts, context management
 - **Production AI Applications:** Built AI recruiting assistant with conversational interface

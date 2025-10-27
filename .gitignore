@@ -22,6 +22,7 @@
 # misc
 .DS_Store
 *.pem
+app/api/lib/workingDocs/*
 
 # debug
 npm-debug.log*

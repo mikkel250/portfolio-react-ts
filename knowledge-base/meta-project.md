@@ -42,7 +42,7 @@ You're currently interacting with an AI recruiting assistant I built to serve du
 
 **Rationale:**
 - **Cost Optimization:** Use Google's free tier that includes a generous number of requests/day as primary, fallback to paid providers
-- **Quality Improvement:** Gemini Flash provides significantly better responses than GPT-4o-mini
+- **Quality Improvement:** Gemini Pro provides significantly better responses than GPT-4o-mini
 - **Reliability:** Multiple providers ensure uptime and handle rate limits gracefully
 - **Future-Proofing:** Easy to add new providers or switch models based on performance data
 - **Learning Value:** Demonstrates understanding of different API patterns and provider trade-offs
@@ -194,9 +194,9 @@ With this foundation, building more sophisticated agentic workflows would involv
 - **Total development cost: ~$10-20**
 
 **Monthly Operating Cost (Multi-Provider Architecture):**
-- **Primary:** Google Gemini Flash (free tier: 250 requests/day) = $0
+- **Primary:** Google Gemini Pro (free tier: 100 requests/day) = $0
 - **Fallback:** Claude Haiku 4.5 (~$0.001-0.005 per conversation)
-- **With 25-message rate limit per user:** ~100 conversations = $0 (free tier)
+- **With 15-message rate limit per user:** ~100 conversations = $0 (free tier)
 - **Even with heavy usage (500 conversations/month):** ~$0-2.50/month
 - **Cost optimization through intelligent provider selection**
 
@@ -302,7 +302,7 @@ Each upgrade would be data-driven based on actual usage patterns. For example:
 - Production-ready: three-state widget, rate limiting, professional UI
 - Cost-optimized: ~$0-2.50/month operating cost using free tier + intelligent fallback
 - Advanced architecture: Multi-provider LLM system with unified abstraction layer
-- Modern stack: Next.js, TypeScript, Google Gemini, Anthropic Claude, OpenAI, serverless architecture
+- Modern stack: Next.js, React, TypeScript, Google Gemini, Anthropic Claude, OpenAI, serverless architecture
 - **Can deliver this exact capability for a company's website or application**
 
 **Real-world applications:**

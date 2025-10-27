@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
     const llmResponse = await chat(messages, finalSystemPrompt, {
       temperature: 0.7,
       maxTokens: 8192,
-      model: process.env.AI_MODEL || 'gpt-4o-mini', // Easy model switching via env var
+      model: process.env.AI_MODEL || process.env.AI_MODEL_FALLBACKS || 'gemini-2.5-pro', // Easy model switching via env var
     });
 
     // return successful response

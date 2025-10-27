@@ -14,7 +14,7 @@ AI-powered recruiting assistant that analyzes job descriptions and answers quest
 
 
 ### Technologies
-Next.js 14, React 18, TypeScript 5, Vercel Serverless Functions (Node.js runtime), OpenAI GPT-4o-mini, Tailwind CSS, Framer Motion, Aceternity UI
+Next.js 14, React 18, TypeScript 5, Vercel Serverless Functions (Node.js runtime), multiple LLM APIs (Google, Anthropic, OpenAI), Tailwind CSS, Framer Motion, Aceternity UI
 
 ### Key Features
 - Three-state expandable chat widget (minimized, compact, maximized)
@@ -25,7 +25,7 @@ Next.js 14, React 18, TypeScript 5, Vercel Serverless Functions (Node.js runtime
 - Meta-awareness: can explain its own technical implementation and design decisions
 
 ### Technical Highlights
-- **MVP-first approach:** Chose GPT-4o-mini for cost-effective validation before optimization, demonstrating business-conscious technical decision-making
+- **MVP-first approach:** Chose Google Gemini 2.5 Pro for cost-effective validation before optimization, demonstrating business-conscious technical decision-making, with the ability to easily switch models and a stack of fallbacks in case of errors.
 - **Simple RAG implementation:** Keyword-based retrieval without vector database for faster MVP iteration
 - **Marketing-focused prompt engineering:** System prompts designed to effectively sell candidate using benefit-focused language
 - **Modern UI with Aceternity:** Professional, polished interface using Framer Motion animations
