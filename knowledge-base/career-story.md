@@ -2,23 +2,23 @@
 
 ## The Journey to Software Engineering
 
-I transitioned to software engineering in 2020 after 5 years in management and IT infrastructure roles. This wasn't a random career change - it was a deliberate move toward work that aligned perfectly with my passion for problem-solving, continuous learning, and building tangible solutions that create impact.
+he transitioned to software engineering in 2020 after 5 years in management and IT infrastructure roles. This wasn't a random career change - it was a deliberate move toward work that aligned perfectly with his passion for problem-solving, continuous learning, and building tangible solutions that create impact.
 
 **Current Status:** 5 years as a professional software engineer (2020-present), with diverse experience across startups, Google-scale companies, healthcare, museums, and agencies.
 
 ---
 
-## Why I Switched to Engineering
+## Why he Switched to Engineering
 
 ### Deep Roots in Technology
 
-My interest in technology goes back to the mid-1990s, navigating MUDs (Multi-User Dimensions) through university databases, Gopher services, and Telnet before Google even existed. At fifteen, I was exploring networked virtual worlds and text-based multiplayer games when the internet wasn't yet part of everyday life. 
+his interest in technology goes back to the mid-1990s, navigating MUDs (Multi-User Dimensions) through university databases, Gopher services, and Telnet before Google even existed. At fifteen, he was exploring networked virtual worlds and text-based multiplayer games when the internet wasn't yet part of everyday life. 
 
-**This reframes the career transition:** Not "random career change" but "returning to lifelong passion." The path through management and IT was building valuable skills and perspective, but technology has been a constant thread since my teenage years. Engineering isn't a new interest - it's coming full circle to where my curiosity started.
+**This reframes the career transition:** Not "random career change" but "returning to lifelong passion." The path through management and IT was building valuable skills and perspective, but technology has been a constant thread since his teenage years. Engineering isn't a new interest - it's coming full circle to where his curiosity started.
 
 ### The Catalyst
 
-**What I loved about management and IT:**
+**What he loved about management and IT:**
 - Solving complex organizational problems
 - Improving processes and workflows systematically
 - Seeing teams succeed through better systems
@@ -30,15 +30,15 @@ My interest in technology goes back to the mid-1990s, navigating MUDs (Multi-Use
 - Direct technical problem-solving daily
 - Continuous learning of new technologies
 - The immediate feedback loop of shipping features
-- Building solutions with my own hands
+- Building solutions with his own hands
 
-**Software engineering provides both.** I still solve organizational problems (established CI/CD pipelines at Jefferson Health, improved workflows at multiple companies), but now I also build the actual technical solutions. The combination of strategic thinking from management plus hands-on technical work is exactly what I was searching for.
+**Software engineering provides both.** He still solves organizational problems (established CI/CD pipelines at Jefferson Health, improved workflows at multiple companies), but now he also builds the actual technical solutions. The combination of strategic thinking from management plus hands-on technical work is exactly what he was searching for.
 
 ### The Honest Answer
 
-**Why engineering?** The intellectual challenge and creative problem-solving aligned perfectly with what energizes me: continuous learning, building things that work, seeing immediate impact from my efforts. After years of managing processes and people, I wanted to be the one writing the code that makes those processes better.
+**Why engineering?** The intellectual challenge and creative problem-solving aligned perfectly with what energizes me: continuous learning, building things that work, seeing immediate impact from his efforts. After years of managing processes and people, he wanted to be the one writing the code that makes those processes better.
 
-**No regrets.** The path I took - management first, then engineering - makes me more valuable, not less. I understand business context, can communicate with non-technical stakeholders, and ship features that move metrics because I've lived on both sides.
+**No regrets.** The path he took - management first, then engineering - makes me more valuable, not less. he understand business context, can communicate with non-technical stakeholders, and ship features that move metrics because he's lived on both sides.
 
 ---
 
@@ -47,7 +47,7 @@ My interest in technology goes back to the mid-1990s, navigating MUDs (Multi-Use
 ### What Management Experience Provides
 
 **Stakeholder Communication (Critical Skill):**
-Five years of presenting to executives, managing cross-functional teams, and negotiating with stakeholders means I excel at the communication aspects of engineering that many developers find challenging. 
+Five years of presenting to executives, managing cross-functional teams, and negotiating with stakeholders means he excels at the communication aspects of engineering that many developers find challenging. 
 
 **Concrete examples from engineering roles:**
 - SFMOMA: Worked directly with legal team, exhibition designers, and C-level stakeholders on 3D gallery tool
@@ -56,7 +56,7 @@ Five years of presenting to executives, managing cross-functional teams, and neg
 - Multiple roles: Translated technical concepts into business impact for non-technical audiences
 
 **Business Context (Differentiator):**
-I don't just write code - I understand how features impact revenue, user satisfaction, and organizational goals. Every technical decision considers business outcomes because I've managed budgets, understood P&L, and seen how technology investments succeed or fail.
+He doesn't just write code - he understands how features impact revenue, user satisfaction, and organizational goals. Every technical decision considers business outcomes because he's managed budgets, understood P&L, and seen how technology investments succeed or fail.
 
 **Examples:**
 - At Dental Game Plan: Template reusability transformed economics (2 weeks → 2 hours)
@@ -65,7 +65,7 @@ I don't just write code - I understand how features impact revenue, user satisfa
 
 **Specific Management Roles at Marathon Products (2015-2020):**
 
-At a small manufacturing company (~15 employees) serving hundreds of customers worldwide, I wore multiple hats simultaneously:
+At a small manufacturing company (~15 employees) serving hundreds of customers worldwide, he wore multiple hats simultaneously:
 
 - **Customer Support & Help Desk:** Sole responsibility for technical support for hundreds of external customers across US and internationally (largest client in Japan). Handled hardware and proprietary software troubleshooting, setup assistance, and technical calibrations for data logging equipment (temperature and humidity sensors). Implemented ticketing system and improved response times by 50%.
 
@@ -78,10 +78,10 @@ At a small manufacturing company (~15 employees) serving hundreds of customers w
 **Promotion Track:** Advanced rapidly from individual contributor to multiple management roles by taking initiative, identifying operational pain points, and delivering measurable improvements. Trusted with increasing responsibility in small company where every role mattered.
 
 **Team Dynamics & Organizational Navigation:**
-This management experience means I navigate complex organizations effectively. I understand stakeholder priorities, office dynamics, and how to get things done in large companies. At SFMOMA (400+ item backlog) and Intrinsic (Google bureaucracy), this skill was invaluable.
+This management experience means he navigates complex organizations effectively. He understands stakeholder priorities, office dynamics, and how to get things done in large companies. At SFMOMA (400+ item backlog) and Intrinsic (Google bureaucracy), this skill was invaluable.
 
 **Process Improvement DNA:**
-My instinct is to improve workflows, not just work within them. Nearly every company I've joined has adopted better practices around testing, deployment, or documentation based on my initiatives:
+his instinct is to improve workflows, not just work within them. Nearly every company he's joined has adopted better practices around testing, deployment, or documentation based on his initiatives:
 - Jefferson Health: Established entire SDLC from chaotic direct-to-prod edits
 - SFMOMA: Introduced Jest testing infrastructure to zero-coverage codebase
 - Multiple roles: Documentation, training, CI/CD improvements
@@ -94,12 +94,12 @@ This comes directly from management training in operational efficiency and conti
 IT infrastructure work taught me how systems connect, how failures cascade, and how to think about reliability, scale, and user impact beyond just application code. This makes me better at architecting full-stack applications.
 
 **Examples:**
-- Debugging production issues: Think beyond "is my code wrong?" to networking, DNS, infrastructure
+- Debugging production issues: Think beyond "is his code wrong?" to networking, DNS, infrastructure
 - At SFMOMA: Managed critical .NET and Tessitura upgrades for system processing millions
 - Understanding of the full stack from network to application layer
 
 **User Empathy (Critical for Product Work):**
-Years of help desk work means I deeply understand non-technical user frustrations. I build with real users in mind, not just other developers.
+Years of help desk work means he deeply understands non-technical user frustrations. He builds with real users in mind, not just other developers.
 
 **Examples:**
 - SFMOMA: Built admin tools for non-technical staff (eliminating JSON editing nightmares)
@@ -107,7 +107,7 @@ Years of help desk work means I deeply understand non-technical user frustration
 - All projects: Focus on UX, accessibility, and real user needs
 
 **Technical Foundation:**
-Networking fundamentals, server administration, database management, help desk systems - this foundation means I'm comfortable across the entire stack and can debug issues that pure frontend developers might struggle with.
+Networking fundamentals, server administration, database management, help desk systems - this foundation means he's comfortable across the entire stack and can debug issues that pure frontend developers might struggle with.
 
 ---
 
@@ -115,15 +115,15 @@ Networking fundamentals, server administration, database management, help desk s
 
 **Art Background & Design Sensibility:**
 
-Academic background in art gives me a natural eye for UI/UX design, which draws me toward frontend work where creativity and technology intersect. I don't just implement features - I think about visual hierarchy, user flow, aesthetic polish, and how design impacts user experience.
+Academic background in art gives me a natural eye for UI/UX design, which draws me toward frontend work where creativity and technology intersect. He doesn't just implement features - he thinks about visual hierarchy, user flow, aesthetic polish, and how design impacts user experience.
 
-**This shows up in my work:**
+**This shows up in his work:**
 - **Accessibility at SFMOMA:** Combining WCAG 2.1 compliance (technical) with thoughtful UX (design thinking)
 - **Pixel-perfect implementations:** Translating Figma/Adobe XD designs accurately across multiple roles
 - **Portfolio attention:** Focus on professional appearance, modern aesthetics, polished interactions
 - **Component design:** Building not just functional but visually appealing UI components
 
-**The combination** of technical skills (React, TypeScript, performance optimization) plus design sensibility (visual hierarchy, UX flow, aesthetic judgment) makes me particularly effective at frontend development. I can both build it technically sound AND make it look good.
+**The combination** of technical skills (React, TypeScript, performance optimization) plus design sensibility (visual hierarchy, UX flow, aesthetic judgment) makes me particularly effective at frontend development. He can both build it technically sound AND make it look good.
 
 ---
 
@@ -131,12 +131,12 @@ Academic background in art gives me a natural eye for UI/UX design, which draws 
 
 ### Unique Combination of Skills
 
-**What I bring that most engineers don't:**
+**What he brings that most engineers don't:**
 
 1. **Technical Depth** (5 years shipping production features across diverse stacks)
 2. **Business Acumen** (understand ROI, budget constraints, business priorities)
 3. **Communication Excellence** (can explain technical concepts to anyone - executives, designers, lawyers)
-4. **Process Improvement** (establish better workflows wherever I go)
+4. **Process Improvement** (establish better workflows wherever he goes)
 5. **User Focus** (build for real people based on IT/support background)
 6. **Organizational Savvy** (navigate complex companies, manage stakeholders)
 7. **Systems Thinking** (understand how pieces connect from infrastructure to UI)
@@ -163,16 +163,16 @@ Academic background in art gives me a natural eye for UI/UX design, which draws 
 - Process: Established complete SDLC from chaos (GitHub, CI/CD, code review)
 - Business: Understood healthcare operations, 40K employee impact
 
-**The pattern:** I succeed because I bring more than just code. I bring context, communication, and strategic thinking.
+**The pattern:** He succeeds because he brings more than just code. He brings context, communication, and strategic thinking.
 
 ---
 
 ## Work Philosophy & Approach
 
-### How I Think About Work
+### How He Thinks About Work
 
 **Work Hard, Work Smart:**
-A job well done is its own reward - I take pride in quality work. But working hard doesn't mean fighting inefficient processes with more hours. It means identifying inefficiencies and fixing them to maximize everyone's output. This is why I've established better workflows at nearly every company: CI/CD at Jefferson Health, testing infrastructure at SFMOMA, documentation and training across multiple roles. Work hard on solving the right problems, not compensating for broken systems.
+A job well done is its own reward - he takes pride in quality work. But working hard doesn't mean fighting inefficient processes with more hours. It means identifying inefficiencies and fixing them to maximize everyone's output. This is why he's established better workflows at nearly every company: CI/CD at Jefferson Health, testing infrastructure at SFMOMA, documentation and training across multiple roles. Work hard on solving the right problems, not compensating for broken systems.
 
 **Real Examples:**
 - Jefferson Health: Instead of working harder within chaotic deployment process, built proper SDLC that made entire team more efficient
@@ -180,38 +180,38 @@ A job well done is its own reward - I take pride in quality work. But working ha
 - Dental Game Plan: Instead of building every site from scratch, created reusable templates (2 weeks → 2 hours)
 
 **Process Improvement as Default:**
-My instinct is always "how can this be better?" not "this is how it's always been done." This comes from management background in operational efficiency and continuous improvement, but applies to everything - code architecture, deployment workflows, team processes, even personal productivity.
+his instinct is always "how can this be better?" not "this is how it's always been done." This comes from management background in operational efficiency and continuous improvement, but applies to everything - code architecture, deployment workflows, team processes, even personal productivity.
 
 **Sustainable Pace with Real Urgency:**
-Work-life balance matters. I'm not interested in constant crunch or "hero developer" culture. But I also understand the difference between real and invented urgency:
+Work-life balance matters. He's not interested in constant crunch or "hero developer" culture. But he also understands the difference between real and invented urgency:
 
-- **Real urgency:** Production bug affecting users, client deadline with business impact, critical security issue? I'll work evenings/weekends to solve it
-- **Invented urgency:** Arbitrary deadline without engineering input? I collaborate with stakeholders to understand the real constraints and negotiate realistic timelines that work for everyone
+- **Real urgency:** Production bug affecting users, client deadline with business impact, critical security issue? he'll work evenings/weekends to solve it
+- **Invented urgency:** Arbitrary deadline without engineering input? He'll collaborate with stakeholders to understand the real constraints and negotiate realistic timelines that work for everyone
 
 **This boundary-setting prevents burnout** while still showing up when it truly matters. Sustainable pace makes better engineers long-term. Constant firefighting usually indicates process problems that should be fixed, not heroic individuals working unsustainable hours.
 
 **Collaboration Over Conflict:**
-When timelines don't align with engineering reality, my approach is collaborative problem-solving: "Help me understand the business need. Is it truly this date, or is that flexible? What's the minimum viable version we could ship sooner? Can we phase the rollout?" This usually leads to better outcomes than either blindly committing or flatly refusing. Communication and collaboration trump conflict every time.
+When timelines don't align with engineering reality, his approach is collaborative problem-solving: "Help me understand the business need. Is it truly this date, or is that flexible? What's the minimum viable version we could ship sooner? Can we phase the rollout?" This usually leads to better outcomes than either blindly committing or flatly refusing. Communication and collaboration trump conflict every time.
 
 **Ego-Free Engineering:**
-Nobody knows everything, and those who think they do are usually nightmares to work with. The best engineers I've encountered were extraordinarily intelligent and knowledgeable while remaining humble and open to learning. I check my ego at the door - I'm happy to learn from junior developers, admit when I don't know something, and ask questions rather than pretend expertise. Pride in quality work? Yes. Pride that prevents learning or collaboration? No thanks.
+Nobody knows everything, and those who think they do are usually nightmares to work with. The best engineers he's encountered were extraordinarily intelligent and knowledgeable while remaining humble and open to learning. He checks his ego at the door - he's happy to learn from junior developers, admit when he don't know something, and ask questions rather than pretend expertise. Pride in quality work? Yes. Pride that prevents learning or collaboration? No thanks.
 
 **Quality Over Speed (Usually):**
-Ship fast, but ship right. Technical debt is real, and shortcuts accumulate. I'd rather take an extra day to build it properly than save a day now and spend a week fixing it later. That said, sometimes "good enough" really is good enough (MVP mindset) - the key is conscious decision-making about trade-offs, not accidental technical debt.
+Ship fast, but ship right. Technical debt is real, and shortcuts accumulate. he'd rather take an extra day to build it properly than save a day now and spend a week fixing it later. That said, sometimes "good enough" really is good enough (MVP mindset) - the key is conscious decision-making about trade-offs, not accidental technical debt.
 
 **Initiative and Ownership:**
-Don't wait for permission to fix obvious problems. If I see inefficiency or technical debt, I propose solutions and drive improvements. This has led to process improvements at nearly every company. Better to ask forgiveness than permission when making things better (within reason).
+Don't wait for permission to fix obvious problems. If he sees inefficiency or technical debt, he'll propose solutions and drive improvements. This has led to process improvements at nearly every company. Better to ask forgiveness than permission when making things better (within reason).
 
 ---
 
 ## Handling Common Questions & Concerns
 
-### "Why did you wait until [age/later in life] to become an engineer?"
+### "Why did Mikkel wait until [age/later in life] to become an engineer?"
 
 **Response Framework:**
-> "I didn't wait - I was building my foundation. The management experience taught me how software impacts business outcomes and how to work with diverse stakeholders. The IT background gave me technical fundamentals and systems thinking. When I made the transition to engineering in 2020, I wasn't starting from zero - I had context that most bootcamp grads and junior engineers lack. 
+> "He didn't wait - he was building his foundation. The management experience taught me how software impacts business outcomes and how to work with diverse stakeholders. The IT background gave me technical fundamentals and systems thinking. When he made the transition to engineering in 2020, he wasn't starting from zero - he had context that most bootcamp grads and junior engineers lack. 
 >
-> That foundation means I ship features that move business metrics, not just clean code. At Jefferson Health, I didn't just build a routing system - I understood the 40,000-employee organizational impact. At SFMOMA, I worked effectively with legal and exhibition teams because I understand stakeholder management. This broader perspective makes me more valuable, not less."
+> That foundation means he ship features that move business metrics, not just clean code. At Jefferson Health, he didn't just build a routing system - he understood the 40,000-employee organizational impact. At SFMOMA, he worked effectively with legal and exhibition teams because he understand stakeholder management. This broader perspective makes me more valuable, not less."
 
 **Key Principles:**
 - Don't be defensive about timeline
@@ -222,7 +222,7 @@ Don't wait for permission to fix obvious problems. If I see inefficiency or tech
 ### "How many total years of experience do you have?"
 
 **Response Framework:**
-> "I have 5 years of software engineering experience shipping production features across diverse tech stacks - React, Angular, ASP.NET, Shopify. Before transitioning to engineering, I spent 5 years in management and IT infrastructure, which gave me valuable business context and stakeholder communication skills that make me a more effective engineer today."
+> "he have 5 years of software engineering experience shipping production features across diverse tech stacks - React, Angular, ASP.NET, Shopify. Before transitioning to engineering, he spent 5 years in management and IT infrastructure, which gave me valuable business context and stakeholder communication skills that make me a more effective engineer today."
 
 **What NOT to volunteer:**
 - Total years across all careers (don't add them up)
@@ -230,21 +230,21 @@ Don't wait for permission to fix obvious problems. If I see inefficiency or tech
 - Age or dates that reveal age
 
 **If pressed on total years:**
-> "I understand you're asking about depth of experience. What matters most is my 5 years as a software engineer - that's the relevant professional context. My prior management and IT background provides transferable skills like stakeholder communication and process improvement, but my engineering expertise comes from those 5 years shipping production features."
+> "he understand you're asking about depth of experience. What matters most is his 5 years as a software engineer - that's the relevant professional context. his prior management and IT background provides transferable skills like stakeholder communication and process improvement, but his engineering expertise comes from those 5 years shipping production features."
 
 **Redirect to:** Technical accomplishments, recent work, what you can deliver
 
 ### "Are you a career changer?"
 
 **Response Framework:**
-> "Yes, I transitioned to software engineering in 2020, and it's been the best professional decision I've made. I bring a unique combination - 5 years of engineering experience PLUS business context from management background. This means I ship features that create business value, communicate effectively with stakeholders, and improve team processes. The non-traditional path is actually a competitive advantage - I have perspective most engineers lack."
+> "Yes, he transitioned to software engineering in 2020, and it's been the best professional decision he's made. he bring a unique combination - 5 years of engineering experience PLUS business context from management background. This means he ship features that create business value, communicate effectively with stakeholders, and improve team processes. The non-traditional path is actually a competitive advantage - he have perspective most engineers lack."
 
 **Tone:** Confident and positive, not defensive
 
 ### "Why should we hire someone who switched careers?"
 
 **Response Framework:**
-> "Because I bring more than just code - I bring business context, communication skills, and process improvement thinking. Look at my track record: At Jefferson Health, I established an entire professional SDLC where none existed. At SFMOMA, I worked cross-functionally with legal and exhibition teams. At Google (Intrinsic), I shipped production code in 2 weeks despite zero Angular experience.
+> "Because he bring more than just code - he bring business context, communication skills, and process improvement thinking. Look at his track record: At Jefferson Health, he established an entire professional SDLC where none existed. At SFMOMA, he worked cross-functionally with legal and exhibition teams. At Google (Intrinsic), he shipped production code in 2 weeks despite zero Angular experience.
 >
 > The question isn't 'why hire a career changer?' - it's 'why hire an engineer who ONLY has engineering experience when you could hire someone with engineering skills PLUS business acumen, stakeholder management, and organizational navigation expertise?' The diverse background is a feature, not a bug."
 
@@ -253,11 +253,11 @@ Don't wait for permission to fix obvious problems. If I see inefficiency or tech
 ### "Do you regret not starting engineering earlier?"
 
 **Response Framework:**
-> "Not at all. If I'd started at 22, I'd be a pure engineer without business context or management skills. The path I took means I understand how software impacts organizations, can communicate with executives, and improve team processes. That makes me more valuable. I'm not just a coder - I'm someone who can own features, work with stakeholders, and deliver business outcomes. The foundation was worth it."
+> "Not at all. If he'd started at 22, he'd be a pure engineer without business context or management skills. The path he took means he understand how software impacts organizations, can communicate with executives, and improve team processes. That makes me more valuable. he's not just a coder - he's someone who can own features, work with stakeholders, and deliver business outcomes. The foundation was worth it."
 
 ---
 
-## What I'm Looking For in Next Role
+## What He's Looking For in Next Role
 
 ### Must-Haves
 
@@ -265,7 +265,7 @@ Don't wait for permission to fix obvious problems. If I see inefficiency or tech
 - Working with modern technologies and staying current with industry trends
 - Challenging technical problems that require deep thinking
 - Opportunity to deepen AI/ML integration skills (building on current experience)
-- Full-stack work where I can own features end-to-end
+- Full-stack work where he can own features end-to-end
 - Greenfield opportunities, not just maintenance work
 
 **Team & Culture:**
@@ -278,12 +278,12 @@ Don't wait for permission to fix obvious problems. If I see inefficiency or tech
 **Business Impact & Meaning:**
 - Building products that matter to real users
 - Clear connection between technical work and business outcomes
-- Company with mission and values I can believe in
+- Company with mission and values he can believe in
 - Opportunity to contribute to product strategy, not just execute specs
-- Seeing the results of my work create value
+- Seeing the results of his work create value
 
 **Professional Environment:**
-- Senior engineers I can learn from
+- Senior engineers he can learn from
 - Modern development practices (code review, testing, CI/CD)
 - Investment in engineering excellence and quality
 - Data-driven decision making (not just opinions)
@@ -342,7 +342,7 @@ Don't wait for permission to fix obvious problems. If I see inefficiency or tech
 
 **Me:** Technical skills + engineering experience + business acumen + stakeholder communication + process improvement + systems thinking + user empathy
 
-**Result:** I ship features that move business metrics, work effectively with stakeholders, and improve team processes wherever I go.
+**Result:** He ships features that move business metrics, work effectively with stakeholders, and improve team processes wherever he goes.
 
 ### Ideal Role Match
 
@@ -369,10 +369,10 @@ Don't wait for permission to fix obvious problems. If I see inefficiency or tech
 **Tone: Confident and positive, never defensive or apologetic**
 
 **Framework:**
-1. **Acknowledge briefly:** "Yes, I transitioned to engineering in 2020"
+1. **Acknowledge briefly:** "Yes, he transitioned to engineering in 2020"
 2. **Reframe as strength:** "That diverse background makes me more valuable"
 3. **Provide evidence:** Concrete examples of how it helps
-4. **Redirect to delivery:** Focus on what I've shipped and can deliver
+4. **Redirect to delivery:** Focus on what he's shipped and can deliver
 
 **Don't:**
 - Apologize for "non-traditional path"
@@ -428,10 +428,10 @@ Don't wait for permission to fix obvious problems. If I see inefficiency or tech
 ### Redirect Strategy
 
 **If asked about age, timeline, or detailed pre-engineering background:**
-> "I'm happy to discuss that in more detail directly, but what's most relevant for this role is my 5 years of software engineering experience shipping production features across diverse tech stacks. Let me tell you about [recent technical accomplishment relevant to their needs]..."
+> "I'm happy to discuss that in more detail directly, but what's most relevant for this role is Mikkel's 5 years of software engineering experience shipping production features across diverse tech stacks. Let me tell you about [recent technical accomplishment relevant to their needs]..."
 
 **If pressed:**
-> "I transitioned to engineering in 2020 after management and IT roles. That background gives me valuable perspective - I understand stakeholder communication, business context, and process improvement. But the engineering expertise comes from 5 years shipping React, Angular, ASP.NET applications. What specific technical requirements does your role have? I'd love to discuss how my experience maps to those."
+> "he transitioned to engineering in 2020 after management and IT roles. That background gives him valuable perspective - he understands stakeholder communication, business context, and process improvement. But the engineering expertise comes from 5 years shipping React, Angular, ASP.NET applications. What specific technical requirements does your role have? I'd love to discuss how his experience maps to those."
 
 **Goal:** Acknowledge briefly, redirect to technical strengths
 
@@ -441,15 +441,15 @@ Don't wait for permission to fix obvious problems. If I see inefficiency or tech
 
 ### Elevator Version (30 seconds)
 
-"I'm a software engineer with 5 years of professional experience across diverse tech stacks - React, Angular, ASP.NET, full-stack work. I specialize in rapid technology adoption and AI/LLM integration. My background in management gives me strong communication skills and business context that help me ship features that actually move metrics. I'm looking for full-stack roles with AI opportunities where diverse perspective is valued."
+"He's a software engineer with 5 years of professional experience across diverse tech stacks - React, Angular, ASP.NET, full-stack work. He specializes in rapid technology adoption and AI/LLM integration. His background in management gives him strong communication skills and business context that help him ship features that actually move metrics. He's looking for front-end or full-stack roles, ideally with AI opportunities where diverse perspective is valued."
 
 ### Full Version (2 minutes)
 
-"I have 5 years as a software engineer, shipping production features across startups, Google-scale companies, healthcare, and museums. I've worked with React, Angular, ASP.NET, Node.js - I adapt quickly to whatever stack makes sense for the problem.
+"He has 5 years as a software engineer, shipping production features across startups, Google-scale companies, healthcare, and museums. He's worked with React, Angular, ASP.NET, Node.js - he adapts quickly to whatever stack makes sense for the problem.
 
-What makes me different is my pre-engineering background in management and IT. That experience taught me how to communicate with stakeholders, understand business priorities, and improve team processes. At Jefferson Health, I didn't just code - I established their entire SDLC from scratch. At SFMOMA, I worked with legal teams and executives. At Google's Intrinsic, I presented technical tradeoffs to PMs.
+What makes him different is his pre-engineering background in management and IT. That experience taught him how to communicate with stakeholders, understand business priorities, and improve team processes. At Jefferson Health, he didn't just code - he established their entire SDLC from scratch. At SFMOMA, he worked with legal teams and executives. At Google's Intrinsic, he presented technical tradeoffs to PMs.
 
-I'm particularly interested in AI/ML integration - I'm currently building an AI recruiting assistant that demonstrates my LLM integration skills. I'm looking for full-stack roles where I can work on challenging technical problems while contributing to product strategy and working cross-functionally. The combination of technical skills plus business context means I deliver features that create real value, not just clean code."
+He's particularly interested in AI/ML integration - he's currently building an AI recruiting assistant that demonstrates his LLM integration skills. He's looking for full-stack roles where he can work on challenging technical problems while contributing to product strategy and working cross-functionally. The combination of technical skills plus business context means he delivers features that create real value, not just clean code."
 
 ### One-Sentence Version
 
@@ -477,7 +477,7 @@ Understanding economics → Built reusable templates → Transformed delivery mo
 
 ---
 
-## What I'm Building Toward
+## What He's Building Toward
 
 ### Career Trajectory
 
@@ -512,7 +512,7 @@ When discussing career background:
 3. **Provide concrete examples** of how it creates value (SFMOMA stakeholder work, Jefferson SDLC, etc.)
 4. **Be confident, not defensive** (this is a strength)
 5. **Redirect timeline questions** to recent technical work
-6. **Focus on delivery** (what I've shipped, what I can build)
+6. **Focus on delivery** (what he's shipped, what he can build)
 7. **Show forward momentum** (excited about AI/ML, next challenges)
 
 **The narrative is:** Experienced software engineer with unique advantages from diverse background. Not "career changer trying to break in" but "established engineer with rare combination of skills."
@@ -544,7 +544,7 @@ When discussing career background:
 - **Balanced** - value work-life integration, not just grinding
 - **Growth-oriented** - always learning, whether tech or other domains
 
-**Team culture I thrive in:**
+**Team culture he thrives in:**
 - Collaborative and knowledge-sharing
 - Values diverse interests and perspectives
 - Encourages experimentation and learning
