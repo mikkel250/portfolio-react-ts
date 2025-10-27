@@ -12,7 +12,7 @@ export default function EventsPage() {
           I speak at conferences about how
           <span className="text-cyan-500"> PHP is the best</span>
         </h1>
-        <p className="text-zinc-400 text-sm md:text-base max-w-2xl mt-8 md:leading-loose tracking-wide">
+        <p className="text-zinc-300 text-sm md:text-base max-w-2xl mt-8 md:leading-loose tracking-wide">
           I don't understand why people are after Angular and React when PHP is
           still the OG of web development. I've been building a lot of things,
           from small experiments to full-blown web applications, each project

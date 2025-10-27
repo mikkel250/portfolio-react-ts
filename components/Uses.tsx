@@ -8,7 +8,7 @@ export const Uses = () => {
       {uses.map((el, idx) => (
         <div key={`uses-${idx}`} className="my-8">
           <h4 className="text-base font-bold text-zinc-100">{el.name}</h4>
-          <p className="text-sm text-zinc-400 leading-loose">
+          <p className="text-sm text-zinc-300 leading-loose">
             {el.description}
           </p>
         </div>

@@ -57,7 +57,7 @@ export const PermanentPreview = ({
             <div className="text-center p-4">
               <div className="text-cyan-500 text-2xl mb-2">🔗</div>
               <div className="text-zinc-300 text-sm font-medium">Live Demo</div>
-              <div className="text-zinc-500 text-xs mt-1">Click to visit</div>
+                              <div className="text-zinc-400 text-xs mt-1">Click to visit</div>
             </div>
           </div>
         )}

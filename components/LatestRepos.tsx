@@ -50,12 +50,12 @@ export const LatestRepos = ({
                 <h2 className="text-base text-zinc-100 font-bold">
                   {repo.name}
                 </h2>
-                <p className=" text-zinc-400 font-normal text-sm leading-loose mt-4 tracking-wide">
+                <p className=" text-zinc-300 font-normal text-sm leading-loose mt-4 tracking-wide">
                   {truncateText(repo?.description, 100)}
                 </p>
               </div>
 
-              <div className="mt-4 flex flex-row space-x-4 items-center text-zinc-500 group-hover:text-cyan-500">
+              <div className="mt-4 flex flex-row space-x-4 items-center text-zinc-400 group-hover:text-cyan-500">
                 <div className=" font-normal text-sm flex flex-row space-x-1 items-center ">
                   <AiOutlineFork className="h-4 w-4 stroke-1 " />
                   <span className=" group-hover:text-cyan-500">
@@ -78,7 +78,7 @@ export const LatestRepos = ({
           <div className="flex justify-center relative z-[70] ">
             <Link
               href="/contributions"
-              className="text-zinc-200 border border-zinc-600 bg-zinc-900 px-8 py-2 rounded-lg hover:border-zinc-700 hover:bg-zinc-800/[0.8] transition duration-200"
+              className="text-zinc-50 border border-zinc-600 bg-zinc-900 px-8 py-2 rounded-lg hover:border-zinc-700 hover:bg-zinc-800/[0.8] transition duration-200"
             >
               Show More
             </Link>

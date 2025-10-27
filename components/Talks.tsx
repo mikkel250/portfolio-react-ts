@@ -33,13 +33,13 @@ const Talks = ({
         <div>
           <div className="flex flex-row space-x-4 mb-4 relative">
             <div className="w-[2px] h-full bg-zinc-800  absolute left-0"></div>
-            <p className="text-zinc-500 text-sm">{company}</p>
+            <p className="text-zinc-400 text-sm">{company}</p>
           </div>
           <h4 className="font-bold text-base md:text-xl tracking-tight text-zinc-300 mb-2">
             {title}
           </h4>
-          <p className="text-zinc-400 text-sm">{description}</p>
-          <p className="text-zinc-600 group-hover:text-cyan-500 transition duration-200 text-sm mt-2 inline-block">
+          <p className="text-zinc-300 text-sm">{description}</p>
+          <p className="text-zinc-400 group-hover:text-cyan-500 transition duration-200 text-sm mt-2 inline-block">
             <AiFillPlayCircle className="inline-block mb-[2px]" />{" "}
             <span>Watch Video</span>
           </p>

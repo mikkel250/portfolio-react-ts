@@ -52,7 +52,7 @@ export const Footer = () => {
             <CustomLink
               key={`footer-link-${idx}`}
               href={navItem.link}
-              className="text-zinc-100 text-sm relative"
+              className="text-zinc-50 text-sm relative"
             >
               <span className="relative z-10 px-2 py-2 inline-block">
                 {navItem.name}
@@ -60,7 +60,7 @@ export const Footer = () => {
             </CustomLink>
           ))}
         </div>
-        <p className="text-zinc-200 text-sm font-light text-center mt-8 border-t border-zinc-800 pt-4">
+        <p className="text-zinc-50 text-sm font-light text-center mt-8 border-t border-zinc-800 pt-4">
           © {new Date().getFullYear()} Mikkel Ridley. All rights
           reserved.
         </p>
@@ -69,7 +69,7 @@ export const Footer = () => {
             <a
               key={`footer-link-${idx}`}
               href={socialLink.link}
-              className="text-zinc-500 text-sm relative"
+              className="text-zinc-400 text-sm relative"
               target="__blank"
             >
               <span className="relative z-10 px-2 py-2 inline-block">

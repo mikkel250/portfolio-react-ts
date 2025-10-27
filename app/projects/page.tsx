@@ -11,7 +11,7 @@ export default function ProjectsPage() {
           From AI assistants to
           <span className="text-cyan-500"> e-commerce platforms</span>
         </h1>
-        <p className="text-zinc-400 text-sm md:text-base max-w-2xl mt-8 md:leading-loose tracking-wide">
+        <p className="text-zinc-300 text-sm md:text-base max-w-2xl mt-8 md:leading-loose tracking-wide">
           Come explore the fruits of my labor, from small experiments to
           full-blown web applications, each project showcases my love for coding
           and design.

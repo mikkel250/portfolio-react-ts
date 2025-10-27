@@ -43,7 +43,7 @@ export default function AboutPage() {
             <span className="text-cyan-500"> Mikkel Ridley</span> and I'm a
             software engineer.
           </h1>
-          <p className="text-zinc-400 text-sm md:text-base max-w-2xl mt-8 md:leading-loose tracking-wide">
+          <p className="text-zinc-300 text-sm md:text-base max-w-2xl mt-8 md:leading-loose tracking-wide">
             It all started with MUDs (Multi-User Dimensions) back in the mid-nineties, 
             when I was just fifteen and the internet wasn't yet part of everyday life. 
             Since then, my journey has taken some twists and turns. From salmon fishing 
@@ -65,7 +65,7 @@ export default function AboutPage() {
               <a
                 key={`footer-link-${idx}`}
                 href={socialLink.link}
-                className="text-zinc-500 text-sm relative"
+                className="text-zinc-400 text-sm relative"
                 target="__blank"
               >
                 <span className="relative z-10 px-2 py-2 inline-block hover:text-cyan-500">
@@ -78,20 +78,20 @@ export default function AboutPage() {
       </div>
 
       <div className="max-w-5xl mx-auto px-8 mt-10 relative">
-        <p className="text-zinc-400 text-sm md:text-base mt-8 md:leading-loose tracking-wide">
+        <p className="text-zinc-300 text-sm md:text-base mt-8 md:leading-loose tracking-wide">
           During five years as a manager at a local business before I transitioned 
           into software engineering, I wore many hats. I was the sole Help Desk and 
           Tech Support Manager, spearheading key improvements that significantly boosted 
           support efficiency. These experiences sharpened my leadership, process improvement, 
           and collaboration skills—qualities I bring to every software project.
         </p>
-        <p className="text-zinc-400 text-sm md:text-base mt-8 md:leading-loose tracking-wide">
+        <p className="text-zinc-300 text-sm md:text-base mt-8 md:leading-loose tracking-wide">
           When I'm not coding, I'm an excellent cook, I'm usually walking or playing 
           with my Golden Retriever Freddie Mercury (he's a master of both Grunt and Gulp), 
           gaming, investing or coaching others in crypto, blasting Mongolian heavy metal, 
           cycling, geeking out over Neo-Futuristic architecture, and traveling the globe.
         </p>
-        <p className="text-zinc-400 text-sm md:text-base mt-8 md:leading-loose tracking-wide">
+        <p className="text-zinc-300 text-sm md:text-base mt-8 md:leading-loose tracking-wide">
           Here's a timeline of what I've been upto
         </p>
         <Timeline />

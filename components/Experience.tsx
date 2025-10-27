@@ -18,7 +18,7 @@ export const Experience = () => {
       <h1 className="text-2xl md:text-3xl text-white font-bold max-w-5xl mx-auto mt-20 md:mt-40">
         Work Experience
       </h1>
-      <p className="text-zinc-400 text-sm md:text-base max-w-2xl mt-4 leading-loose tracking-wide ">
+      <p className="text-zinc-300 text-sm md:text-base max-w-2xl mt-4 leading-loose tracking-wide ">
         I've worked across diverse industries - from healthcare and robotics to art and fintech. Each role has taught me something unique about building software that matters.
       </p>
       <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-2 mt-20 max-w-2xl mx-auto">
@@ -54,7 +54,7 @@ export const Experience = () => {
               <button
                 onClick={() => setActiveWorkExperience(exp)}
                 className={clsx(
-                  "px-4 py-2 text-zinc-400 relative z-20 min-w-28 w-full text-left rounded-md flex flex-row space-x-2 items-center group",
+                  "px-4 py-2 text-zinc-300 relative z-20 min-w-28 w-full text-left rounded-md flex flex-row space-x-2 items-center group",
                   activeWorkExperience?.company === exp.company
                     ? "bg-zinc-800"
                     : null
@@ -101,11 +101,11 @@ export const Experience = () => {
                   </span>
                 </h1>
 
-                <div className="text-zinc-400 text-sm tracking-widest">
+                <div className="text-zinc-300 text-sm tracking-widest">
                   {moment(activeWorkExperience?.startDate).format("MMM YYYY")} -{" "}
                   {moment(activeWorkExperience?.endDate).format("MMM YYYY")}
                 </div>
-                <p className="text-zinc-400 text-sm">
+                <p className="text-zinc-300 text-sm">
                   {activeWorkExperience?.location}
                 </p>
 
@@ -116,7 +116,7 @@ export const Experience = () => {
                       className="flex flex-row space-x-2 items-start my-2"
                     >
                       <BsCheck2 className="text-cyan-500 mt-[3px] flex-shrink-0" />
-                      <span className="text-zinc-400 text-sm">{bullet}</span>
+                      <span className="text-zinc-300 text-sm">{bullet}</span>
                     </div>
                   ))}
                 </div>

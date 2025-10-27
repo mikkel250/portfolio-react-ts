@@ -8,17 +8,17 @@ export const Hero = () => {
         I'm a software engineer who{" "}
         <span className="text-cyan-500">builds things.</span>
       </h1>
-      <p className="text-zinc-400 text-sm md:text-base max-w-2xl mt-8 leading-loose tracking-wide">
+      <p className="text-zinc-300 text-sm md:text-base max-w-2xl mt-8 leading-loose tracking-wide">
         Meet Mikkel Ridley, a Software Engineer with 5 years of experience primarily 
         on the Front End and recently expanding into Full Stack. From building ticketing 
         platforms at SFMOMA to developing Angular components at Intrinsic (an Alphabet/GoogleX company), I bring both 
         technical expertise and leadership experience to every project.
       </p>
-      <div className="mt-8 text-zinc-400 text-sm md:text-base max-w-2xl leading-loose tracking-wide">
+      <div className="mt-8 text-zinc-300 text-sm md:text-base max-w-2xl leading-loose tracking-wide">
         Recently worked on{" "}
         <LinkPreview
           className={
-            "text-zinc-200 font-bold hover:text-cyan-500 transition duration-150 outline-none"
+            "text-zinc-50 font-bold hover:text-cyan-500 transition duration-150 outline-none"
           }
           url="https://tickets.sfmoma.org"
         >
@@ -27,7 +27,7 @@ export const Hero = () => {
         and a {" "}
         <LinkPreview
           className={
-            "text-zinc-200 font-bold hover:text-cyan-500 transition duration-150"
+            "text-zinc-50 font-bold hover:text-cyan-500 transition duration-150"
           }
           url="https://freelancersmartcontract.netlify.app"
         >
