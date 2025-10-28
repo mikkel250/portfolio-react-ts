@@ -58,6 +58,7 @@ function isMetaQuery(query: string): boolean {
   return metaKeywords.test(query);
 }
 
+// Job description detection function (server-side only)
 function isJobDescriptionQuery(query: string): boolean {
   // Simplified JD detection - only the most obvious indicators
   const obviousJD = [
@@ -163,3 +164,6 @@ export function extractJobTitle(query: string): string | null {
 
   return null;
 }
+
+
+// Job filtering functions moved to lib/input-filter.ts to avoid fs import issues on client side

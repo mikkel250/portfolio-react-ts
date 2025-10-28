@@ -1,12 +1,16 @@
 # Technical Projects
 
+**Last Updated:** October 28, 2025  
+**Version:** 2.0
+
 ## Overview
-I build side projects for two purposes, with my favorites covering both: learning new technologies and solving specific problems. These projects demonstrate hands-on experience with diverse tech stacks and my ability to ship complete, functional applications.
+This is a list of projects that Mikkel built outside of work, aka side projects, aka personal projects, a common practice in software development. Mikkel builds side projects for two purposes, with his favorites covering both: learning new technologies and solving specific problems. These projects demonstrate hands-on experience with diverse tech stacks and his ability to ship complete, functional applications.
 
 ---
 
 ## AI Recruiting Assistant (This Project!)
-**Status:** In Development  
+**Type:** Personal Project (Professional Application)  
+**Status:** Live in Production (Launched October 2025)  
 **Integration:** Built into portfolio website (see Portfolio Website project)
 
 ### Description
@@ -14,7 +18,7 @@ AI-powered recruiting assistant that analyzes job descriptions and answers quest
 
 
 ### Technologies
-Next.js 14, React 18, TypeScript 5, Vercel Serverless Functions (Node.js runtime), LLM APIs, Tailwind CSS, Framer Motion, Aceternity UI
+Next.js 14, React 18, TypeScript 5, Vercel Serverless Functions (Node.js runtime), multiple LLM APIs (Google, Anthropic, OpenAI), Tailwind CSS, Framer Motion, Aceternity UI
 
 ### Key Features
 - Three-state expandable chat widget (minimized, compact, maximized)
@@ -25,7 +29,7 @@ Next.js 14, React 18, TypeScript 5, Vercel Serverless Functions (Node.js runtime
 - Meta-awareness: can explain its own technical implementation and design decisions
 
 ### Technical Highlights
-- **MVP-first approach:** Chose Google Gemini 2.5 pro, with a configurable stack of fallbacks for cost-effective validation before optimization, demonstrating business-conscious technical decision-making
+- **MVP-first approach:** Chose Google Gemini 2.5 Pro for cost-effective validation before optimization, demonstrating business-conscious technical decision-making, with the ability to easily switch models and a stack of fallbacks in case of errors.
 - **Simple RAG implementation:** Keyword-based retrieval without vector database for faster MVP iteration
 - **Marketing-focused prompt engineering:** System prompts designed to effectively sell candidate using benefit-focused language
 - **Modern UI with Aceternity:** Professional, polished interface using Framer Motion animations
@@ -36,6 +40,7 @@ Demonstrates full-stack + AI integration capabilities to potential employers whi
 ---
 
 ## React eCommerce Store
+**Type:** Personal Project (Learning & Portfolio)  
 **Status:** Complete  
 **Links:** [GitHub](https://github.com/mikkel250/react-ecommerce) | [Live Demo](https://react-ecommerce-production-b661.up.railway.app)
 
@@ -60,6 +65,7 @@ Built complete full-stack application with authentication, database, API integra
 ---
 
 ## DeFi Analytics Dashboards
+**Type:** Paid Freelance Work (Professional)  
 **Status:** Complete  
 **Links:** [Live on Dune Analytics](https://dune.com/uniwizards/eth-alt-pool-analytics-v4)
 
@@ -81,10 +87,11 @@ Demonstrates ability to work with complex data pipelines, blockchain technology 
 ---
 
 ## Professional Portfolio Website
-**Status:** In Development (Redesign)  
+**Type:** Personal Project (Professional Tool)  
+**Status:** Live in Production (Updated October 2025, ongoing refinements)  
 
 ### Description
-Modern, professional portfolio built with Next.js and Aceternity UI showcasing technical projects and professional experience. **Features integrated AI recruiting assistant** (see separate project entry) providing interactive way for recruiters to learn about my background.
+Modern, professional portfolio built with Next.js and Aceternity UI showcasing technical projects and professional experience. **Features integrated AI recruiting assistant** (see separate project entry) providing interactive way for recruiters to learn about Mikkel's background.
 
 ### Technologies
 Next.js 14, React 18, TypeScript 5, Tailwind CSS, Framer Motion, Aceternity UI (DevPro template), Vercel
@@ -105,6 +112,7 @@ Serves as primary job search tool showcasing both technical capabilities and pro
 ---
 
 ## Face Recognition App
+**Type:** Personal Project (Learning & Portfolio)  
 **Status:** Complete  
 **Links:** [GitHub](https://github.com/mikkel250/face-recognition)
 
@@ -127,6 +135,7 @@ Demonstrates full-stack capabilities with frontend, backend API, database, and t
 ---
 
 ## Smart Contract for Freelance Work Agreements
+**Type:** Personal Project (Learning - Web3 Exploration)  
 **Status:** Complete  
 **Links:** [GitHub](https://github.com/mikkel250/SoftwareDevSmartContract) | [Live Demo](https://freelancersmartcontract.netlify.app)
 
@@ -148,6 +157,7 @@ Shows exploration of Web3 technologies and blockchain development. Built smart c
 ---
 
 ## Bootstrap Store
+**Type:** Personal Project (Learning - Frontend Fundamentals)  
 **Status:** Complete  
 **Links:** [GitHub](https://github.com/mikkel250/bootstrap-store) | [Live Demo](https://mikkel250.github.io/bootstrap-store/)
 
@@ -169,6 +179,7 @@ Demonstrates fundamentals with vanilla JavaScript and popular CSS framework. Sho
 ---
 
 ## Robofriends
+**Type:** Personal Project (Learning - React Fundamentals)  
 **Status:** Complete  
 **Links:** [GitHub](https://github.com/mikkel250/robofriends) | [Live Demo](https://mikkel250.github.io/robofriends)
 
@@ -190,6 +201,7 @@ Learning project focusing on React fundamentals: state management, component com
 ---
 
 ## Twilio Communication Demos
+**Type:** Personal Project (Learning - API Integration)  
 **Status:** Complete  
 **Links:** [GitHub](https://github.com/mikkel250/twilio_demos)
 
@@ -211,6 +223,7 @@ Shows ability to integrate with communication APIs and handle real-time events. 
 ---
 
 ## Calculator Project
+**Type:** Personal Project (Learning - JavaScript Fundamentals)  
 **Status:** Complete  
 **Links:** [GitHub](https://github.com/mikkel250/calculator-project) | [Live Demo](https://mikkel250.github.io/calculator-project)
 

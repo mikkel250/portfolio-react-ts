@@ -1,10 +1,41 @@
 # Career Transition & Background Story
 
+**Last Updated:** October 28, 2025  
+**Version:** 2.0
+
 ## The Journey to Software Engineering
 
-he transitioned to software engineering in 2020 after 5 years in management and IT infrastructure roles. This wasn't a random career change - it was a deliberate move toward work that aligned perfectly with his passion for problem-solving, continuous learning, and building tangible solutions that create impact.
+He transitioned to software engineering in 2020 after 5 years in management and IT infrastructure roles. This wasn't a random career change - it was a deliberate move toward work that aligned perfectly with his passion for problem-solving, continuous learning, and building tangible solutions that create impact.
 
-**Current Status:** 5 years as a professional software engineer (2020-present), with diverse experience across startups, Google-scale companies, healthcare, museums, and agencies.
+**Current Status (as of October 2025):** 5+ years as a professional software engineer (May 2020 - October 2025), with diverse experience across startups, Google-scale companies, healthcare, museums, and agencies.
+
+---
+
+## ✅ VERIFIED FACTS (Use These Exactly)
+
+### Core Experience
+- **Total Software Engineering Experience:** 5+ years (May 2020 - October 2025)
+- **Pre-Engineering Background:** 5 years management and IT infrastructure (2015-2020)
+- **Total Professional Experience:** 10+ years combined, BUT only cite "5 years software engineering" or "5+ years"
+
+### Companies Worked At (Professional Roles)
+1. **SFMOMA** - Software Engineer, Full Stack (September 2023 - May 2025) | 1 year 8 months
+2. **Intrinsic (Google/Alphabet)** - UI/UX Developer (January 2023 - May 2023) | 5 months
+3. **Jefferson Health** - Software Engineer, Front End (November 2021 - January 2023) | 1 year 2 months
+4. **Dental Game Plan** - Software Engineer, Front End (April 2021 - December 2021) | 8 months
+5. **Kul Inc.** - Software Engineer, Front End (May 2020 - March 2021) | 10 months
+
+### Key Learning Speed Achievements
+- **Angular:** ~3 weeks from zero experience to working independently and shipping production code at Google/Intrinsic (2023)
+- **ASP.NET:** No prior experience, learned on the job at SFMOMA (2023-2025)
+- **Shopify:** No prior experience at Kul Inc, became expert by Jefferson Health role (2020-2023)
+- **Jekyll:** No prior experience, became sole framework owner at Dental Game Plan (2021)
+
+### ❌ DO NOT Say
+- "10+ years of software engineering" → ONLY 5 years
+- "Worked at Google" → Say "Intrinsic (Google/Alphabet)" or "Google's Intrinsic"
+- "Mastered Angular in 2 weeks" → Say "~3 weeks to working proficiency"
+- "Led large engineering teams" → Trained teams, no formal lead role
 
 ---
 
@@ -12,7 +43,7 @@ he transitioned to software engineering in 2020 after 5 years in management and 
 
 ### Deep Roots in Technology
 
-his interest in technology goes back to the mid-1990s, navigating MUDs (Multi-User Dimensions) through university databases, Gopher services, and Telnet before Google even existed. At fifteen, he was exploring networked virtual worlds and text-based multiplayer games when the internet wasn't yet part of everyday life. 
+His interest in technology goes back to the mid-1990s, navigating MUDs (Multi-User Dimensions) through university databases, Gopher services, and Telnet before Google even existed. At fifteen, he was exploring networked virtual worlds and text-based multiplayer games when the internet wasn't yet part of everyday life. 
 
 **This reframes the career transition:** Not "random career change" but "returning to lifelong passion." The path through management and IT was building valuable skills and perspective, but technology has been a constant thread since his teenage years. Engineering isn't a new interest - it's coming full circle to where his curiosity started.
 
@@ -81,7 +112,7 @@ At a small manufacturing company (~15 employees) serving hundreds of customers w
 This management experience means he navigates complex organizations effectively. He understands stakeholder priorities, office dynamics, and how to get things done in large companies. At SFMOMA (400+ item backlog) and Intrinsic (Google bureaucracy), this skill was invaluable.
 
 **Process Improvement DNA:**
-his instinct is to improve workflows, not just work within them. Nearly every company he's joined has adopted better practices around testing, deployment, or documentation based on his initiatives:
+His instinct is to improve workflows, not just work within them. Nearly every company he's joined has adopted better practices around testing, deployment, or documentation based on his initiatives:
 - Jefferson Health: Established entire SDLC from chaotic direct-to-prod edits
 - SFMOMA: Introduced Jest testing infrastructure to zero-coverage codebase
 - Multiple roles: Documentation, training, CI/CD improvements
@@ -91,7 +122,7 @@ This comes directly from management training in operational efficiency and conti
 ### What IT Infrastructure Background Provides
 
 **Systems Thinking:**
-IT infrastructure work taught me how systems connect, how failures cascade, and how to think about reliability, scale, and user impact beyond just application code. This makes me better at architecting full-stack applications.
+IT infrastructure work taught him how systems connect, how failures cascade, and how to think about reliability, scale, and user impact beyond just application code. This makes him better at architecting full-stack applications.
 
 **Examples:**
 - Debugging production issues: Think beyond "is his code wrong?" to networking, DNS, infrastructure
@@ -115,7 +146,7 @@ Networking fundamentals, server administration, database management, help desk s
 
 **Art Background & Design Sensibility:**
 
-Academic background in art gives me a natural eye for UI/UX design, which draws me toward frontend work where creativity and technology intersect. He doesn't just implement features - he thinks about visual hierarchy, user flow, aesthetic polish, and how design impacts user experience.
+Academic background in art gives him a natural eye for UI/UX design, which draws him toward frontend work where creativity and technology intersect. He doesn't just implement features - he thinks about visual hierarchy, user flow, aesthetic polish, and how design impacts user experience.
 
 **This shows up in his work:**
 - **Accessibility at SFMOMA:** Combining WCAG 2.1 compliance (technical) with thoughtful UX (design thinking)
@@ -123,11 +154,11 @@ Academic background in art gives me a natural eye for UI/UX design, which draws 
 - **Portfolio attention:** Focus on professional appearance, modern aesthetics, polished interactions
 - **Component design:** Building not just functional but visually appealing UI components
 
-**The combination** of technical skills (React, TypeScript, performance optimization) plus design sensibility (visual hierarchy, UX flow, aesthetic judgment) makes me particularly effective at frontend development. He can both build it technically sound AND make it look good.
+**The combination** of technical skills (React, TypeScript, performance optimization) plus design sensibility (visual hierarchy, UX flow, aesthetic judgment) makes him particularly effective at frontend development. He can both build it technically sound AND make it look good.
 
 ---
 
-## How This Makes Me a Better Engineer
+## How This Makes Him a Better Engineer
 
 ### Unique Combination of Skills
 
@@ -152,7 +183,7 @@ Academic background in art gives me a natural eye for UI/UX design, which draws 
 - Business: Understood museum operations, $3M annual online sales
 
 **At Intrinsic (Google):**
-- Technical: Shipped Angular code in 2 weeks with zero prior experience
+- Technical: Reached Angular proficiency and shipped production code within ~3 weeks with zero prior experience
 - Communication: Presented tradeoffs to PMs, collaborated across 6-person team
 - Process: Worked in Google's rigorous review system
 - Business: Understood enterprise robotics use cases, $1M+ equipment operators
@@ -180,12 +211,12 @@ A job well done is its own reward - he takes pride in quality work. But working 
 - Dental Game Plan: Instead of building every site from scratch, created reusable templates (2 weeks → 2 hours)
 
 **Process Improvement as Default:**
-his instinct is always "how can this be better?" not "this is how it's always been done." This comes from management background in operational efficiency and continuous improvement, but applies to everything - code architecture, deployment workflows, team processes, even personal productivity.
+His instinct is always "how can this be better?" not "this is how it's always been done." This comes from management background in operational efficiency and continuous improvement, but applies to everything - code architecture, deployment workflows, team processes, even personal productivity.
 
 **Sustainable Pace with Real Urgency:**
 Work-life balance matters. He's not interested in constant crunch or "hero developer" culture. But he also understands the difference between real and invented urgency:
 
-- **Real urgency:** Production bug affecting users, client deadline with business impact, critical security issue? he'll work evenings/weekends to solve it
+- **Real urgency:** Production bug affecting users, client deadline with business impact, critical security issue? He'll work evenings/weekends to solve it
 - **Invented urgency:** Arbitrary deadline without engineering input? He'll collaborate with stakeholders to understand the real constraints and negotiate realistic timelines that work for everyone
 
 **This boundary-setting prevents burnout** while still showing up when it truly matters. Sustainable pace makes better engineers long-term. Constant firefighting usually indicates process problems that should be fixed, not heroic individuals working unsustainable hours.
@@ -194,10 +225,10 @@ Work-life balance matters. He's not interested in constant crunch or "hero devel
 When timelines don't align with engineering reality, his approach is collaborative problem-solving: "Help me understand the business need. Is it truly this date, or is that flexible? What's the minimum viable version we could ship sooner? Can we phase the rollout?" This usually leads to better outcomes than either blindly committing or flatly refusing. Communication and collaboration trump conflict every time.
 
 **Ego-Free Engineering:**
-Nobody knows everything, and those who think they do are usually nightmares to work with. The best engineers he's encountered were extraordinarily intelligent and knowledgeable while remaining humble and open to learning. He checks his ego at the door - he's happy to learn from junior developers, admit when he don't know something, and ask questions rather than pretend expertise. Pride in quality work? Yes. Pride that prevents learning or collaboration? No thanks.
+Nobody knows everything, and those who think they do are usually nightmares to work with. The best engineers he's encountered were extraordinarily intelligent and knowledgeable while remaining humble and open to learning. He checks his ego at the door - he's happy to learn from junior developers, admit when he doesn't know something, and ask questions rather than pretend expertise. Pride in quality work? Yes. Pride that prevents learning or collaboration? No thanks.
 
 **Quality Over Speed (Usually):**
-Ship fast, but ship right. Technical debt is real, and shortcuts accumulate. he'd rather take an extra day to build it properly than save a day now and spend a week fixing it later. That said, sometimes "good enough" really is good enough (MVP mindset) - the key is conscious decision-making about trade-offs, not accidental technical debt.
+Ship fast, but ship right. Technical debt is real, and shortcuts accumulate. He'd rather take an extra day to build it properly than save a day now and spend a week fixing it later. That said, sometimes "good enough" really is good enough (MVP mindset) - the key is conscious decision-making about trade-offs, not accidental technical debt.
 
 **Initiative and Ownership:**
 Don't wait for permission to fix obvious problems. If he sees inefficiency or technical debt, he'll propose solutions and drive improvements. This has led to process improvements at nearly every company. Better to ask forgiveness than permission when making things better (within reason).
@@ -209,9 +240,9 @@ Don't wait for permission to fix obvious problems. If he sees inefficiency or te
 ### "Why did Mikkel wait until [age/later in life] to become an engineer?"
 
 **Response Framework:**
-> "He didn't wait - he was building his foundation. The management experience taught me how software impacts business outcomes and how to work with diverse stakeholders. The IT background gave me technical fundamentals and systems thinking. When he made the transition to engineering in 2020, he wasn't starting from zero - he had context that most bootcamp grads and junior engineers lack. 
+> "He didn't wait - he was building his foundation. The management experience taught him how software impacts business outcomes and how to work with diverse stakeholders. The IT background gave him technical fundamentals and systems thinking. When he made the transition to engineering in 2020, he wasn't starting from zero - he had context that most bootcamp grads and junior engineers lack. 
 >
-> That foundation means he ship features that move business metrics, not just clean code. At Jefferson Health, he didn't just build a routing system - he understood the 40,000-employee organizational impact. At SFMOMA, he worked effectively with legal and exhibition teams because he understand stakeholder management. This broader perspective makes me more valuable, not less."
+> That foundation means he ships features that move business metrics, not just clean code. At Jefferson Health, he didn't just build a routing system - he understood the 40,000-employee organizational impact. At SFMOMA, he worked effectively with legal and exhibition teams because he understands stakeholder management. This broader perspective makes him more valuable, not less."
 
 **Key Principles:**
 - Don't be defensive about timeline
@@ -244,6 +275,7 @@ Don't wait for permission to fix obvious problems. If he sees inefficiency or te
 ### "Why should we hire someone who switched careers?"
 
 **Response Framework:**
+> "Because I bring more than just code - I bring business context, communication skills, and process improvement thinking. Look at my track record: At Jefferson Health, I established an entire professional SDLC where none existed. At SFMOMA, I worked cross-functionally with legal and exhibition teams. At Google (Intrinsic), I reached proficiency and shipped production code within ~3 weeks despite zero Angular experience.
 > "Because he bring more than just code - he bring business context, communication skills, and process improvement thinking. Look at his track record: At Jefferson Health, he established an entire professional SDLC where none existed. At SFMOMA, he worked cross-functionally with legal and exhibition teams. At Google (Intrinsic), he shipped production code in 2 weeks despite zero Angular experience.
 >
 > The question isn't 'why hire a career changer?' - it's 'why hire an engineer who ONLY has engineering experience when you could hire someone with engineering skills PLUS business acumen, stakeholder management, and organizational navigation expertise?' The diverse background is a feature, not a bug."
@@ -392,7 +424,7 @@ Don't wait for permission to fix obvious problems. If he sees inefficiency or te
 
 1. **"Diverse background is an asset"** - Business context + technical skills = rare combination
 2. **"Proven track record"** - 5 years shipping production features, worked at Google, established processes
-3. **"Rapid learner"** - 5 examples of mastering new tech professionally (Angular 2 weeks, ASP.NET, Shopify, Jekyll)
+3. **"Rapid learner"** - 5 examples of mastering new tech professionally (Angular in ~3 weeks, ASP.NET, Shopify, Jekyll)
 4. **"Business-minded engineer"** - Ship features that move metrics, not just clean code
 5. **"Looking forward"** - Excited about AI/ML opportunities, full-stack growth, technical challenges
 
@@ -468,7 +500,7 @@ Management experience → Recognized chaotic workflow → Established profession
 Stakeholder management skills → Worked effectively with legal/exhibition teams → Revived dormant 3D gallery tool
 
 **Intrinsic - Rapid Learning:**
-Self-directed learning from management → Analyzed code patterns → Production Angular in 2 weeks
+Self-directed learning from management → Analyzed code patterns → Working proficiency in Angular within ~3 weeks
 
 **Dental Game Plan - Business Thinking:**
 Understanding economics → Built reusable templates → Transformed delivery model (2 weeks → 2 hours)

@@ -1,8 +1,16 @@
 export const uses = [
   {
-    name: "React & TypeScript",
+    name: "MacBook Pro M2",
+    description: `My main development machine. Perfect for React, TypeScript, and full-stack development. The M2 chip handles everything I throw at it.`,
+  },
+  {
+    name: "VS Code",
+    description: `My primary code editor with extensions for React, TypeScript, and Tailwind CSS. I love the integrated terminal and Git support.`,
+  },
+  {
+    name: "React, Next.js, & TypeScript",
     description:
-      "My go-to stack for frontend development. I use React for UI components and TypeScript for type safety and better developer experience.",
+      "My go-to stack for frontend development. I use React for UI components, Next.js for server-side rendering, routing, and API routes, easy project launch and deployment to Vercel, with TypeScript for type safety and better developer experience.",
   },
   {
     name: "Next & Node.js",

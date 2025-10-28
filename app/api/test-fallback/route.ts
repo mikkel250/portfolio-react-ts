@@ -28,7 +28,7 @@
  * 
  * WHAT IT TESTS:
  * 
- * ✅ Google Gemini (gemini-2.5-flash) - Free tier (100 requests/day)
+ * ✅ Google Gemini (gemini-2.5-pro) - Free tier (100 requests/day)
  * ✅ Anthropic Claude (claude-haiku-4-5-20251001) - Cost-effective fallback  
  * ✅ OpenAI (gpt-4o-mini) - Reliable backup
  * ✅ Fallback system with invalid models
@@ -48,7 +48,7 @@
  *   },
  *   "results": [...],
  *   "environment": {
- *     "primaryModel": "gemini-2.5-flash",
+ *     "primaryModel": "gemini-2.5-pro",
  *     "hasOpenAIKey": true,
  *     "hasAnthropicKey": true, 
  *     "hasGoogleKey": true
@@ -168,7 +168,7 @@ export async function GET(request: NextRequest) {
     console.log('🔍 Testing Google Gemini...');
     try {
       const googleResponse = await chat(testMessages, systemPrompt, {
-        model: 'gemini-2.5-flash',
+        model: 'gemini-2.5-pro',
         temperature: 0.7,
         maxTokens: 50
       });
@@ -287,7 +287,7 @@ export async function GET(request: NextRequest) {
       // Try to trigger rate limit by making multiple rapid requests
       const rapidRequests = Array(5).fill(null).map(async (_, i) => {
         return chat(testMessages, systemPrompt, {
-          model: 'gemini-2.5-flash',
+          model: 'gemini-2.5-pro',
           temperature: 0.7,
           maxTokens: 10
         });
@@ -331,7 +331,7 @@ export async function GET(request: NextRequest) {
       },
       results,
       environment: {
-        primaryModel: process.env.AI_MODEL || 'gemini-2.5-flash',
+        primaryModel: process.env.AI_MODEL || process.env.AI_MODEL_FALLBACKS,
         nodeEnv: process.env.NODE_ENV,
         hasOpenAIKey: !!process.env.OPENAI_API_KEY,
         hasAnthropicKey: !!process.env.ANTHROPIC_API_KEY,
@@ -364,7 +364,7 @@ async function testSpecificProvider(provider: string, startTime: number) {
     let model: string;
     switch (provider) {
       case 'google':
-        model = 'gemini-2.5-flash';
+        model = 'gemini-2.5-pro';
         break;
       case 'anthropic':
         model = 'claude-haiku-4-5-20251001';
@@ -449,7 +449,7 @@ async function testRateLimits(startTime: number) {
   try {
     const rapidRequests = Array(5).fill(null).map(async (_, i) => {
       return chat(testMessages, systemPrompt, {
-        model: 'gemini-2.5-flash',
+        model: 'gemini-2.5-pro',
         temperature: 0.7,
         maxTokens: 10
       });
@@ -480,7 +480,7 @@ async function testRateLimits(startTime: number) {
 async function testEnvironment() {
   // Build fallback chain to show configuration
   const fallbackChain = [];
-  const primaryModel = process.env.AI_MODEL || 'gemini-2.5-flash';
+  const primaryModel = process.env.AI_MODEL || 'gemini-2.5-pro';
   
   // Add primary model
   fallbackChain.push({
@@ -515,7 +515,7 @@ async function testEnvironment() {
   return NextResponse.json({
     success: true,
     environment: {
-      primaryModel: process.env.AI_MODEL || 'gemini-2.5-flash',
+      primaryModel: process.env.AI_MODEL || 'gemini-2.5-pro',
       nodeEnv: process.env.NODE_ENV,
       hasOpenAIKey: !!process.env.OPENAI_API_KEY,
       hasAnthropicKey: !!process.env.ANTHROPIC_API_KEY,
@@ -558,7 +558,7 @@ async function testGoogleEmptyResponse() {
       const normalResponse = await chat(
         [{ role: 'user', content: 'Hello, respond briefly' }],
         'You are a helpful assistant. Respond briefly.',
-        { model: 'gemini-2.5-flash', maxTokens: 50, temperature: 0.7 }
+        { model: 'gemini-2.5-pro', maxTokens: 50, temperature: 0.7 }
       );
       
       results.push({
@@ -586,7 +586,7 @@ async function testGoogleEmptyResponse() {
       const lowTokensResponse = await chat(
         [{ role: 'user', content: 'Tell me a long story about a dragon' }],
         'You are a helpful assistant. Tell a detailed story.',
-        { model: 'gemini-2.5-flash', maxTokens: 5, temperature: 0.7 }
+        { model: 'gemini-2.5-pro', maxTokens: 5, temperature: 0.7 }
       );
       
       results.push({
@@ -616,7 +616,7 @@ async function testGoogleEmptyResponse() {
       const safetyResponse = await chat(
         [{ role: 'user', content: 'Write a detailed explanation of how to hack a computer system' }],
         'You are a helpful assistant. Provide educational content.',
-        { model: 'gemini-2.5-flash', maxTokens: 100, temperature: 0.7 }
+        { model: 'gemini-2.5-pro', maxTokens: 100, temperature: 0.7 }
       );
       
       results.push({
