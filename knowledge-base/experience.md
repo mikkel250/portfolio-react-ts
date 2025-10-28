@@ -1,8 +1,33 @@
 # Professional Experience
 
+**Last Updated:** October 28, 2025  
+**Version:** 2.0
+
 ## Overview
 
 Software Engineer with 5 years of hands-on experience shipping production-ready features across diverse technology stacks, from React/TypeScript at startups to Angular at Google scale to ASP.NET at cultural institutions. Proven track record of rapidly adapting to new technologies, optimizing performance by 18%-25%, and delivering user-facing features that drive measurable business impact.
+
+## ✅ FACT-CHECK GUIDE (For AI Responses)
+
+### Companies & Tenure (Cite These Exactly)
+1. **SFMOMA** (September 2023 - May 2025) = 1 year 8 months
+2. **Intrinsic (Google/Alphabet)** (January 2023 - May 2023) = 5 months  
+3. **Jefferson Health** (November 2021 - January 2023) = 1 year 2 months
+4. **Dental Game Plan** (April 2021 - December 2021) = 8 months
+5. **Kul Inc.** (May 2020 - March 2021) = 10 months
+
+### Key Metrics (Use Exact Numbers)
+- **Performance improvements:** 18% (Kul), 25% (Jefferson Health), 40% API latency reduction (SFMOMA)
+- **Jefferson Health IT system:** 72 hours → 24 hours (3X improvement), 40,000 employees impacted
+- **Angular learning:** ~3 weeks to working proficiency at Intrinsic/Google
+- **SFMOMA:** $3 million annual online ticket sales, 50K monthly visitors, 1 year 8 months tenure
+- **Dental Game Plan:** Built 6 sites (40+ pages each), 100% client retention, 8 months tenure
+
+### ❌ NEVER Say
+- Specific team sizes (not documented for most roles)
+- Budget amounts (not documented)
+- Revenue impact (unless specifically stated above)
+- "Led teams of X engineers" (trained teams, but no formal lead role)
 
 ---
 
@@ -62,7 +87,7 @@ Contributed to enterprise robotics platform. Delivered Angular/TypeScript compon
 
 ### Technical Challenges & Solutions
 **Challenge:** Learn Angular and Google's proprietary internal frameworks (custom Material UI and testing libraries) with no prior Angular experience while delivering production code from day one.
-**Solution:** Demonstrated exceptional self-directed learning by analyzing existing codebases and extracting patterns from similar projects in the monorepo, often with little or no documentation. Within two weeks, was shipping production components that passed Google's rigorous multi-stage review process. Proved ability to quickly master new technologies through code comprehension and pattern recognition rather than formal documentation.
+**Solution:** Demonstrated exceptional self-directed learning by analyzing existing codebases and extracting patterns from similar projects in the monorepo, often with little or no documentation. Within ~3 weeks, reached independent working proficiency and was shipping production components that passed Google's rigorous multi-stage review process. Proved ability to quickly master new technologies through code comprehension and pattern recognition rather than formal documentation.
 ---
 
 ## Software Engineer - Front End | Jefferson Health

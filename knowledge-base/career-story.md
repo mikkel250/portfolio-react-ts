@@ -1,10 +1,41 @@
 # Career Transition & Background Story
 
+**Last Updated:** October 28, 2025  
+**Version:** 2.0
+
 ## The Journey to Software Engineering
 
 I transitioned to software engineering in 2020 after 5 years in management and IT infrastructure roles. This wasn't a random career change - it was a deliberate move toward work that aligned perfectly with my passion for problem-solving, continuous learning, and building tangible solutions that create impact.
 
-**Current Status:** 5 years as a professional software engineer (2020-present), with diverse experience across startups, Google-scale companies, healthcare, museums, and agencies.
+**Current Status (as of October 2025):** 5+ years as a professional software engineer (May 2020 - October 2025), with diverse experience across startups, Google-scale companies, healthcare, museums, and agencies.
+
+---
+
+## ✅ VERIFIED FACTS (Use These Exactly)
+
+### Core Experience
+- **Total Software Engineering Experience:** 5+ years (May 2020 - October 2025)
+- **Pre-Engineering Background:** 5 years management and IT infrastructure (2015-2020)
+- **Total Professional Experience:** 10+ years combined, BUT only cite "5 years software engineering" or "5+ years"
+
+### Companies Worked At (Professional Roles)
+1. **SFMOMA** - Software Engineer, Full Stack (September 2023 - May 2025) | 1 year 8 months
+2. **Intrinsic (Google/Alphabet)** - UI/UX Developer (January 2023 - May 2023) | 5 months
+3. **Jefferson Health** - Software Engineer, Front End (November 2021 - January 2023) | 1 year 2 months
+4. **Dental Game Plan** - Software Engineer, Front End (April 2021 - December 2021) | 8 months
+5. **Kul Inc.** - Software Engineer, Front End (May 2020 - March 2021) | 10 months
+
+### Key Learning Speed Achievements
+- **Angular:** ~3 weeks from zero experience to working independently and shipping production code at Google/Intrinsic (2023)
+- **ASP.NET:** No prior experience, learned on the job at SFMOMA (2023-2025)
+- **Shopify:** No prior experience at Kul Inc, became expert by Jefferson Health role (2020-2023)
+- **Jekyll:** No prior experience, became sole framework owner at Dental Game Plan (2021)
+
+### ❌ DO NOT Say
+- "10+ years of software engineering" → ONLY 5 years
+- "Worked at Google" → Say "Intrinsic (Google/Alphabet)" or "Google's Intrinsic"
+- "Mastered Angular in 2 weeks" → Say "~3 weeks to working proficiency"
+- "Led large engineering teams" → Trained teams, no formal lead role
 
 ---
 
@@ -152,7 +183,7 @@ Academic background in art gives me a natural eye for UI/UX design, which draws 
 - Business: Understood museum operations, $3M annual online sales
 
 **At Intrinsic (Google):**
-- Technical: Shipped Angular code in 2 weeks with zero prior experience
+- Technical: Reached Angular proficiency and shipped production code within ~3 weeks with zero prior experience
 - Communication: Presented tradeoffs to PMs, collaborated across 6-person team
 - Process: Worked in Google's rigorous review system
 - Business: Understood enterprise robotics use cases, $1M+ equipment operators
@@ -244,7 +275,7 @@ Don't wait for permission to fix obvious problems. If I see inefficiency or tech
 ### "Why should we hire someone who switched careers?"
 
 **Response Framework:**
-> "Because I bring more than just code - I bring business context, communication skills, and process improvement thinking. Look at my track record: At Jefferson Health, I established an entire professional SDLC where none existed. At SFMOMA, I worked cross-functionally with legal and exhibition teams. At Google (Intrinsic), I shipped production code in 2 weeks despite zero Angular experience.
+> "Because I bring more than just code - I bring business context, communication skills, and process improvement thinking. Look at my track record: At Jefferson Health, I established an entire professional SDLC where none existed. At SFMOMA, I worked cross-functionally with legal and exhibition teams. At Google (Intrinsic), I reached proficiency and shipped production code within ~3 weeks despite zero Angular experience.
 >
 > The question isn't 'why hire a career changer?' - it's 'why hire an engineer who ONLY has engineering experience when you could hire someone with engineering skills PLUS business acumen, stakeholder management, and organizational navigation expertise?' The diverse background is a feature, not a bug."
 
@@ -392,7 +423,7 @@ Don't wait for permission to fix obvious problems. If I see inefficiency or tech
 
 1. **"Diverse background is an asset"** - Business context + technical skills = rare combination
 2. **"Proven track record"** - 5 years shipping production features, worked at Google, established processes
-3. **"Rapid learner"** - 5 examples of mastering new tech professionally (Angular 2 weeks, ASP.NET, Shopify, Jekyll)
+3. **"Rapid learner"** - 5 examples of mastering new tech professionally (Angular in ~3 weeks, ASP.NET, Shopify, Jekyll)
 4. **"Business-minded engineer"** - Ship features that move metrics, not just clean code
 5. **"Looking forward"** - Excited about AI/ML opportunities, full-stack growth, technical challenges
 
@@ -468,7 +499,7 @@ Management experience → Recognized chaotic workflow → Established profession
 Stakeholder management skills → Worked effectively with legal/exhibition teams → Revived dormant 3D gallery tool
 
 **Intrinsic - Rapid Learning:**
-Self-directed learning from management → Analyzed code patterns → Production Angular in 2 weeks
+Self-directed learning from management → Analyzed code patterns → Working proficiency in Angular within ~3 weeks
 
 **Dental Game Plan - Business Thinking:**
 Understanding economics → Built reusable templates → Transformed delivery model (2 weeks → 2 hours)

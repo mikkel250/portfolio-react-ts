@@ -23,6 +23,8 @@
 .DS_Store
 *.pem
 app/api/lib/workingDocs/*
+knowledge-base/workingDocs/*
+workingDocs/*
 
 # debug
 npm-debug.log*

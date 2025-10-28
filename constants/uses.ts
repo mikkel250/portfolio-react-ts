@@ -8,9 +8,9 @@ export const uses = [
     description: `My primary code editor with extensions for React, TypeScript, and Tailwind CSS. I love the integrated terminal and Git support.`,
   },
   {
-    name: "React & TypeScript",
+    name: "React, Next.js, & TypeScript",
     description:
-      "My go-to stack for frontend development. I use React for UI components and TypeScript for type safety and better developer experience.",
+      "My go-to stack for frontend development. I use React for UI components, Next.js for server-side rendering, routing, and API routes, easy project launch and deployment to Vercel, with TypeScript for type safety and better developer experience.",
   },
   {
     name: "Shopify & Liquid",

@@ -2,6 +2,24 @@ import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
 import { GoogleGenAI } from '@google/genai';
 
+// Configuration helper
+function getLLMConfig() {
+  // Parse max tokens from env (supports different values for different models)
+  const maxTokens = process.env.AI_MAX_TOKENS 
+    ? parseInt(process.env.AI_MAX_TOKENS, 10) 
+    : 8192; // Default for Flash and most models
+  
+  // Temperature from env (defaults to lower for reduced hallucinations)
+  const temperature = process.env.AI_TEMPERATURE 
+    ? parseFloat(process.env.AI_TEMPERATURE) 
+    : 0.3; // Lower default to reduce hallucinations
+  
+  return { maxTokens, temperature };
+}
+
+// Export config helper for use in routes
+export const LLM_CONFIG = getLLMConfig();
+
 // Types for our chat interface
 export interface ChatMessage {
   role: 'system' | 'user' | 'assistant';
@@ -60,11 +78,12 @@ async function callOpenAI(
   systemPrompt: string,
   options: ChatOptions = {}
 ): Promise<ChatResponse> {
-  // Default options
+  // Default options from env or fallback values
+  const { maxTokens: defaultMaxTokens, temperature: defaultTemperature } = getLLMConfig();
   const {
-    temperature = 0.7,
-    maxTokens = 8192,
-    model = process.env.AI_MODEL || process.env.AI_MODEL_FALLBACKS,
+    temperature = defaultTemperature,
+    maxTokens = defaultMaxTokens,
+    model = process.env.AI_MODEL || process.env.AI_MODEL_FALLBACKS || 'gpt-4o-mini',
   } = options;
 
   // Format messages - handle both user strings and full message objects
@@ -117,7 +136,8 @@ async function callAnthropic(
   systemPrompt: string,
   options: ChatOptions
 ): Promise<ChatResponse> {
-  const { temperature = 0.7, maxTokens = 8192, model = 'claude-haiku-4-5-20251001' } = options;
+  const { maxTokens: defaultMaxTokens, temperature: defaultTemperature } = getLLMConfig();
+  const { temperature = defaultTemperature, maxTokens = defaultMaxTokens, model = 'claude-haiku-4-5-20251001' } = options;
 
   // format messages
   const formattedMessages: ChatMessage[] = messages.map((msg) => {
@@ -174,7 +194,9 @@ async function callGoogle(
   systemPrompt: string,
   options: ChatOptions
 ): Promise<ChatResponse> {
-  const { temperature = 0.7, maxTokens = 8192, model = 'gemini-2.5-pro' } = options;
+  // Use lower temperature for Gemini Pro to reduce hallucinations
+  const { maxTokens: defaultMaxTokens, temperature: defaultTemperature } = getLLMConfig();
+  const { temperature = defaultTemperature, maxTokens = defaultMaxTokens, model = 'gemini-2.5-pro' } = options;
 
   // format messages
   const formattedMessages: ChatMessage[] = messages.map((msg) => {
@@ -189,22 +211,25 @@ async function callGoogle(
     return { role: 'user', content: (msg as any).content || String(msg) };
   });
 
-  // google doesn't use a system prompt, inject it as first user message
-  const combinedMessage = `${systemPrompt}\n\n${formattedMessages[0]?.content || ''}`;
+  // Build conversation history for context awareness
+  // Include system prompt at the start for better grounding
+  let fullPrompt = `${systemPrompt}\n\n---\n\nConversation History:\n`;
   
-  // For @google/genai, we need to format messages as a single content string
-  const contents = formattedMessages.length > 1 
-    ? formattedMessages.map(msg => msg.content).join('\n\n')
-    : combinedMessage;
+  // Add conversation history (exclude the last message which is the current query)
+  for (let i = 0; i < formattedMessages.length - 1; i++) {
+    const msg = formattedMessages[i];
+    const role = msg.role === 'user' ? 'User' : 'Assistant';
+    fullPrompt += `${role}: ${msg.content}\n\n`;
+  }
+  
+  // Add current user message
+  fullPrompt += `User: ${formattedMessages[formattedMessages.length - 1]?.content || ''}`;
 
-  // Call the new @google/genai API
+  // Call the @google/genai API
   const response = await google.models.generateContent({
     model: model,
-    contents: contents,
+    contents: fullPrompt,
     config: {
-      thinkingConfig: {
-        thinkingBudget: -1, // Dynamic: model adjusts based on prompt complexity
-      },
       temperature,
       maxOutputTokens: maxTokens,
     },

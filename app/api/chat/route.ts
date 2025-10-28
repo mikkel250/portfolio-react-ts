@@ -130,9 +130,9 @@ export async function POST(request: NextRequest) {
     }
     //=========
     // call LLM with conversation history
+    // Temperature and maxTokens come from environment variables (AI_TEMPERATURE, AI_MAX_TOKENS)
+    // or use defaults configured in lib/llm.ts
     const llmResponse = await chat(messages, systemPrompt, {
-      temperature: 0.7,
-      maxTokens: 8192,
       model: process.env.AI_MODEL || process.env.AI_MODEL_FALLBACKS, // Easy model switching via env var
     });
 

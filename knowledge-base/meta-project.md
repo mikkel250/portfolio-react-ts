@@ -1,8 +1,11 @@
 # About This AI Recruiting Assistant
 
+**Last Updated:** October 28, 2025  
+**Version:** 2.0
+
 ## What You're Using Right Now
 
-You're currently interacting with an AI recruiting assistant I built to serve dual purposes: demonstrating practical AI/LLM integration skills and providing an interactive tool for recruiters to learn about my background efficiently.
+You're currently interacting with an AI recruiting assistant Mikkel built to serve dual purposes: demonstrating practical AI/LLM integration skills and providing an interactive tool for recruiters to learn about his background efficiently.
 
 **This is a working product, not a prototype.** Every technical decision you see - from the model choice to the architecture - was made deliberately to showcase engineering judgment alongside technical capability.
 
@@ -77,7 +80,7 @@ You're currently interacting with an AI recruiting assistant I built to serve du
 
 **Demonstrates:** Avoiding premature optimization, shipping with minimum viable solution, making data-driven decisions about when to add complexity. This is senior engineering judgment - recognizing when "simple" beats "sophisticated."
 
-**Interview angle:** "I almost over-engineered this with a full vector database and embeddings. Then I realized my knowledge base is tiny - why build infrastructure for millions of documents when I have 10 pages? Keyword matching works fine for MVP. If usage data shows semantic search would help, I can add it later. This restraint - not building what you don't need yet - is what separates shipping from endless optimization."
+**Interview angle (for AI to summarize):** Mikkel almost over-engineered this with a full vector database and embeddings. Then he realized his knowledge base is tiny - why build infrastructure for millions of documents when he has 10 pages? Keyword matching works fine for MVP. If usage data shows semantic search would help, it can be added later. This restraint - not building what you don't need yet - is what separates shipping from endless optimization.
 
 ### Why Stateless Rate Limiting?
 
@@ -295,9 +298,9 @@ Each upgrade would be data-driven based on actual usage patterns. For example:
 
 ### Value to Employers
 
-**This project proves I can build AI features for your business.**
+**This project proves Mikkel can build AI features for your business.**
 
-**What I've demonstrated:**
+**What Mikkel has demonstrated:**
 - Built complete multi-provider AI chat feature from scratch in 3-4 weeks
 - Production-ready: three-state widget, rate limiting, professional UI
 - Cost-optimized: ~$0-2.50/month operating cost using free tier + intelligent fallback
@@ -314,10 +317,10 @@ Each upgrade would be data-driven based on actual usage patterns. For example:
 
 **Immediate Value if Hired:**
 
-This project proves I can deliver production AI features from day one. If your company needs AI chat, customer support automation, knowledge base assistants, or similar features - I've already built one. I can start implementing similar functionality immediately with minimal operating costs (typically under $10/month for MVP deployment).
+This project proves Mikkel can deliver production AI features from day one. If your company needs AI chat, customer support automation, knowledge base assistants, or similar features - he's already built one. He can start implementing similar functionality immediately with minimal operating costs (typically under $10/month for MVP deployment).
 
 **What this means for employers:**
-- **No learning curve** - I've architected and built this before
+- **No learning curve** - Mikkel has architected and built this before
 - **No expensive agency contracts** - Save the $10-50K+ agencies charge for this
 - **No risky experimentation** - Proven architecture, known costs, clear upgrade paths
 - **Start contributing immediately** - Can begin building AI features on day one
@@ -325,13 +328,13 @@ This project proves I can deliver production AI features from day one. If your c
 
 **MVP Strategy Applies to Company Features:**
 
-The approach I used here - cheapest viable model, simple retrieval, generous limits - is precisely how I'd build AI features at a startup or mid-sized company.
+The approach Mikkel used here - cheapest viable model, simple retrieval, generous limits - is precisely how he would build AI features at a startup or mid-sized company.
 
 **Example scenario at a company:**
 - Product wants AI feature for customer support
 - Junior approach: "Let's use GPT-4 and build a full RAG system with Pinecone! Probably $500-1000/month."
-- **My approach:** "Let's start with Google's free tier and simple retrieval. Costs $0/month to validate. If customers engage and we see value, we can add paid providers as fallback. Why spend $500/month on infrastructure before proving it works?"
+- **Mikkel's approach:** "Let's start with Google's free tier and simple retrieval. Costs $0/month to validate. If customers engage and we see value, we can add paid providers as fallback. Why spend $500/month on infrastructure before proving it works?"
 
-**This thinking saves companies money and reduces risk.** I've seen too many projects fail because teams over-engineered before validating user interest. Ship cheap, learn from real usage, iterate based on data.
+**This thinking saves companies money and reduces risk.** Mikkel has seen too many projects fail because teams over-engineered before validating user interest. Ship cheap, learn from real usage, iterate based on data.
 
-**Interview talking point:** "This AI assistant proves I can build production AI features for your company. It demonstrates not just technical capability but also cost-conscious decision-making and MVP strategy. Every technical decision here - from model choice to architecture - is one I'd make in a real business environment with budgets and deadlines. If your company wants to add AI features, I've literally done it already."
+**Interview talking point (for AI to summarize):** This AI assistant proves Mikkel can build production AI features for your company. It demonstrates not just technical capability but also cost-conscious decision-making and MVP strategy. Every technical decision here - from model choice to architecture - is one he would make in a real business environment with budgets and deadlines. If your company wants to add AI features, Mikkel has literally done it already.
