@@ -30,8 +30,8 @@ Software engineer with 5 years of professional experience across diverse technol
 ### JavaScript Frameworks & Libraries
 
 **React Ecosystem (Primary Expertise):**
-- **React:** 16, 17, 18 - Hooks, Context, component composition, performance optimization
-- **Next.js:** 13, 14 - App router, server components, API routes, SSG/SSR
+- **React:** - Hooks, Context, component composition, performance optimization
+- **Next.js:** - App router, server components, API routes, SSG/SSR
 - **React Router:** Client-side routing, navigation
 - **Redux:** State management for complex applications
 - **Hooks:** Custom hooks, useState, useEffect, useContext, performance hooks
@@ -94,22 +94,22 @@ Software engineer with 5 years of professional experience across diverse technol
 
 ## AI & Machine Learning
 
-### LLM Integration & Generative AI
+### LLM Integration & Generative AI (Personal Project - Portfolio Website)
 - **OpenAI API:** Google Gemini 2.5, Anthropic Claude, OpenAI GPT-4, GPT-4o-mini, chat completions, streaming responses, token optimization
 - **Prompt Engineering:** System prompts, context injection, guardrails, few-shot examples
 - **RAG Systems:** Knowledge base retrieval, semantic search concepts, context management
-- **Production AI Applications:** Built AI recruiting assistant with conversational interface
+- **Production AI Applications:** Built AI recruiting assistant with conversational interface that is currently live in production **(Personal Project - Portfolio site, October 2025)**
 - **Cost Optimization:** Model selection, rate limiting, usage monitoring
 
 ### AI Development Tools
 - **Model Context Protocol (MCP):** Early adopter, AI workflow orchestration
-- **AI Agent Development:** Conversational interfaces, state management, user experience
-- **Practical ML Applications:** Integrating ML/AI into real products, not just experiments
+- **AI Agent Development:** Conversational interfaces, state management, user experience on personal portfolio site with AI Assistant **(Personal Project)**
+- **Practical ML Applications:** Integrating ML/AI into real production site on personal portfolio site with AI Assistant **(Personal Project)**
 
 ### Other AI/ML Experience
 - **Image Recognition:** Clarifai API integration for face detection **(Personal Project)**
 - **Stable Diffusion:** Early adopter, local instance experimentation **(Personal)**
-- **Generative AI:** Practical applications in production environments **(Professional - This AI Assistant, October 2025)**
+- **Generative AI:** Practical applications in production environments **(Personal Project - AI Assistant in portfolio, October 2025)**
 
 ---
 
@@ -117,13 +117,12 @@ Software engineer with 5 years of professional experience across diverse technol
 
 ### Version Control & Collaboration
 - **Git:** Advanced workflows, branching strategies, PR reviews, conflict resolution
-- **GitHub:** Actions (CI/CD), project management, collaboration
+- **GitHub:** Version control, project management, collaboration
 - **GitLab:** CI/CD pipelines, repository management
 - **Bitbucket:** Repository hosting, pipelines
 - **Google Piper:** Google-scale version control (from Intrinsic)
 
 ### CI/CD & Deployment
-- **GitHub Actions:** Automated testing, deployment pipelines
 - **CI/CD Design:** Built pipelines from scratch, automated workflows
 - **Deployment Automation:** Zero-downtime deployments, staging environments
 
@@ -135,7 +134,6 @@ Software engineer with 5 years of professional experience across diverse technol
 - **Netlify:** Static site hosting, continuous deployment
 
 ### Containerization & Orchestration
-- **Docker:** Containerization, multi-stage builds, development environments
 - **Kubernetes:** Container orchestration (from Intrinsic/Google experience)
 
 ---
@@ -152,8 +150,8 @@ Software engineer with 5 years of professional experience across diverse technol
 ### Testing & Quality Assurance
 - **Jest:** Unit testing, mocking, coverage reporting, test-driven development
 - **Jasmine/Karma:** Angular testing frameworks (from Intrinsic)
-- **Testing Strategy:** Established test infrastructure from scratch (0% → 85% coverage)
-- **Axe DevTools:** Accessibility testing and WCAG compliance validation
+- **Testing Strategy:** Established test infrastructure from scratch, set up CI/CD integration with npm test commands
+- **Axe/WAVE DevTools:** Accessibility testing and WCAG compliance validation
 - **Lighthouse/PageSpeed:** Performance testing and optimization
 
 ### Development Environments
@@ -276,11 +274,11 @@ Software engineer with 5 years of professional experience across diverse technol
 
 ## Recently Completed & Active Projects (As of October 2025)
 
-### Recently Shipped to Production
-- **AI/LLM Integration:** Built production AI recruiting assistant **(Completed October 2025)**
+### Recently Shipped to Production (Personal Projects)
+- **AI/LLM Integration:** Built AI recruiting assistant for portfolio site **(Personal Project - Completed October 2025)**
 - **Modern UI Libraries:** Aceternity UI, advanced Framer Motion patterns **(Live in portfolio, October 2025)**
-- **Serverless Architecture:** Vercel functions, edge computing **(Deployed October 2025)**
-- **Next.js 14:** App router, server components, streaming **(Production use, October 2025)**
+- **Serverless Architecture:** Vercel functions, edge computing **(Deployed in portfolio, October 2025)**
+- **Next.js 14:** App router, server components, streaming **(Personal project use, October 2025)**
 
 ### Areas of Active Interest
 - **AI Agent Development:** Conversational interfaces, RAG systems, prompt engineering **(Actively using)**
@@ -315,7 +313,7 @@ Technologies used in employment, contract work, or paid freelance projects - pro
 
 **APIs & Services:** Shopify APIs, Tessitura CRM, GraphQL, RESTful APIs, Stripe, Twilio, Google Maps, Clarifai
 
-**DevOps/Cloud:** Git, GitHub, GitLab, Bitbucket, AWS (EC2, S3), Azure DevOps, Vercel, Docker, Kubernetes
+**DevOps/Cloud:** Git, GitHub, GitLab, Bitbucket, AWS (EC2, S3), Azure DevOps, Vercel, Kubernetes
 
 **Build/Test:** Webpack, Jest, Jasmine/Karma, Bazel (Google), Lighthouse, Axe DevTools
 
@@ -333,7 +331,7 @@ Technologies explored through unpaid side projects, demonstrating initiative and
 **Python:** Scripting, automation, data analysis (personal projects only - no professional production use), Django
 
 **AI/ML Integration:** OpenAI API, LLM integration, RAG systems, prompt engineering
-- *Note: Actively transitioning to professional through AI recruiting assistant project*
+- *Note: AI recruiting assistant is a personal project (portfolio site), not professional work*
 
 **Experimental:** Various emerging technologies and frameworks for learning
 
@@ -384,7 +382,7 @@ Technologies explored through unpaid side projects, demonstrating initiative and
 
 **Technologies:**
 - **React:** 3 professional roles (Kul, Dental Game Plan, Jefferson Health) totaling ~3 years, built component libraries, state management at scale, performance optimization
-- **JavaScript/TypeScript:** Used across all 5 professional roles spanning 5 years, from vanilla JS to TypeScript 5, strict typing in 100k+ line codebases
+- **JavaScript:** Used across all 5 professional roles spanning 5 years, from vanilla JS to TypeScript 5, strict typing in 100k+ line codebases
 - **HTML5/CSS3/SCSS:** Core of every professional role over 5 years, accessibility expertise (WCAG 2.1 AA), responsive design mastery, BEM methodologies
 - **Git/Version Control:** Used professionally across all 5 roles over 5 years, established workflows, trained teams, advanced branching strategies
 - **Performance Optimization:** Achieved 18-25% improvements across multiple professional projects, deep expertise in Lighthouse, Core Web Vitals
@@ -396,15 +394,8 @@ Technologies explored through unpaid side projects, demonstrating initiative and
 
 **Technologies:**
 - **Shopify:** 2 professional roles (Kul 2020-2021, Jefferson Health 2021-2023) totaling ~2.5 years, learned from zero to expert, led platform migration
-- **Angular:** 1 professional role (Intrinsic/Google 2023), shipped production code in 3 weeks, 100% test coverage, Google-scale development
 - **ASP.NET Core/Razor Pages:** 1 professional role (SFMOMA 2023-2025) totaling 1.5 years, sole frontend engineer, complex CRM integrations
 - **Node.js:** Multiple professional roles
-- **Jekyll:** 1 professional role (Dental Game Plan 2021), became sole owner of custom SSG framework, built 6 production sites
-- **PostgreSQL/SQL Server:** Professional use across multiple roles, complex queries
-- **Dune Analytics SQL:** Paid freelance work, built 4 dashboards with 28 background queries analyzing DeFi protocols
-- **AWS:** Professional deployment across multiple roles (EC2, S3, CloudFront)
-- **Azure DevOps:** Professional use at SFMOMA
-- **Jest:** Introduced and established testing infrastructure from scratch at multiple companies
 - **CI/CD Pipelines:** Built from scratch at Jefferson Health, professional use across roles
 - **Webpack/Bazel:** Professional build system experience including Google-scale Bazel
 
@@ -412,14 +403,22 @@ Technologies explored through unpaid side projects, demonstrating initiative and
 **Criteria:** Professional use in production or substantial personal projects
 
 **Technologies:**
-- **Next.js:** Professional experience for React project scaffolding, personal projects and integrating into portfolio redesign (professional application in progress)
-- **Redux:** Professional use in eCommerce and complex state management scenarios
+- **TypeScript:** Used across multiple professional roles and personal projects.
+- **Next.js:** Professional experience for React project scaffolding, personal projects and integrating into portfolio redesign
+- **Angular:** 1 professional role (Intrinsic/Google 2023), shipped production code in 3 weeks, 100% test coverage, Google-scale development
 - **GraphQL:** Personal project implementation (eCommerce store)
+- **Redux:** Personal project implementation in eCommerce and complex state management scenarios
 - **Material UI:** Professional use at Intrinsic (Google)
 - **Tailwind CSS:** Current project use
 - **RxJS:** Professional use at Intrinsic for reactive programming
-- **Docker/Kubernetes:** Professional exposure at Intrinsic (Google infrastructure)
+- **Kubernetes:** Professional exposure at Intrinsic (Google infrastructure) - container orchestration
+- **PostgreSQL/SQL Server:** Professional use across multiple roles, complex queries
+- **Dune Analytics SQL:** Paid freelance work, built 4 dashboards with 28 background queries analyzing DeFi protocols
 - **Vercel:** Extensive personal project deployment experience, serverless functions
+- **Jekyll:** 1 professional role (Dental Game Plan 2021), became sole owner of custom SSG framework, built 6 production sites
+- **AWS:** Professional deployment across multiple roles (EC2, S3, CloudFront)
+- **Azure DevOps:** Professional use at SFMOMA
+- **Jest:** Introduced and established testing infrastructure from scratch, including CI/CD integration setup
 - **Framer Motion:** Current personal project implementation in portfolio and AI assistant
 - **Bootstrap:** Professional use in multiple roles and personal projects
 - **Stripe API:** Project integration (in eCommerce project)
@@ -431,10 +430,10 @@ Technologies explored through unpaid side projects, demonstrating initiative and
 **Criteria:** Learning phase, limited use in personal projects only, or very limited professional exposure
 
 **Technologies:**
-- **OpenAI API/LLM Integration:** **(PROFESSIONAL APPLICATION)** Built production AI recruiting assistant (October 2025), deployed and functional
-- **RAG Systems:** **(PROFESSIONAL APPLICATION)** Implemented in AI recruiting assistant (October 2025)
-- **Prompt Engineering:** **(PROFESSIONAL APPLICATION)** Active use through AI assistant development (October 2025)
-- **Aceternity UI:** **(PROFESSIONAL APPLICATION)** Current project implementation in portfolio (October 2025)
+- **OpenAI API/LLM Integration:** **(PERSONAL PROJECT)** Built AI recruiting assistant for portfolio site (October 2025), deployed and functional
+- **RAG Systems:** **(PERSONAL PROJECT)** Implemented in AI recruiting assistant for portfolio (October 2025)
+- **Prompt Engineering:** **(PERSONAL PROJECT)** Active use through AI assistant development for portfolio (October 2025)
+- **Aceternity UI:** **(PERSONAL PROJECT)** Current project implementation in portfolio (October 2025)
 - **Solidity/Ethereum/Web3.js:** **(PERSONAL ONLY - NO PROFESSIONAL USE)** Personal smart contract projects, NOT used professionally
 - **Three.js:** **(PERSONAL PROJECTS)** 3D visualizations, limited professional use at SFMOMA
 - **D3.js/c3.js:** **(PERSONAL PROJECTS)** Data visualizations and some professional visualization work
@@ -483,9 +482,7 @@ Technologies explored through unpaid side projects, demonstrating initiative and
 - Many successful engineers are self-taught (examples: David Heinemeier Hansson, John Carmack started young)
 - What matters: Can you ship reliable, maintainable code? (Yes - 5 years of evidence)
 - Non-CS backgrounds bring diverse problem-solving approaches
-
-**If Asked Directly:**
-> "I took a non-traditional path into software engineering through a bootcamp and extensive self-teaching. What I may lack in formal CS theory, I make up for with 5 years of professional production experience, rapid learning ability, and a track record of shipping reliable code. I've learned algorithms and data structures through practical application, and I'm always eager to deepen my theoretical knowledge when it benefits the work."
+- Many transferrable skills acquired while working other fields
 
 ---
 
@@ -499,10 +496,10 @@ Technologies explored through unpaid side projects, demonstrating initiative and
 - Mention personal projects as reinforcement if relevant
 
 **If technology is in Personal Projects only (e.g., Python):**
-- Be transparent: "My [technology] experience is from personal projects, not professional production environments"
-- Show capability: Describe what you've built and learned
+- Be transparent: "Mikkel's [technology] experience is from personal projects, not professional production environments"
+- Show capability: Describe what he built and learned
 - Provide evidence of rapid learning: Reference Angular (learned enough to start shipping production code in ~3 weeks) or ASP.NET, Shopify, Jekyll examples
-- Be confident: "Haven't used professionally YET, but proven track record of rapid technology adoption"
+- Be confident: "Hasn't used professionally YET, but proven track record of rapid technology adoption"
 - Respect their criteria: Don't argue, acknowledge professional experience matters for depth
 
 **Addressing the Professional vs Personal Distinction:**
@@ -517,4 +514,4 @@ Technologies explored through unpaid side projects, demonstrating initiative and
 - Lead with professional strengths
 - Demonstrate rapid learning ability with evidence
 - Don't oversell personal project experience as equivalent to professional
-- Be confident in capability without claiming expertise you don't have
+- Be confident in capability without claiming expertise he doesn't have
