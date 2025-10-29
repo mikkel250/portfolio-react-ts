@@ -18,7 +18,7 @@ AI-powered recruiting assistant that analyzes job descriptions and answers quest
 
 
 ### Technologies
-Next.js 14, React 18, TypeScript 5, Vercel Serverless Functions (Node.js runtime), multiple LLM APIs (Google, Anthropic, OpenAI), Tailwind CSS, Framer Motion, Aceternity UI
+Next.js 14, React 18, TypeScript 5, Next.js API Routes (Node.js runtime), multiple LLM APIs (Google, Anthropic, OpenAI), Tailwind CSS, Framer Motion, Aceternity UI
 
 ### Key Features
 - Three-state expandable chat widget (minimized, compact, maximized)

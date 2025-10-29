@@ -23,7 +23,7 @@ You're currently interacting with an AI recruiting assistant Mikkel built to ser
 - Fully responsive (mobile = full-screen compact mode)
 
 **Backend:**
-- Vercel Serverless Functions (Node.js runtime)
+- Next.js API Routes (deployed as Vercel Serverless Functions with Node.js runtime)
 - Multi-provider LLM architecture (Google Gemini, Anthropic Claude, OpenAI)
 - Intelligent provider selection with cost optimization (should cost close to $0/mo to run MVP unless users exceed 100/month, a good problem to have)
 - Simple keyword-based RAG (retrieval-augmented generation)
