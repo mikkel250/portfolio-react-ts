@@ -100,6 +100,7 @@ Software engineer with 5 years of professional experience across diverse technol
 - **RAG Systems:** Knowledge base retrieval, semantic search concepts, context management
 - **Production AI Applications:** Built AI recruiting assistant with conversational interface that is currently live in production **(Personal Project - Portfolio site, October 2025)**
 - **Cost Optimization:** Model selection, rate limiting, usage monitoring
+- **Production LLM Observability:** LangSmith integration for real-time tracing, performance monitoring, and analytics **(Personal Project - December 2024)**
 
 ### AI Development Tools
 - **Model Context Protocol (MCP):** Early adopter, AI workflow orchestration

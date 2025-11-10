@@ -123,8 +123,8 @@ export async function POST(request: NextRequest) {
     // Try to read the file directly
     try {
       const envContent = fs.readFileSync(envPath, 'utf8');
-      console.log('🔧 .env.local content preview:', envContent.substring(0, 200));
-      console.log('🔧 Contains AI_MODEL:', envContent.includes('AI_MODEL'));
+      // console.log('🔧 .env.local content preview:', envContent.substring(0, 200));
+      // console.log('🔧 Contains AI_MODEL:', envContent.includes('AI_MODEL'));
     } catch (error) {
       console.log('🔧 Error reading .env.local:', error instanceof Error ? error.message : String(error));
     }
@@ -142,7 +142,8 @@ export async function POST(request: NextRequest) {
       usage: llmResponse.usage,
       model: llmResponse.model,
       remaining: rateLimit.remaining,
-      resetTime: rateLimit.resetTime
+      resetTime: rateLimit.resetTime,
+      traceUrl: `https://smith.langchain.com/projects/${process.env.LANGSMITH_PROJECT_NAME}`
     });
 
   } catch (error: any) {

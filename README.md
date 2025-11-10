@@ -1,4 +1,32 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Portfolio Website with AI Recruiting Assistant
+
+This is a [Next.js](https://nextjs.org/) portfolio website featuring a production-grade AI recruiting assistant built to demonstrate advanced LLM integration skills and provide recruiters with an interactive way to learn about Mikkel's background.
+
+## Key Features
+
+### 🤖 AI Recruiting Assistant
+- **Multi-Provider LLM Architecture**: Unified abstraction layer supporting Google Gemini, Anthropic Claude, and OpenAI
+- **Intelligent Fallback**: Automatic provider switching for reliability and cost optimization
+- **Production Observability**: LangSmith integration for real-time tracing, token monitoring, and performance analytics
+- **Keyword-Based RAG**: Lightweight knowledge retrieval system optimized for small content bases
+- **Cost-Optimized**: ~$0-2.50/month operating costs using free tiers and intelligent provider selection
+
+### 🛠 Technical Stack
+- **Frontend**: Next.js 15, React 18, TypeScript, Tailwind CSS, Framer Motion
+- **Backend**: Next.js API Routes, Serverless Functions
+- **AI/LLM**: Google Gemini 2.5, Anthropic Claude, OpenAI GPT-4o
+- **Observability**: LangSmith for production monitoring
+- **Deployment**: Vercel
+
+### 📊 LangSmith Integration
+The project includes enterprise-grade LLM observability with LangSmith:
+- Real-time tracing of all AI interactions
+- Token usage and cost tracking across providers
+- Performance monitoring and latency analysis
+- Response quality metrics
+- Data-driven optimization insights
+
+See [knowledge-base/meta-project.md](./knowledge-base/meta-project.md) for detailed technical documentation.
 
 ## Getting Started
 

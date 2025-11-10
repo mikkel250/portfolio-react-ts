@@ -6,13 +6,19 @@ import { LinkPreview } from "./LinkPreview";
 
 import { BsTerminal } from "react-icons/bs";
 
-export const Projects = () => {
+type ProjectItem = (typeof projects)[number];
+
+export const Projects = ({
+  items = projects,
+}: {
+  items?: ProjectItem[];
+}) => {
   let [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   return (
     <div className="max-w-5xl mx-auto px-8">
       <div className="grid grid-cols-1 md:grid-cols-2  lg:grid-cols-3 gap-10 mt-20">
-        {projects.map((project, idx) => (
+        {items.map((project, idx) => (
           <div
             key={idx}
             className="relative group block p-2"

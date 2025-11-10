@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
 import { GoogleGenAI } from '@google/genai';
+import { traceLLMCall, traceableChat } from './langsmith';
 
 // Configuration helper
 function getLLMConfig() {
@@ -12,7 +13,7 @@ function getLLMConfig() {
   // Temperature from env (defaults to lower for reduced hallucinations)
   const temperature = process.env.AI_TEMPERATURE 
     ? parseFloat(process.env.AI_TEMPERATURE) 
-    : 0.3; // Lower default to reduce hallucinations
+    : 0.3; // Lowered default to reduce hallucinations in Gemini Pro
   
   return { maxTokens, temperature };
 }
@@ -238,7 +239,7 @@ async function callGoogle(
   // Extract response - @google/genai returns text directly
   const content = response.text;
   if (!content) {
-    console.log('🔧 Response structure:', JSON.stringify(response, null, 2));
+    console.log('Response structure:', JSON.stringify(response, null, 2));
     throw new Error('No text content in response from Google');
   }
 
@@ -287,18 +288,18 @@ function buildFallbackChain(primaryModel: string): Array<{ provider: Provider; m
             });
           }
         });
-        console.log(`✅ Loaded ${fallbackModels.length} fallback models from AI_MODEL_FALLBACKS`);
+        console.log(`Loaded ${fallbackModels.length} fallback models from AI_MODEL_FALLBACKS`);
       } else {
-        console.log('⚠️ AI_MODEL_FALLBACKS is not a valid JSON array');
+        console.log('AI_MODEL_FALLBACKS is not a valid JSON array');
       }
     }
   } catch (error) {
-    console.log('⚠️ Failed to parse AI_MODEL_FALLBACKS JSON:', error);
+    console.log('Failed to parse AI_MODEL_FALLBACKS JSON:', error);
   }
   
   // If no fallbacks are configured, add default fallbacks
   if (fallbackChain.length === 1) {
-    console.log('⚠️ No fallback models configured in AI_MODEL_FALLBACKS. Using default fallbacks.');
+    console.log('No fallback models configured in AI_MODEL_FALLBACKS. Using default fallbacks.');
     fallbackChain.push(
       { provider: 'anthropic', model: 'claude-haiku-4-5-20251001', reason: 'Default fallback 1' },
       { provider: 'openai', model: 'gpt-4o', reason: 'Default fallback 2' }
@@ -319,33 +320,47 @@ export async function chat(
   // Build fallback chain from environment variables
   const fallbackChain = buildFallbackChain(primaryModel);
   
-  console.log(`🔄 Fallback chain: ${fallbackChain.map(f => `${f.model} (${f.provider})`).join(' → ')}`);
+  console.log(`Fallback chain: ${fallbackChain.map(f => `${f.model} (${f.provider})`).join(' → ')}`);
 
   let lastError: any = null;
 
   for (let i = 0; i < fallbackChain.length; i++) {
     const { provider, model, reason } = fallbackChain[i];
+    let startTime = Date.now(); // Declare outside try block so it's available in catch
     
     try {
-      console.log(`🔄 Attempting ${provider} (${model}) - ${reason}`);
+      console.log(`Attempting ${provider} (${model}) - ${reason}`);
       
+      // Call provider
       const response = await callProvider(provider, messages, systemPrompt, { ...options, model });
+      
+      // Trace the successful call (fire and forget)
+      traceLLMCall(provider, model, messages as ChatMessage[], systemPrompt, response, startTime, options)
+        .catch(err => console.error('Tracing error:', err));
       
       // Log usage for monitoring
       logUsage(provider, model, response.usage.totalTokens);
       
       if (i > 0) {
-        console.log(`✅ Fallback successful: ${provider} (${model})`);
+        console.log(`Fallback successful: ${provider} (${model})`);
       }
       
       return response;
+      
     } catch (error: any) {
       lastError = error;
-      console.log(`❌ ${provider} failed:`, error.message);
+      console.log(`${provider} failed:`, error.message);
+      
+      // Trace the failure (fire and forget)
+      traceLLMCall(provider, model, messages as ChatMessage[], systemPrompt, {
+        content: `Error: ${error.message}`,
+        usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 }
+      } as ChatResponse, startTime, options)
+        .catch(err => console.error('Tracing error:', err));
       
       // Check if this is a retryable error
       if (isRetryableError(error)) {
-        console.log(`🔄 Retrying with next provider...`);
+        console.log(`Retrying with next provider...`);
         continue;
       } else {
         // Non-retryable error (e.g., invalid API key), don't try other providers

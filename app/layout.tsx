@@ -20,12 +20,14 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-    { url: "/images/my-profile.png", sizes: "32x32", type: "image/png" },
-    { url: "/images/my-profile.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon.ico", type: "image/x-icon" },
     ],
-    shortcut: "/images/my-profile.png",
-    apple: "/images/my-profile.png",
+    shortcut: "/favicon.png",
+    apple: "/favicon.png",
     },
+  manifest: "/site.webmanifest",
 };
 
 export default function RootLayout({

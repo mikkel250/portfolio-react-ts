@@ -17,10 +17,10 @@ Software Engineer with 5 years of hands-on experience shipping production-ready 
 5. **Kul Inc.** (May 2020 - March 2021) = 10 months
 
 ### Key Metrics (Use Exact Numbers)
-- **Performance improvements:** 18% (Kul), 25% (Jefferson Health), 40% API latency reduction (SFMOMA)
+- **Performance improvements:** 18% (Kul), 25% (Jefferson Health)
 - **Jefferson Health IT system:** 72 hours → 24 hours (3X improvement), 40,000 employees impacted
 - **Angular learning:** ~3 weeks to working proficiency at Intrinsic/Google
-- **SFMOMA:** $3 million annual online ticket sales, 50K monthly visitors, 1 year 8 months tenure
+- **SFMOMA:** $3 million annual online ticket sales, 1 year 8 months tenure, expanded museum accessibility to visitors with disabilities through WCAG 2.1 AA compliance, potentially increasing addressable audience by 15%.
 - **Dental Game Plan:** Built 6 sites (40+ pages each), 100% client retention, 8 months tenure
 
 ### ❌ NEVER Say
@@ -108,6 +108,8 @@ Jefferson Health, a 40,000-employee healthcare system and university, needed to 
 - **Implemented Design System:** Collaborated with design team to implement company-wide visual identity on specific digital properties. Delivered pixel-perfect components matching new brand guidelines, ensuring consistency across Jefferson Health web properties serving millions of patients annually.
 
 - **Performance Optimization Success:** Reduced storefront load time by 25% using Lighthouse and PageSpeed insights. Implemented critical CSS inlining, tree shaking, image lazy loading, and JavaScript deferral strategies that improved Core Web Vitals scores from "Needs Improvement" to "Good" across all metrics.
+
+- **Contract extended due to outstanding Performance:** Originally contracted for 4 months, contract was extended an additional 10 months due to outstanding performance during original tenure, for a total of a 14 month contract.
 
 ### Technologies & Skills
 React 18, TypeScript 4, Next.js 13, Shopify Liquid, JavaScript ES6+, SCSS, GitHub Actions, Shopify CLI, GraphQL, Webpack, Lighthouse
