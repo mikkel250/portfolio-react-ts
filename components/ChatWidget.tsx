@@ -61,9 +61,41 @@ export default function ChatWidget() {
     return null;
   }
 
+  // Check if we're on mobile
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      // If we're on mobile and in compact state, switch to maximized
+      if (mobile && widgetState === 'compact') {
+        setWidgetState('maximized');
+      }
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, [widgetState, setWidgetState]);
+
   const handleMinimize = () => setWidgetState('minimized');
-  const handleCompact = () => setWidgetState('compact');
+  const handleCompact = () => {
+    // On mobile, compact state should go to minimized instead
+    if (isMobile) {
+      setWidgetState('minimized');
+    } else {
+      setWidgetState('compact');
+    }
+  };
   const handleMaximize = () => setWidgetState('maximized');
+  const handleOpen = () => {
+    // On mobile, opening should go directly to maximized
+    if (isMobile) {
+      setWidgetState('maximized');
+    } else {
+      setWidgetState('compact');
+    }
+  };
 
   // Determine container classes based on state
   const isCompact = widgetState === 'compact';
@@ -76,7 +108,7 @@ export default function ChatWidget() {
       {widgetState === 'minimized' && (
         <button
           className="chat-widget-btn"
-          onClick={handleCompact}
+          onClick={handleOpen}
           aria-label="Open AI chat assistant"
         >
           <span className="chat-widget-btn__icon">💬</span>
@@ -110,7 +142,7 @@ export default function ChatWidget() {
                 ⛶
               </button>
             )}
-            {isMaximized && (
+            {isMaximized && !isMobile && (
               <button
                 className="chat-widget-modal__control-btn"
                 onClick={handleCompact}
