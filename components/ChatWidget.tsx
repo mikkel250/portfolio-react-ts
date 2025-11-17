@@ -7,12 +7,20 @@ import { useChatWidget } from '@/contexts/AppContext';
 export default function ChatWidget() {
   const { state: widgetState, setState: setWidgetState } = useChatWidget();
   const [mounted, setMounted] = useState(false);
+  // Check if we're on mobile - initialize safely for SSR
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+    // Initialize mobile check on client
+    if (typeof window !== 'undefined') {
+      setIsMobile(window.innerWidth <= 768);
+    }
   }, []);
 
   useEffect(() => {
+    if (!mounted || typeof window === 'undefined') return;
+    
     if (widgetState === 'maximized') {
       // Save current scroll position
       const scrollY = window.scrollY;
@@ -49,22 +57,19 @@ export default function ChatWidget() {
 
     return () => {
       // Cleanup if component unmounts while maximized
-      const body = document.body;
-      body.style.position = '';
-      body.style.top = '';
-      body.style.width = '';
-      body.style.overflow = '';
+      if (typeof window !== 'undefined') {
+        const body = document.body;
+        body.style.position = '';
+        body.style.top = '';
+        body.style.width = '';
+        body.style.overflow = '';
+      }
     };
-  }, [widgetState]);
-
-  if (!mounted) {
-    return null;
-  }
-
-  // Check if we're on mobile
-  const [isMobile, setIsMobile] = useState(false);
+  }, [widgetState, mounted]);
   
   useEffect(() => {
+    if (!mounted || typeof window === 'undefined') return;
+    
     const checkMobile = () => {
       const mobile = window.innerWidth <= 768;
       setIsMobile(mobile);
@@ -76,7 +81,11 @@ export default function ChatWidget() {
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
-  }, [widgetState, setWidgetState]);
+  }, [widgetState, setWidgetState, mounted]);
+
+  if (!mounted) {
+    return null;
+  }
 
   const handleMinimize = () => setWidgetState('minimized');
   const handleCompact = () => {
