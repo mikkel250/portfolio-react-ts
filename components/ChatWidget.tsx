@@ -14,13 +14,46 @@ export default function ChatWidget() {
 
   useEffect(() => {
     if (widgetState === 'maximized') {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
+      // Save current scroll position
+      const scrollY = window.scrollY;
+      const body = document.body;
+      
+      // Prevent scrolling on mobile
+      body.style.position = 'fixed';
+      body.style.top = `-${scrollY}px`;
+      body.style.width = '100%';
+      body.style.overflow = 'hidden';
+      
+      // Prevent touchmove on overlay/modal to stop background scrolling
+      const preventTouchMove = (e: TouchEvent) => {
+        // Allow scrolling within the modal content
+        const target = e.target as HTMLElement;
+        const modalContent = target.closest('.chat-widget-modal__content');
+        if (!modalContent) {
+          e.preventDefault();
+        }
+      };
+      
+      document.addEventListener('touchmove', preventTouchMove, { passive: false });
+      
+      return () => {
+        // Restore scroll position
+        body.style.position = '';
+        body.style.top = '';
+        body.style.width = '';
+        body.style.overflow = '';
+        window.scrollTo(0, scrollY);
+        document.removeEventListener('touchmove', preventTouchMove);
+      };
     }
 
     return () => {
-      document.body.style.overflow = '';
+      // Cleanup if component unmounts while maximized
+      const body = document.body;
+      body.style.position = '';
+      body.style.top = '';
+      body.style.width = '';
+      body.style.overflow = '';
     };
   }, [widgetState]);
 

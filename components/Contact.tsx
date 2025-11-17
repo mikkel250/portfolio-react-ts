@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
 export const Contact = () => {
@@ -7,6 +7,43 @@ export const Contact = () => {
   const [success, setSuccess] = useState<string | null>("");
   const [error, setError] = useState<string | null>("");
   const [loading, setLoading] = useState<Boolean>(false);
+  
+  useEffect(() => {
+    if (open) {
+      // Save current scroll position
+      const scrollY = window.scrollY;
+      const body = document.body;
+      
+      // Prevent scrolling on mobile
+      body.style.position = 'fixed';
+      body.style.top = `-${scrollY}px`;
+      body.style.width = '100%';
+      body.style.overflow = 'hidden';
+      
+      // Prevent touchmove on background
+      const preventTouchMove = (e: TouchEvent) => {
+        // Allow scrolling within the contact form if needed
+        const target = e.target as HTMLElement;
+        const formContent = target.closest('.content');
+        if (!formContent) {
+          e.preventDefault();
+        }
+      };
+      
+      document.addEventListener('touchmove', preventTouchMove, { passive: false });
+      
+      return () => {
+        // Restore scroll position
+        body.style.position = '';
+        body.style.top = '';
+        body.style.width = '';
+        body.style.overflow = '';
+        window.scrollTo(0, scrollY);
+        document.removeEventListener('touchmove', preventTouchMove);
+      };
+    }
+  }, [open]);
+
 
   const [formState, setFormState] = useState({
     email: {

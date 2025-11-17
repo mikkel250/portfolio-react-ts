@@ -2,12 +2,43 @@
 import { Logo } from "@/components/Logo";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { IoIosCloseCircleOutline, IoIosMenu } from "react-icons/io";
 import { CustomLink } from "../CustomLink";
 
 export const MobileNav = ({ navItems }: any) => {
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      // Save current scroll position
+      const scrollY = window.scrollY;
+      const body = document.body;
+      
+      // Prevent scrolling on mobile
+      body.style.position = 'fixed';
+      body.style.top = `-${scrollY}px`;
+      body.style.width = '100%';
+      body.style.overflow = 'hidden';
+      
+      // Prevent touchmove on background
+      const preventTouchMove = (e: TouchEvent) => {
+        e.preventDefault();
+      };
+      
+      document.addEventListener('touchmove', preventTouchMove, { passive: false });
+      
+      return () => {
+        // Restore scroll position
+        body.style.position = '';
+        body.style.top = '';
+        body.style.width = '';
+        body.style.overflow = '';
+        window.scrollTo(0, scrollY);
+        document.removeEventListener('touchmove', preventTouchMove);
+      };
+    }
+  }, [open]);
   const item = {
     exit: {
       opacity: 0,
