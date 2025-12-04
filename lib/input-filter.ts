@@ -118,14 +118,32 @@ function checkSalaryQuery(query: string): JobFilterResult {
 }
 
 function checkRoleMatch(query: string): JobFilterResult {
+  // First, check if this is clearly a software engineering role
+  // If it contains strong software engineering indicators, skip role filtering
+  const softwareEngineeringIndicators = [
+    /\b(engineer|developer|programmer|software|frontend|backend|full.?stack|fullstack)/i,
+    /\b(sdk|api|react|typescript|javascript|node|python|java|go|rust)/i,
+    /\b(code|programming|coding|development|infrastructure|devops)/i,
+    /\b(technical|tech stack|tech stack|architecture|system design)/i,
+  ];
+  
+  const hasSoftwareEngineeringIndicators = softwareEngineeringIndicators.some(pattern => pattern.test(query));
+  
+  // If it has strong software engineering indicators, don't filter it out
+  // This prevents false positives from terms like "delivery" in "CI/CD & Delivery"
+  if (hasSoftwareEngineeringIndicators) {
+    return { shouldProceed: true };
+  }
+  
   // Only filter out obviously non-matching roles, let AI handle nuanced matching
   // These are roles that are clearly not software engineering
+  // Made patterns more specific to avoid false positives (e.g., "delivery driver" not just "delivery")
   const nonMatchingRoles = [
     /\b(medical doctor|physician|surgeon|nurse|healthcare provider)/i,
     /\b(teacher|professor|educator|instructor)/i,
     /\b(lawyer|attorney|legal counsel)/i,
     /\b(accountant|cpa|finance|bookkeeper)/i,
-    /\b(pilot|flight attendant|driver|delivery)/i,
+    /\b(pilot|flight attendant|delivery driver|truck driver|uber driver|taxi driver|bus driver)/i,
     /\b(chef|cook|restaurant|food service)/i,
     /\b(retail|cashier|sales associate)/i,
     /\b(construction|contractor|plumber|electrician)/i,
