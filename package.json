@@ -26,7 +26,7 @@
     "langsmith": "^0.3.76",
     "mini-svg-data-uri": "^1.4.4",
     "moment": "^2.29.4",
-    "next": "^15.5.6",
+    "next": "^15.5.7",
     "nprogress": "^0.2.0",
     "octokit": "^2.0.14",
     "openai": "^6.5.0",
