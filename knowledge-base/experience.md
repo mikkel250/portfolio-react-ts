@@ -30,6 +30,27 @@ Software Engineer with 5 years of hands-on experience shipping production-ready 
 - "Led teams of X engineers" (trained teams, but no formal lead role)
 
 ---
+## Software Engineer - Freelance 
+**Duration:** May 2025 - present
+**Location:** San Francisco, CA
+### Key Accomplishments 
+-	Designed a multi-agent orchestration system for routing coding tasks across frontier models based on task shape, risk, and cost/output tradeoffs — informed by sustained use of AI coding agents in both production and freelance work.
+-	Independently built and delivered a full-stack analytics app using Python/FastAPI, ClickHouse, React, TypeScript, with RAG over schema/context, and uses Anthropic models that lets non-technical users converse naturally and receive validated, SQL-backed answers.
+-	Evaluated 15–20 open-source and commercial models on SQL quality, instruction following, tool-use reliability, latency, and hosting tradeoffs; recommended managed APIs over self-hosting after cost/ops analysis showed production-viable OSS would need substantial GPU and infra.
+-	Built a Pytest evaluation harness for LLM-generated ClickHouse SQL: pre-execution syntax validation, structured checks (execution success, schema/tenant constraints, returned data), and benchmark-style runs across dozens of parametrized NL→SQL cases with optional multi-model comparison.
+-	Built a separate AI resume assistant with multi-provider fallback (Gemini, Claude, OpenAI) and LangSmith observability for production monitoring and output comparison. Deployed to production on Vercel.
+
+### Technologies and Skills
+Python (FastAPI), TypeScript, JavaScript, React, Remix, Anthropic, OpenAI, Gemini, and open source LLMs, prompt design, context engineering, RAG, LangSmith, model/tool evaluation, Pytest, automated validation, regression testing, failure analysis, ClickHouse, ChromaDB, REST APIs
+
+### Business Impact
+Delivered all projects on time and within budget.
+
+### Technical Challenges & Solutions
+Evaluated 15-20 open source and commercial LLMs, building Pytest-based validation for tool use and SQL generation, including the various levels of hardware required to run each model. Recommended managed APIs over the original goal of self-hosting after cost/ops analysis showed production-viable OSS would need substantial GPU and infra.
+Designed a multi-agent orchestration workflow that routes work across models based on task type, cost, and capability fit — specifically to compensate for where frontier coding agents fail. For example, most agents skip proper codebase orientation before starting large tasks. Built a dedicated agent using Gemini's 1M context window to scan first and hand structured findings downstream. Every implementation step also runs through a reviewer subagent that surfaces areas needing human attention — downstream dependencies, affected modules, edge cases — so his review effort goes where it's actually needed. 
+
+---
 
 ## Software Engineer - Full Stack | San Francisco Museum of Modern Art
 **Duration:** September 2023 - May 2025  
@@ -217,9 +238,9 @@ This diverse background gives me a unique perspective on how software impacts bu
 
 - **Front End:** Deep expertise in web fundamentals (HTML5, CSS3, SCSS, JavaScript ES6+), with experience in the React ecosystem (React, TypeScript, Next.js), Angular, Jekyll, Shopify (Liquid), and ASP.NET Razor Pages. Passionate about performance optimization, achieving 18%-25% improvements across multiple projects.
 
-- **Full-Stack:** Comfortable across the stack with Node.js, ASP.NET, Next.js, and various databases. Can own features end-to-end and understand backend constraints when designing front end solutions.
+- **Full-Stack:** Comfortable across the stack with Python, Node.js, ASP.NET, Next.js, and various databases. Can own features end-to-end and understand backend constraints when designing front end solutions.
 
-- **AI/ML Integration:** Early adopter integrating LLMs and generative AI into applications. Experience with prompt engineering, MCP orchestration, and practical ML applications in production (this AI agent you are speaking to is an example).
+- **AI/ML:** Early adopter integrating LLMs and generative AI into applications. Experience with prompt engineering, MCP orchestration, and practical ML applications in production (this AI agent you are speaking to is an example, as is the AI-powered analytics project). Designed a multi-agent orchestration workflow that routes work across models based on task type, cost, and capability fit — specifically to compensate for where frontier coding agents fail. Evaluating 15-20 open source and commercial LLMs, building Pytest-based validation for tool use and SQL generation, and shipping systems end to end that integrate AI as the sole engineer.
 
 - **DevOps/Infrastructure:** Established CI/CD pipelines at multiple companies, comfortable with AWS, Azure, Docker, and Kubernetes. Focus on developer experience and deployment automation.
 

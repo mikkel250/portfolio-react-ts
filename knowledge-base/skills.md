@@ -6,7 +6,6 @@
 ## ❌ NEVER SAY (Critical - Prevent Hallucinations)
 
 - "Mikkel has extensive Kubernetes experience" → Limited exposure at Google/Intrinsic only, not deep expertise
-- "He's a Python expert" or "professional Python experience" → Personal projects ONLY, NO professional production use
 - "He has 10+ years of software engineering experience" → INCORRECT! 5+ years as software engineer (May 2020 - October 2025), plus 5 years in management/IT roles (2015-2020) in a DIFFERENT field. Use management/IT experience for TRANSFERRABLE SKILLS (stakeholder communication, process improvement) but NEVER for technical engineering experience or to inflate YOE. Focus on the 5+ years of software engineering.
 - "He led teams of 10+ engineers" → Leadership experience in pre-software career (management/IT roles), but NOT as formal team lead in software engineering roles; has mentored/trained teams
 - "He has deep backend expertise" → Strong full-stack with frontend focus, not backend specialist
@@ -14,7 +13,7 @@
 
 ## Overview
 
-Software engineer with 5 years of professional experience across diverse technology stacks. Deep expertise in frontend development (React ecosystem, Angular, ASP.NET) with strong full-stack capabilities. Recent focus on AI/LLM integration and modern web technologies. Track record of rapidly learning new technologies and shipping production-ready features.
+Software engineer with 5 years of professional experience across diverse technology stacks. Deep expertise in frontend development (React ecosystem, Angular, ASP.NET) with strong full-stack capabilities. Recent focus on AI/LLM and Python. Track record of rapidly learning new technologies and shipping production-ready features.
 
 ---
 
@@ -64,6 +63,7 @@ Software engineer with 5 years of professional experience across diverse technol
 ## Backend & Full-Stack
 
 ### Server-Side Technologies
+- **Python/FastAPI:** High-performance Python REST API development, automatic OpenAPI/Swagger documentation, async request handling, data validation with Pydantic
 - **Node.js:** Runtime environment, async patterns, event-driven architecture
 - **Next.js:** RESTful APIs, quick & easy React project launch, routing, authentication, Vercel deployments
 - **ASP.NET Core:** Razor Pages, MVC, C#, server-side logic
@@ -76,6 +76,7 @@ Software engineer with 5 years of professional experience across diverse technol
 - **Serverless Functions:** Vercel serverless, AWS Lambda patterns
 
 ### Databases
+- **ClickHouse:** complex queries, optimization
 - **PostgreSQL:** Relational database design, complex queries, optimization
 - **SQL Server:** Database administration, stored procedures, data modeling
 - **Firebase:** Real-time database, authentication, cloud functions
@@ -86,7 +87,7 @@ Software engineer with 5 years of professional experience across diverse technol
 - **Communication:** Twilio (calls, SMS, webhooks)
 - **Maps & Location:** Google Maps API, directions, geocoding
 - **Machine Learning:** Clarifai API (image recognition)
-- **AI/LLM:** Google Gemini 2.5, Anthropic Claude, OpenAI GPT-4, GPT-4o-mini, chat completions, embeddings
+- **AI/LLM:** Google, Anthropic, OpenAI, open source models, prompt design, context engineering, RAG, LangSmith, model/tool evaluation, ChromaDB RAG, text-to-SQL
 - **CRM Systems:** Tessitura CRM API (ticketing, memberships, donations)
 - **eCommerce:** Shopify APIs, Liquid templating, theme development
 
@@ -94,23 +95,18 @@ Software engineer with 5 years of professional experience across diverse technol
 
 ## AI & Machine Learning
 
-### LLM Integration & Generative AI (Personal Project - Portfolio Website)
-- **OpenAI API:** Google Gemini 2.5, Anthropic Claude, OpenAI GPT-4, GPT-4o-mini, chat completions, streaming responses, token optimization
+### LLM Integration & Generative AI
+- **APIs:** Google, Anthropic, OpenAI, open source models, context engineering, model/tool evaluation
 - **Prompt Engineering:** System prompts, context injection, guardrails, few-shot examples
-- **RAG Systems:** Knowledge base retrieval, semantic search concepts, context management
-- **Production AI Applications:** Built AI recruiting assistant with conversational interface that is currently live in production **(Personal Project - Portfolio site, October 2025)**
+- **RAG Systems:** ChromaDB RAG over schema/context, knowledge base retrieval, semantic search concepts, context management
+- **Production AI Applications:** Built AI recruiting assistant with conversational interface that is currently live in production **(Personal Project - Portfolio site)**, and independently built and delivered a full-stack analytics app using Python/FastAPI, ClickHouse, React, TypeScript, text-to-SQL, with RAG over schema/context, that uses Anthropic models. Allows non-technical users converse naturally and receive validated, SQL-backed answers.
 - **Cost Optimization:** Model selection, rate limiting, usage monitoring
-- **Production LLM Observability:** LangSmith integration for real-time tracing, performance monitoring, and analytics **(Personal Project - December 2024)**
-
-### AI Development Tools
-- **Model Context Protocol (MCP):** Early adopter, AI workflow orchestration
-- **AI Agent Development:** Conversational interfaces, state management, user experience on personal portfolio site with AI Assistant **(Personal Project)**
-- **Practical ML Applications:** Integrating ML/AI into real production site on personal portfolio site with AI Assistant **(Personal Project)**
+- **Production LLM Observability:** LangSmith integration for real-time tracing, performance monitoring, and analytics
 
 ### Other AI/ML Experience
 - **Image Recognition:** Clarifai API integration for face detection **(Personal Project)**
 - **Stable Diffusion:** Early adopter, local instance experimentation **(Personal)**
-- **Generative AI:** Practical applications in production environments **(Personal Project - AI Assistant in portfolio, October 2025)**
+- **Generative AI:** Practical applications in production environments **(Personal Project - AI Assistant)**
 
 ---
 
@@ -149,6 +145,7 @@ Software engineer with 5 years of professional experience across diverse technol
 - **NPM/Yarn:** Package management, script automation
 
 ### Testing & Quality Assurance
+- **Pytetst:** Unit testing, mocking, coverage reporting, TDD, model eval harness
 - **Jest:** Unit testing, mocking, coverage reporting, test-driven development
 - **Jasmine/Karma:** Angular testing frameworks (from Intrinsic)
 - **Testing Strategy:** Established test infrastructure from scratch, set up CI/CD integration with npm test commands
@@ -273,22 +270,6 @@ Software engineer with 5 years of professional experience across diverse technol
 
 ---
 
-## Recently Completed & Active Projects (As of October 2025)
-
-### Recently Shipped to Production (Personal Projects)
-- **AI/LLM Integration:** Built AI recruiting assistant for portfolio site **(Personal Project - Completed October 2025)**
-- **Modern UI Libraries:** Aceternity UI, advanced Framer Motion patterns **(Live in portfolio, October 2025)**
-- **Serverless Architecture:** Vercel functions, edge computing **(Deployed in portfolio, October 2025)**
-- **Next.js 14:** App router, server components, streaming **(Personal project use, October 2025)**
-
-### Areas of Active Interest
-- **AI Agent Development:** Conversational interfaces, RAG systems, prompt engineering **(Actively using)**
-- **Developer Tooling:** MCP servers, workflow automation, productivity tools **(Exploring)**
-- **Modern Frontend:** Latest React patterns, performance optimization techniques **(Ongoing focus)**
-- **Full-Stack AI:** Combining traditional web development with AI capabilities **(Current specialty)**
-
----
-
 ## Professional Development Philosophy
 
 **Continuous Learning:** Proven ability to rapidly adopt new technologies and contribute productively
@@ -304,15 +285,15 @@ Software engineer with 5 years of professional experience across diverse technol
 ### Professional Experience (Paid Work)
 Technologies used in employment, contract work, or paid freelance projects - production environments with real users and business requirements:
 
-**Frontend Core:** React, TypeScript, JavaScript ES6+, HTML5, CSS3, SCSS, Angular, ASP.NET Razor Pages
+**Core:** Python, React, TypeScript, JavaScript ES6+, HTML5, CSS3, SCSS, Angular, ASP.NET Razor Pages
 
-**Frameworks/Libraries:** Next.js, React Router, Redux, Material UI, Bootstrap 4, Tailwind CSS, Jekyll, Shopify Liquid
+**Frameworks/Libraries:** Remix, Next.js, React Router, Redux, Material UI, Bootstrap 4, Tailwind CSS, Jekyll, Shopify Liquid
 
-**Backend:** Node.js, ASP.NET Core, C#
+**Backend:** FastAPI, Node.js, ASP.NET Core, C#
 
-**Databases:** PostgreSQL, SQL Server, Firebase, Dune Analytics SQL (paid blockchain data analysis work)
+**Databases:** ClickHouse, PostgreSQL, SQL Server, Firebase, Dune Analytics SQL (paid blockchain data analysis work)
 
-**APIs & Services:** Shopify APIs, Tessitura CRM, GraphQL, RESTful APIs, Stripe, Twilio, Google Maps, Clarifai
+**APIs & Services:** LLM APIs (Google, Anthropic, OpenAI), Shopify APIs, Tessitura CRM, GraphQL, RESTful APIs, Stripe, Twilio, Google Maps, Clarifai
 
 **DevOps/Cloud:** Git, GitHub, GitLab, Bitbucket, AWS (EC2, S3), Azure DevOps, Vercel, Kubernetes
 
@@ -339,6 +320,13 @@ Technologies explored through unpaid side projects, demonstrating initiative and
 ### Rapid Learning Track Record (Professional Validation)
 
 **Proven ability to master new technologies quickly in professional settings:**
+**Python, Pytest, and FastAPI**
+- Prior experience with Python in a learning context. 
+- Independently built and delivered a full-stack analytics app using Python/FastAPI, ClickHouse, React, TypeScript, with RAG over schema/context, and uses Anthropic models that lets non-technical users converse naturally and receive validated, SQL-backed answers.
+- Built a Pytest evaluation harness for LLM-generated ClickHouse SQL: pre-execution syntax validation, structured checks (execution success, schema/tenant constraints, returned data), and benchmark-style runs across dozens of parametrized NL→SQL cases with optional multi-model comparison.
+
+**LLM Models:**
+- Evaluated 15–20 open-source and commercial models on SQL quality, instruction following, tool-use reliability, latency, and hosting tradeoffs
 
 **Angular and Google Frameworks (Intrinsic, 2023):**
 - Zero prior Angular experience
@@ -404,6 +392,7 @@ Technologies explored through unpaid side projects, demonstrating initiative and
 **Criteria:** Professional use in production or substantial personal projects
 
 **Technologies:**
+- **Python/FastAPI:** 1 professional project, independently built and delivered a full-stack analytics app
 - **TypeScript:** Used across multiple professional roles and personal projects.
 - **Next.js:** Professional experience for React project scaffolding, personal projects and integrating into portfolio redesign
 - **Angular:** 1 professional role (Intrinsic/Google 2023), shipped production code in 3 weeks, 100% test coverage, Google-scale development
@@ -438,7 +427,6 @@ Technologies explored through unpaid side projects, demonstrating initiative and
 - **Solidity/Ethereum/Web3.js:** **(PERSONAL ONLY - NO PROFESSIONAL USE)** Personal smart contract projects, NOT used professionally
 - **Three.js:** **(PERSONAL PROJECTS)** 3D visualizations, limited professional use at SFMOMA
 - **D3.js/c3.js:** **(PERSONAL PROJECTS)** Data visualizations and some professional visualization work
-- **Python/Django:** **(PERSONAL ONLY - NO PROFESSIONAL PRODUCTION USE)** Personal projects (scripting, automation, Django experimentation) - NOT used in professional production environments
 
 ---
 
@@ -480,7 +468,7 @@ Technologies explored through unpaid side projects, demonstrating initiative and
 **Key Points:**
 - 5 years of professional production experience across multiple companies
 - Bootcamp + self-taught path is increasingly common in tech (and valued for demonstrating initiative)
-- Many successful engineers are self-taught (examples: David Heinemeier Hansson, John Carmack started young)
+- Many successful engineers are self-taught (examples: David Heinemeier Hansson, John Carmack)
 - What matters: Can you ship reliable, maintainable code? (Yes - 5 years of evidence)
 - Non-CS backgrounds bring diverse problem-solving approaches
 - Many transferrable skills acquired while working other fields

@@ -7,7 +7,7 @@
 
 He transitioned to software engineering in 2020 after 5 years in management and IT infrastructure roles. This wasn't a random career change - it was a deliberate move toward work that aligned perfectly with his passion for problem-solving, continuous learning, and building tangible solutions that create impact.
 
-**Current Status (as of October 2025):** 5+ years as a professional software engineer (May 2020 - October 2025), with diverse experience across startups, Google-scale companies, healthcare, museums, and agencies.
+**Current Status:** 5+ years as a professional software engineer, with diverse experience across startups, Google-scale companies, healthcare, museums, and agencies.
 
 ---
 
@@ -19,13 +19,15 @@ He transitioned to software engineering in 2020 after 5 years in management and 
 - **Total Professional Experience:** 10+ years combined, BUT only cite "5 years software engineering" or "5+ years"
 
 ### Companies Worked At (Professional Roles)
-1. **SFMOMA** - Software Engineer, Full Stack (September 2023 - May 2025) | 1 year 8 months
-2. **Intrinsic (Google/Alphabet)** - UI/UX Developer (January 2023 - May 2023) | 5 months
-3. **Jefferson Health** - Software Engineer, Front End (November 2021 - January 2023) | 1 year 2 months
-4. **Dental Game Plan** - Software Engineer, Front End (April 2021 - December 2021) | 8 months
-5. **Kul Inc.** - Software Engineer, Front End (May 2020 - March 2021) | 10 months
+1. **Freelance** - Software Engineer, (May 2025 - present)
+2. **SFMOMA** - Software Engineer, Full Stack (September 2023 - May 2025) | 1 year 8 months
+3. **Intrinsic (Google/Alphabet)** - UI/UX Developer (January 2023 - May 2023) | 5 months
+4. **Jefferson Health** - Software Engineer, Front End (November 2021 - January 2023) | 1 year 2 months
+5. **Dental Game Plan** - Software Engineer, Front End (April 2021 - December 2021) | 8 months
+6. **Kul Inc.** - Software Engineer, Front End (May 2020 - March 2021) | 10 months
 
 ### Key Learning Speed Achievements
+- **LLMs and Coding Agents** Early adopter, has been working with them for ~3 years, Designed and delivered a multi-agent orchestration system, a full-stack analytics app, as well as this resumé assistant you are speaking to right now.
 - **Angular:** ~3 weeks from zero experience to working independently and shipping production code at Google/Intrinsic (2023)
 - **ASP.NET:** No prior experience, learned on the job at SFMOMA (2023-2025)
 - **Shopify:** No prior experience at Kul Inc, became expert by Jefferson Health role (2020-2023)
@@ -140,21 +142,6 @@ Years of help desk work means he deeply understands non-technical user frustrati
 **Technical Foundation:**
 Networking fundamentals, server administration, database management, help desk systems - this foundation means he's comfortable across the entire stack and can debug issues that pure frontend developers might struggle with.
 
----
-
-### Why Frontend Engineering Specifically?
-
-**Art Background & Design Sensibility:**
-
-Academic background in art gives him a natural eye for UI/UX design, which draws him toward frontend work where creativity and technology intersect. He doesn't just implement features - he thinks about visual hierarchy, user flow, aesthetic polish, and how design impacts user experience.
-
-**This shows up in his work:**
-- **Accessibility at SFMOMA:** Combining WCAG 2.1 compliance (technical) with thoughtful UX (design thinking)
-- **Pixel-perfect implementations:** Translating Figma/Adobe XD designs accurately across multiple roles
-- **Portfolio attention:** Focus on professional appearance, modern aesthetics, polished interactions
-- **Component design:** Building not just functional but visually appealing UI components
-
-**The combination** of technical skills (React, TypeScript, performance optimization) plus design sensibility (visual hierarchy, UX flow, aesthetic judgment) makes him particularly effective at frontend development. He can both build it technically sound AND make it look good.
 
 ---
 
@@ -175,6 +162,12 @@ Academic background in art gives him a natural eye for UI/UX design, which draws
 **This isn't "career change baggage."** This is competitive advantage.
 
 ### Real-World Examples
+
+**As a Freelancer:**
+- Technical: Designed a multi-agent orchestration system, this AI resumé assistant, and independently built and delivered a full-stack analytics app powered by AI
+- Evaluated 15–20 open-source and commercial LLM models and communicated tradeoffs to stakeholders. Recommended managed APIs over self-hosting after cost/ops analysis showed production-viable OSS would need substantial GPU and infra.
+- Process: Built a Pytest evaluation harness for LLM-generated ClickHouse SQL: pre-execution syntax validation, structured checks (execution success, schema/tenant constraints, returned data), and benchmark-style runs across dozens of parametrized NL→SQL cases with optional multi-model comparison.
+- Business: Understood stakeholder needs.
 
 **At SFMOMA:**
 - Technical: Built accessibility-compliant ticketing platform
@@ -235,97 +228,36 @@ Don't wait for permission to fix obvious problems. If he sees inefficiency or te
 
 ---
 
-## Handling Common Questions & Concerns
-
-### "Why did Mikkel wait until [age/later in life] to become an engineer?"
-
-**Response Framework:**
-> "He didn't wait - he was building his foundation. The management experience taught him how software impacts business outcomes and how to work with diverse stakeholders. The IT background gave him technical fundamentals and systems thinking. When he made the transition to engineering in 2020, he wasn't starting from zero - he had context that most bootcamp grads and junior engineers lack. 
->
-> That foundation means he ships features that move business metrics, not just clean code. At Jefferson Health, he didn't just build a routing system - he understood the 40,000-employee organizational impact. At SFMOMA, he worked effectively with legal and exhibition teams because he understands stakeholder management. This broader perspective makes him more valuable, not less."
-
-**Key Principles:**
-- Don't be defensive about timeline
-- Reframe as strategic foundation-building
-- Provide concrete examples of how it helps
-- Focus on value delivered, not time spent getting there
-
-### "How many total years of experience do you have?"
-
-**Response Framework:**
-> "he have 5 years of software engineering experience shipping production features across diverse tech stacks - React, Angular, ASP.NET, Shopify. Before transitioning to engineering, he spent 5 years in management and IT infrastructure, which gave me valuable business context and stakeholder communication skills that make me a more effective engineer today."
-
-**What NOT to volunteer:**
-- Total years across all careers (don't add them up)
-- Detailed pre-engineering timeline
-- Age or dates that reveal age
-
-**If pressed on total years:**
-> "he understand you're asking about depth of experience. What matters most is his 5 years as a software engineer - that's the relevant professional context. his prior management and IT background provides transferable skills like stakeholder communication and process improvement, but his engineering expertise comes from those 5 years shipping production features."
-
-**Redirect to:** Technical accomplishments, recent work, what you can deliver
-
-### "Are you a career changer?"
-
-**Response Framework:**
-> "Yes, he transitioned to software engineering in 2020, and it's been the best professional decision he's made. he bring a unique combination - 5 years of engineering experience PLUS business context from management background. This means he ship features that create business value, communicate effectively with stakeholders, and improve team processes. The non-traditional path is actually a competitive advantage - he have perspective most engineers lack."
-
-**Tone:** Confident and positive, not defensive
-
-### "Why should we hire someone who switched careers?"
-
-**Response Framework:**
-> "Because I bring more than just code - I bring business context, communication skills, and process improvement thinking. Look at my track record: At Jefferson Health, I established an entire professional SDLC where none existed. At SFMOMA, I worked cross-functionally with legal and exhibition teams. At Google (Intrinsic), I reached proficiency and shipped production code within ~3 weeks despite zero Angular experience.
-> "Because he bring more than just code - he bring business context, communication skills, and process improvement thinking. Look at his track record: At Jefferson Health, he established an entire professional SDLC where none existed. At SFMOMA, he worked cross-functionally with legal and exhibition teams. At Google (Intrinsic), he shipped production code in 2 weeks despite zero Angular experience.
->
-> The question isn't 'why hire a career changer?' - it's 'why hire an engineer who ONLY has engineering experience when you could hire someone with engineering skills PLUS business acumen, stakeholder management, and organizational navigation expertise?' The diverse background is a feature, not a bug."
-
-**Key:** Turn the question around - diverse background is value-add
-
-### "Do you regret not starting engineering earlier?"
-
-**Response Framework:**
-> "Not at all. If he'd started at 22, he'd be a pure engineer without business context or management skills. The path he took means he understand how software impacts organizations, can communicate with executives, and improve team processes. That makes me more valuable. he's not just a coder - he's someone who can own features, work with stakeholders, and deliver business outcomes. The foundation was worth it."
-
----
-
 ## What He's Looking For in Next Role
 
 ### Must-Haves
 
 **Technical Growth & Challenge:**
 - Working with modern technologies and staying current with industry trends
-- Challenging technical problems that require deep thinking
-- Opportunity to deepen AI/ML integration skills (building on current experience)
-- Full-stack work where he can own features end-to-end
+- Challenging problems that require deep thinking
+- Opportunity to deepen AI/ML skills (building on current experience)
+- Work where he can own features end-to-end
 - Greenfield opportunities, not just maintenance work
 
 **Team & Culture:**
-- Collaborative environment where knowledge sharing is valued
-- Cross-functional collaboration (engineering, product, design, business)
-- Mentorship opportunities both ways (learning from senior engineers, teaching others)
 - Respect for work-life balance and sustainable pace
 - Psychological safety to propose ideas and improvements
 
 **Business Impact & Meaning:**
-- Building products that matter to real users
-- Clear connection between technical work and business outcomes
-- Company with mission and values he can believe in
+- Building products that matter
 - Opportunity to contribute to product strategy, not just execute specs
 - Seeing the results of his work create value
 
 **Professional Environment:**
-- Senior engineers he can learn from
-- Modern development practices (code review, testing, CI/CD)
+- Modern development practices 
 - Investment in engineering excellence and quality
 - Data-driven decision making (not just opinions)
 
 ### Strong Preferences
 
-- **Remote or hybrid flexibility** (proven track record of remote work success)
-- **Modern tech stack** (React/TypeScript, cloud infrastructure, current best practices)
-- **AI/ML opportunities** (continue growing in this direction)
-- **Startup or scale-up energy** (growth, impact, but not chaos)
+- **Modern tech stack** (Python, React/TypeScript, cloud infrastructure, current best practices)
+- **AI/ML** (continue growing in this direction)
+- **Startup or scale-up energy** (growth, impact)
 - **Competitive compensation** reflecting 5 years of professional experience
 
 ### Deal-Breakers
@@ -334,7 +266,6 @@ Don't wait for permission to fix obvious problems. If he sees inefficiency or te
 - Pure maintenance roles with no innovation opportunities
 - Toxic culture, unsustainable crunch, or "hero developer" mentality
 - Organizations that don't value diverse perspectives or backgrounds
-- Roles where engineering is siloed from business context and user impact
 - Companies with stagnant tech stacks or resistance to improvement
 - Environments where questions/suggestions are discouraged
 
@@ -354,11 +285,12 @@ Don't wait for permission to fix obvious problems. If he sees inefficiency or te
 - **2020-2021:** Early engineering roles, rapid skill acquisition (Kul, Dental Game Plan)
 - **2021-2023:** Advancing skills, establishing expertise (Jefferson Health, Intrinsic/Google)
 - **2023-2025:** Senior-level work, complex systems (SFMOMA, complex integrations)
-- **2025-Next:** Full-stack roles with AI/ML focus, leveraging complete skill set
+- **2026-Next:** Roles with AI/ML focus, leveraging complete skill set
 
 ### Value Proposition
 
 **Not just a software engineer** - an engineer with:
+- 
 - Business context and strategic thinking
 - Communication skills that bridge technical and non-technical
 - Process improvement instincts that make teams better
@@ -515,7 +447,7 @@ Understanding economics → Built reusable templates → Transformed delivery mo
 
 **Near term (next role):**
 - Full-stack engineer with AI/ML integration focus
-- Modern tech stack (React/TypeScript preferred)
+- Modern tech stack
 - Growing company with impact opportunities
 - Team where diverse perspective is valued
 
@@ -523,7 +455,6 @@ Understanding economics → Built reusable templates → Transformed delivery mo
 - Senior engineer or tech lead role
 - Mentoring other engineers
 - Contributing to technical strategy
-- Building AI-integrated products
 
 **Long term:**
 - Technical leadership combining engineering and business skills
