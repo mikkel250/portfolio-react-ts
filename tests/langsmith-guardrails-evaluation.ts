@@ -184,7 +184,7 @@ async function callChatAPI(query: string): Promise<string> {
       throw new Error(`API call failed: ${response.status} - ${errorText}`);
     }
 
-    const data = await response.json();
+    const data = await response.json() as { content?: string };
     return data.content || '';
   } catch (error: any) {
     const errorMsg = error.message || error.toString();

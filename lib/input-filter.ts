@@ -303,8 +303,9 @@ export function filterInput(query: string, conversationHistory: string[]): Filte
     };
   }
 
-  // spam/keyboard mash filter, check for 4+ repeated characters
-  if (/(.)\1{3,}/.test(trimmed)) {
+  // spam/keyboard mash filter - only check for 4+ repeated letters (actual keyboard mashing)
+  // Skip this check for long messages (likely legitimate content like job descriptions)
+  if (trimmed.length <= 200 && /([a-zA-Z])\1{3,}/.test(trimmed)) {
     return {
       shouldCallAPI: false,
       response: "This seems like an invalid input, please ask a complete question.",
@@ -312,23 +313,25 @@ export function filterInput(query: string, conversationHistory: string[]): Filte
     };
   }
 
-  // specific keyboard mash patterns, regex for single or two random letters
-  const keyboardPatterns = [
-    /asdfg/i,
-    /qwerty/i,
-    /zxcvb/i,
-    /mnbvc/i,
-    /poiuyt/i,
-    /lkjhgf/i,
-    /^[a-z]{1,2}$/i,
-  ];
+  // specific keyboard mash patterns - only check short inputs (long content is likely legitimate)
+  if (trimmed.length <= 200) {
+    const keyboardPatterns = [
+      /asdfg/i,
+      /qwerty/i,
+      /zxcvb/i,
+      /mnbvc/i,
+      /poiuyt/i,
+      /lkjhgf/i,
+      /^[a-z]{1,2}$/i,
+    ];
 
-  if (keyboardPatterns.some(pattern => pattern.test(trimmed))) {
-    return {
-      shouldCallAPI: false,
-      response: "Invalid input detected, please ask a complete question or try formulating it again.",
-      reason: "keyboard_mash"
-    };
+    if (keyboardPatterns.some(pattern => pattern.test(trimmed))) {
+      return {
+        shouldCallAPI: false,
+        response: "Invalid input detected, please ask a complete question or try formulating it again.",
+        reason: "keyboard_mash"
+      };
+    }
   }
 
   // generic queries - provide helpful canned response but don't call API
