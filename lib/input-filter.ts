@@ -31,9 +31,9 @@ function isJobDescriptionQuery(query: string): boolean {
     /you'll be working on/i,
     /about the role/i,
     /experience with the following technologies/i,
-    /JD/i,
+    /\bJD\b/i,
     /job description/i,
-    /opportunity/i,
+    /\bopportunity\b/i,
   ];
   
   const matchCount = obviousJD.filter(pattern => pattern.test(query)).length;
@@ -43,15 +43,17 @@ function isJobDescriptionQuery(query: string): boolean {
 }
 
 function isJobRelatedQuery(query: string): boolean {
+  // Word boundaries on short tokens that are easy substring matches otherwise
+  // (e.g. "role" in "console", "office" in "backoffice" only matches as its own word).
   const jobRelatedKeywords = [
-    /job|position|role|opportunity|hiring|recruiting/i,
-    /salary|compensation|pay|rate|range/i,
-    /location|remote|hybrid|onsite|office/i,
-    /work authorization|visa|citizen|sponsor|sponsorship/i,
-    /relocation|relocate/i
+    /\b(job|position|role|opportunity|hiring|recruiting)\b/i,
+    /\b(salary|compensation|pay|rate|range)\b/i,
+    /\b(location|remote|hybrid|onsite|office)\b/i,
+    /\b(work authorization|visa|citizen|sponsor|sponsorship)\b/i,
+    /\b(relocation|relocate)\b/i,
   ];
-  
-  return jobRelatedKeywords.some(pattern => pattern.test(query));
+
+  return jobRelatedKeywords.some((pattern) => pattern.test(query));
 }
 
 function checkWorkAuthorizationQuery(query: string): JobFilterResult {
@@ -165,20 +167,20 @@ function checkRoleMatch(query: string): JobFilterResult {
 }
 
 function checkLocationQuery(query: string): FilterResult {
-  // Check for location-related questions
+  // Tight phrasing + word boundaries: avoid "where the office is located",
+  // "based on X in Y", "olive oil in …", and bare "location" inside words like "collocation".
   const locationPatterns = [
-    /where.*located/i,
-    /where.*he.*located/i,
-    /where.*is.*he/i,
-    /where.*does.*he.*live/i,
-    /where.*is.*mikkel/i,
-    /location/i,
-    /based.*in/i,
-    /live.*in/i,
-    /from.*(where|what city)/i
+    /\bwhere\b.{0,160}?\b(he|mikkel)\b.{0,160}?\b(located|living|lives\s+in|live\s+in|live)\b/i,
+    /\bwhere\s+(is|does)\s+(he|mikkel)\b/i,
+    /\bwhere\b.{0,80}?\b(is|does)\s+mikkel\b/i,
+    /\bwhere\b.{0,120}?\b(is|does)\s+(he|mikkel)\b.{0,120}?\blive\b/i,
+    /\blocation\b/i,
+    /\bbased\s+in\b/i,
+    /\b(lives?|living)\s+in\b/i,
+    /\bfrom\s+(where|what\s+city)\b/i,
   ];
 
-  const hasLocationPattern = locationPatterns.some(pattern => pattern.test(query));
+  const hasLocationPattern = locationPatterns.some((pattern) => pattern.test(query));
   
   if (hasLocationPattern) {
     if (query.length >= 200) {
@@ -201,18 +203,22 @@ function checkWorkArrangementQuery(query: string): FilterResult {
     /\b(w2|w-2|w\s*2)\b/i,
     /\b(c2c|c-2-c|corp.*to.*corp|corp.*corp)\b/i,
     /\bcontract(.*arrangement)?\b/i,
-    /\b(employment.*arrangement|work.*arrangement)\b/i,
-    /can.*he.*work.*(w2|c2c|contract)/i,
-    /(work|available).*on.*(w2|c2c|contract)/i,
-    /(w2|c2c|contract).*arrangement/i,
-    /sole.*proprietorship/i,
-    /billing.*directly/i,
-    /1099/i,
-    /full.*time/i,
-    /ft[ae]/i
+    // Require "work arrangement" / "employment arrangement" as phrases — not "at work … arrangement …"
+    /\b(employment|work)\s+arrangement\b/i,
+    /\bcan\s+he\s+work\b.{0,80}?\b(w2|c2c|contract)\b/i,
+    /\b(work|available)\s+on\s+(a\s+)?(w2|c2c|contract)\b/i,
+    /\b(w2|c2c|contract)\s+arrangement\b/i,
+    /\bsole\s+proprietorship\b/i,
+    /\bbilling\s+directly\b/i,
+    /\b1099\b/i,
+    /\bfull[\s-]*time\b/i,
+    // Match FTE/FTA only as whole tokens — bare /ft[ae]/ matches "fte" inside "after"
+    /\bft[ae]\b/i,
   ];
 
-  const hasWorkArrangementPattern = workArrangementPatterns.some(pattern => pattern.test(query));
+  const hasWorkArrangementPattern = workArrangementPatterns.some((pattern) =>
+    pattern.test(query),
+  );
   
   if (hasWorkArrangementPattern) {
     if (query.length >= 200) {

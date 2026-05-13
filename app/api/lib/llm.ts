@@ -2,6 +2,7 @@ import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
 import { GoogleGenAI } from '@google/genai';
 import { traceLLMCall, traceableChat } from './langsmith';
+import { traceLLMCall as traceLLMCallLangFuse } from './langfuse';
 
 // Configuration helper
 function getLLMConfig() {
@@ -334,9 +335,11 @@ export async function chat(
       // Call provider
       const response = await callProvider(provider, messages, systemPrompt, { ...options, model });
       
-      // Trace the successful call (fire and forget)
+      // Trace the successful call (fire and forget — LangSmith + LangFuse)
       traceLLMCall(provider, model, messages as ChatMessage[], systemPrompt, response, startTime, options)
-        .catch(err => console.error('Tracing error:', err));
+        .catch(err => console.error('Tracing error (LangSmith):', err));
+      traceLLMCallLangFuse(provider, model, messages as ChatMessage[], systemPrompt, response, startTime, options)
+        .catch(err => console.error('Tracing error (Langfuse):', err));
       
       // Log usage for monitoring
       logUsage(provider, model, response.usage.totalTokens);
@@ -356,7 +359,12 @@ export async function chat(
         content: `Error: ${error.message}`,
         usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 }
       } as ChatResponse, startTime, options)
-        .catch(err => console.error('Tracing error:', err));
+        .catch(err => console.error('Tracing error (LangSmith):', err));
+      traceLLMCallLangFuse(provider, model, messages as ChatMessage[], systemPrompt, {
+        content: `Error: ${error.message}`,
+        usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 }
+      } as ChatResponse, startTime, options)
+        .catch(err => console.error('Tracing error (Langfuse):', err));
       
       // Check if this is a retryable error
       if (isRetryableError(error)) {
