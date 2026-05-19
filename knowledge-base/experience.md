@@ -5,7 +5,7 @@
 
 ## Overview
 
-Software Engineer with 5 years of hands-on experience shipping production-ready features across diverse technology stacks, from React/TypeScript at startups to Angular at Google scale to ASP.NET at cultural institutions. Proven track record of rapidly adapting to new technologies, optimizing performance by 18%-25%, and delivering user-facing features that drive measurable business impact.
+Software Engineer with ~6 years of hands-on experience shipping production-ready features across diverse technology stacks, from React/TypeScript at startups to Angular at Google scale to ASP.NET at cultural institutions. Proven track record of rapidly adapting to new technologies, optimizing performance by 18%-25%, and delivering user-facing features that drive measurable business impact.
 
 ## ✅ FACT-CHECK GUIDE (For AI Responses)
 
@@ -224,7 +224,7 @@ Enabled company to rapidly test multiple business models through fast 2-3 week d
 
 ### Pre-Engineering Experience (Brief)
 
-Before transitioning to software engineering, I spent 5 years in management and IT infrastructure roles that provided invaluable business context and leadership skills. As a manager at Marathon Products (2015-2020), I led cross-functional teams, managed stakeholder relationships, and drove process improvements that saved 100+ hours annually. I implemented help desk and bug tracking systems from scratch, improved response times by 50%, and administered ISO 9001 compliance programs.
+Before transitioning to software engineering, I spent ~6 years in management and IT infrastructure roles that provided invaluable business context and leadership skills. As a manager at Marathon Products (2015-2020), I led cross-functional teams, managed stakeholder relationships, and drove process improvements that saved 100+ hours annually. I implemented help desk and bug tracking systems from scratch, improved response times by 50%, and administered ISO 9001 compliance programs.
 
 This diverse background gives me a unique perspective on how software impacts business outcomes. I understand the frustrations of non-technical stakeholders, the importance of clear documentation, and how to translate technical concepts into business value. My management experience means I excel at cross-functional collaboration, mentoring junior developers, and navigating organizational dynamics that pure engineers sometimes struggle with.
 

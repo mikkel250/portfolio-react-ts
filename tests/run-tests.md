@@ -42,7 +42,7 @@ npx tsx tests/test-context-routing.ts
 
 **Expected Response:**
 - 220-420 words
-- Mentions 5 years of experience
+- Mentions ~6 years of experience
 - Specific projects with metrics
 - Clickable Calendly link
 - No template labels

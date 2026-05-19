@@ -9,7 +9,7 @@ export const Hero = () => {
         <span className="text-cyan-500">builds things.</span>
       </h1>
       <p className="text-zinc-300 text-sm md:text-base max-w-2xl mt-8 leading-loose tracking-wide">
-        Meet Mikkel Ridley, a Software Engineer with 5 years of experience primarily 
+        Meet Mikkel Ridley, a Software Engineer with ~6 years of experience primarily 
         on the Front End and recently expanding into Full Stack. From building ticketing 
         platforms at SFMOMA to developing Angular components at Intrinsic (an Alphabet/GoogleX company), I bring both 
         technical expertise and leadership experience to every project.

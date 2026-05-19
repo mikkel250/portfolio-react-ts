@@ -356,7 +356,7 @@ export function filterInput(query: string, conversationHistory: string[]): Filte
   if (genericPatterns.some(pattern => pattern.test(trimmed))) {
     return {
       shouldCallAPI: false,
-      response: `Mikkel is a software engineer with 5 years of experience, including TypeScript, React, Node.js, ASP.NET, and Shopify expertise. 
+      response: `Mikkel is a software engineer with ~6 years of experience, including TypeScript, React, Node.js, ASP.NET, and Shopify expertise. 
 
 What specific area would you like to explore?
 - Ask about his **experience** at specific companies

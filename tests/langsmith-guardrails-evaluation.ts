@@ -2,8 +2,8 @@
  * LangSmith Evaluation Suite for Prompt Guardrails
  * 
  * This suite tests 8 critical guardrail requirements:
- * 1. States 5 years total SWE experience (not 10+)
- *    - For tech-specific questions (React, Next.js, etc.), allows < 5 years for that tech
+ * 1. States ~6 years total SWE experience (not 10+)
+ *    - For tech-specific questions (React, Next.js, etc.), allows < ~6 years for that tech
  *    - But ensures no false 10+ claims
  * 2. No hallucination (doesn't invent companies/projects)
  * 3. Proper formatting (no template labels like "Hook:", "Proof Points:")
@@ -39,7 +39,7 @@ const evaluationDataset = [
     },
     outputs: {
       criteria_scores: {
-        states_5_years: true, // Tech-specific: checks for no 10+ claims, allows < 5 years for React
+        states_5_years: true, // Tech-specific: checks for no 10+ claims, allows < ~6 years for React
         not_10_plus: true,
         correct_formatting: true,
         no_template_labels: true,
@@ -88,7 +88,7 @@ Requirements:
     },
     outputs: {
       criteria_scores: {
-        states_5_years: true, // Tech-specific: checks for no 10+ claims, allows < 5 years for Next.js
+        states_5_years: true, // Tech-specific: checks for no 10+ claims, allows < ~6 years for Next.js
         specific_projects: true,
         includes_metrics: true,
         // Word count: short answers to short questions are fine
@@ -259,9 +259,9 @@ async function evaluateGuardrails(run: any, example: any): Promise<Record<string
   
   const results: Record<string, { score: number; comment: string }> = {};
   
-  // Check for 5 years of experience (not 10+)
+  // Check for ~6 years of experience (not 10+)
   // Note: For tech-specific questions (React, Next.js, etc.), allow fewer years
-  // but ensure total SWE experience (5 years) is mentioned, or at minimum no false 10+ claims
+  // but ensure total SWE experience (~6 years) is mentioned, or at minimum no false 10+ claims
   if (expectedCriteria.states_5_years || expectedCriteria.not_10_plus) {
     // Match tech-specific queries: check if query contains a tech name AND (experience OR years)
     const hasTechName = /\b(React|Next\.js|Nextjs|TypeScript|Node\.js|Nodejs|Python|JavaScript|JS|TS)\b/i.test(query);
@@ -271,7 +271,7 @@ async function evaluateGuardrails(run: any, example: any): Promise<Record<string
     const has10Plus = /\b(10|11|12|13|14|15|20)\+?\s*years?\b/i.test(response);
     
     if (isTechSpecificQuery) {
-      // For tech-specific questions: don't require "5 years" for that tech
+      // For tech-specific questions: don't require "~6 years" for that tech
       // Just ensure no false 10+ years claim, and optionally mentions total SWE experience
       const hasTotalSWEYears = /(5|five)\s*years?\s*(of|total|software engineering|SWE|as a|professional)/i.test(response);
       results.states_5_years = {
@@ -281,12 +281,12 @@ async function evaluateGuardrails(run: any, example: any): Promise<Record<string
           : 'Incorrectly mentions 10+ years'
       };
     } else {
-      // For general experience questions: require "5 years" mention
+      // For general experience questions: require "~6 years" mention
       results.states_5_years = {
         score: has5Years && !has10Plus ? 1 : 0,
         comment: has5Years && !has10Plus 
-          ? 'Correctly states 5 years' 
-          : has10Plus ? 'Incorrectly mentions 10+ years' : 'Does not state 5 years'
+          ? 'Correctly states ~6 years' 
+          : has10Plus ? 'Incorrectly mentions 10+ years' : 'Does not state ~6 years'
       };
     }
   }

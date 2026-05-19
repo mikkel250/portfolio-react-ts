@@ -6,14 +6,14 @@
 ## ❌ NEVER SAY (Critical - Prevent Hallucinations)
 
 - "Mikkel has extensive Kubernetes experience" → Limited exposure at Google/Intrinsic only, not deep expertise
-- "He has 10+ years of software engineering experience" → INCORRECT! 5+ years as software engineer (May 2020 - October 2025), plus 5 years in management/IT roles (2015-2020) in a DIFFERENT field. Use management/IT experience for TRANSFERRABLE SKILLS (stakeholder communication, process improvement) but NEVER for technical engineering experience or to inflate YOE. Focus on the 5+ years of software engineering.
+- "He has 10+ years of software engineering experience" → INCORRECT! 5+ years as software engineer (May 2020 - October 2025), plus ~6 years in management/IT roles (2015-2020) in a DIFFERENT field. Use management/IT experience for TRANSFERRABLE SKILLS (stakeholder communication, process improvement) but NEVER for technical engineering experience or to inflate YOE. Focus on the 5+ years of software engineering.
 - "He led teams of 10+ engineers" → Leadership experience in pre-software career (management/IT roles), but NOT as formal team lead in software engineering roles; has mentored/trained teams
 - "He has deep backend expertise" → Strong full-stack with frontend focus, not backend specialist
 - "He's a DevOps engineer" → Has CI/CD and deployment skills, but not dedicated DevOps role
 
 ## Overview
 
-Software engineer with 5 years of professional experience across diverse technology stacks. Deep expertise in frontend development (React ecosystem, Angular, ASP.NET) with strong full-stack capabilities. Recent focus on AI/LLM and Python. Track record of rapidly learning new technologies and shipping production-ready features.
+Software engineer with ~6 years of professional experience across diverse technology stacks. Deep expertise in frontend development (React ecosystem, Angular, ASP.NET) with strong full-stack capabilities. Recent focus on AI/LLM and Python. Track record of rapidly learning new technologies and shipping production-ready features.
 
 ---
 
@@ -241,7 +241,7 @@ Software engineer with 5 years of professional experience across diverse technol
 ### Rapid Technology Adoption
 - **Track Record:** Learned enough Angular to start shipping in ~3 weeks (Intrinsic), ASP.NET (no experience prior to SFMOMA), Jekyll (no experience prior to Dental Game Plan)
 - **Learning Method:** Code comprehension, pattern recognition, documentation creation
-- **Adaptability:** React → Angular → ASP.NET → Back to React across 5 years
+- **Adaptability:** React → Angular → ASP.NET → Back to React across ~6 years
 - **Self-Directed:** Thrives with minimal documentation by analyzing existing code
 
 ### System Architecture & Design
@@ -256,7 +256,7 @@ Software engineer with 5 years of professional experience across diverse technol
 ## Soft Skills & Leadership
 
 ### Communication & Collaboration
-- **Stakeholder Management:** Refined through 5 years management background prior to moving into software engineering
+- **Stakeholder Management:** Refined through ~6 years management background prior to moving into software engineering
 - **Cross-functional Teams:** Engineering, design, product, marketing, legal
 - **Technical Translation:** Converting technical complexity into business value
 - **Remote Collaboration:** Async-first communication, documentation-driven
@@ -371,9 +371,9 @@ Technologies explored through unpaid side projects, demonstrating initiative and
 
 **Technologies:**
 - **React:** 3 professional roles (Kul, Dental Game Plan, Jefferson Health) totaling ~3 years, built component libraries, state management at scale, performance optimization
-- **JavaScript:** Used across all 5 professional roles spanning 5 years, from vanilla JS to TypeScript 5, strict typing in 100k+ line codebases
-- **HTML5/CSS3/SCSS:** Core of every professional role over 5 years, accessibility expertise (WCAG 2.1 AA), responsive design mastery, BEM methodologies
-- **Git/Version Control:** Used professionally across all 5 roles over 5 years, established workflows, trained teams, advanced branching strategies
+- **JavaScript:** Used across all 5 professional roles spanning ~6 years, from vanilla JS to TypeScript 5, strict typing in 100k+ line codebases
+- **HTML5/CSS3/SCSS:** Core of every professional role over ~6 years, accessibility expertise (WCAG 2.1 AA), responsive design mastery, BEM methodologies
+- **Git/Version Control:** Used professionally across all 5 roles over ~6 years, established workflows, trained teams, advanced branching strategies
 - **Performance Optimization:** Achieved 18-25% improvements across multiple professional projects, deep expertise in Lighthouse, Core Web Vitals
 - **Accessibility (WCAG 2.1 AA):** Led compliance initiative at SFMOMA with zero critical defects, screen reader testing, semantic HTML expertise
 - **Responsive Design:** Every professional project mobile-responsive, expert in breakpoints, mobile-first design
@@ -382,8 +382,8 @@ Technologies explored through unpaid side projects, demonstrating initiative and
 **Criteria:** Multiple professional uses or single role with significant depth
 
 **Technologies:**
-- **Shopify:** 2 professional roles (Kul 2020-2021, Jefferson Health 2021-2023) totaling ~2.5 years, learned from zero to expert, led platform migration
-- **ASP.NET Core/Razor Pages:** 1 professional role (SFMOMA 2023-2025) totaling 1.5 years, sole frontend engineer, complex CRM integrations
+- **Shopify:** 2 professional roles (Kul 2020-2021, Jefferson Health 2021-2023) totaling ~2.~6 years, learned from zero to expert, led platform migration
+- **ASP.NET Core/Razor Pages:** 1 professional role (SFMOMA 2023-2025) totaling 1.~6 years, sole frontend engineer, complex CRM integrations
 - **Node.js:** Multiple professional roles
 - **CI/CD Pipelines:** Built from scratch at Jefferson Health, professional use across roles
 - **Webpack/Bazel:** Professional build system experience including Google-scale Bazel
@@ -466,10 +466,10 @@ Technologies explored through unpaid side projects, demonstrating initiative and
 
 ### Addressing the "No CS Degree" Question
 **Key Points:**
-- 5 years of professional production experience across multiple companies
+- ~6 years of professional production experience across multiple companies
 - Bootcamp + self-taught path is increasingly common in tech (and valued for demonstrating initiative)
 - Many successful engineers are self-taught (examples: David Heinemeier Hansson, John Carmack)
-- What matters: Can you ship reliable, maintainable code? (Yes - 5 years of evidence)
+- What matters: Can you ship reliable, maintainable code? (Yes - ~6 years of evidence)
 - Non-CS backgrounds bring diverse problem-solving approaches
 - Many transferrable skills acquired while working other fields
 

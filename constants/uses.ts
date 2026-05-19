@@ -7,7 +7,7 @@ export const uses = [
   {
     name: "JavaScript & HTML5/CSS3/SCSS",
     description:
-      "Core web technologies used across all 5 professional roles over 5 years. JavaScript (ES6+), semantic HTML5, modern CSS3 (flexbox, grid, animations), SCSS with BEM methodology. Responsive design expertise with mobile-first approach in every professional project.",
+      "Core web technologies used across all 5 professional roles over ~6 years. JavaScript (ES6+), semantic HTML5, modern CSS3 (flexbox, grid, animations), SCSS with BEM methodology. Responsive design expertise with mobile-first approach in every professional project.",
   },
   {
     name: "Angular",
@@ -62,12 +62,12 @@ export const uses = [
   {
     name: "Shopify & Liquid",
     description:
-      "E-commerce platform expertise from 2 professional roles (Kul Inc 2020-2021, Jefferson Health 2021-2023, ~2.5 years total). Work extensively with Shopify, Liquid templating, theme development, and APIs. Led platform migrations from 1.x to 2.0 and established modern development workflows.",
+      "E-commerce platform expertise from 2 professional roles (Kul Inc 2020-2021, Jefferson Health 2021-2023, ~2.~6 years total). Work extensively with Shopify, Liquid templating, theme development, and APIs. Led platform migrations from 1.x to 2.0 and established modern development workflows.",
   },
   {
     name: "Git & GitHub",
     description:
-      "Version control used across all 5 professional roles over 5 years. Advanced Git workflows, branching strategies, and PR reviews. Modernized development workflows for multiple teams. Also experienced with GitLab, Bitbucket, and Google Piper (Intrinsic/Google).",
+      "Version control used across all 5 professional roles over ~6 years. Advanced Git workflows, branching strategies, and PR reviews. Modernized development workflows for multiple teams. Also experienced with GitLab, Bitbucket, and Google Piper (Intrinsic/Google).",
   },
   {
     name: "CI/CD & DevOps",
