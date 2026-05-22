@@ -1,8 +1,8 @@
 export const runtime = 'nodejs';
-import { JD_ANALYSIS_SYSTEM_PROMPT } from './../lib/jd-prompt';
 import { NextRequest, NextResponse } from 'next/server';
 import { checkRateLimit } from '../lib/rate-limit';
 import { getAllContext, extractJobTitle } from '../lib/knowledge-base';
+import { compilePrompt } from '../lib/langfuse-prompts';
 import { chat } from '../lib/llm';
 
 // JD analysis endpoint - special endpoint for analyzing JDs and returning a match
@@ -56,12 +56,12 @@ export async function POST(request: NextRequest) {
     const fullContext = getAllContext();
 
     // build a specialized system prompt with full context
-    const systemPrompt = JD_ANALYSIS_SYSTEM_PROMPT + '\n\n## Candidate Background\n\n' + fullContext;
+    const basePrompt = await compilePrompt('portfolio-jd-analysis', {
+      context: fullContext,
+      job_title: jobTitle || 'Unknown',
+    });
 
-    // add a job title to prompt if extracted 
-    const finalSystemPrompt = jobTitle
-      ? systemPrompt + `\n\n## Target Role\n\n${jobTitle}`
-      : systemPrompt;
+    const finalSystemPrompt = basePrompt;
 
     // create message with JD
     const messages = [
@@ -75,6 +75,7 @@ export async function POST(request: NextRequest) {
     // Temperature and maxTokens come from environment variables (AI_TEMPERATURE, AI_MAX_TOKENS)
     const llmResponse = await chat(messages, finalSystemPrompt, {
       model: process.env.AI_MODEL || process.env.AI_MODEL_FALLBACKS || 'gemini-2.5-pro', // Easy model switching via env var
+      langfusePrompt: { name: 'portfolio-jd-analysis' },
     });
 
     // return successful response

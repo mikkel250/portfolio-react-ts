@@ -5,6 +5,7 @@
  * Note: Main chat prompt is in chat-prompt.ts, JD prompt is in jd-prompt.ts
  */
 
+import { compilePrompt } from './langfuse-prompts';
 import { CHAT_SYSTEM_PROMPT } from './chat-prompt';
 
 /**
@@ -33,19 +34,31 @@ export function isAIQuery(query: string): boolean {
 }
 
 /**
- * Build chat system prompt with injected context and placeholders
+ * Build chat system prompt with injected context and placeholders.
+ *
+ * Tries Langfuse Prompt Management first (deployment-free iteration),
+ * falls back to the local hardcoded prompt.
  */
-export function buildChatSystemPrompt(
+export async function buildChatSystemPrompt(
   context: string,
   options?: {
     calendlyLink?: string;
   }
-): string {
-  let prompt = CHAT_SYSTEM_PROMPT.replace('{CONTEXT}', context);
-  
-  // Replace Calendly link
+): Promise<string> {
   const calendlyLink = options?.calendlyLink || process.env.NEXT_PUBLIC_CALENDLY_LINK || '';
-  prompt = prompt.split('{CALENDLY_LINK}').join(calendlyLink);
-  
+
+  const prompt = await compilePrompt('portfolio-chat-system', {
+    context,
+    calendly_link: calendlyLink,
+  });
+
+  // If compilePrompt fell back to local, replace the legacy {VAR} syntax
+  if (!process.env.LANGFUSE_PUBLIC_KEY) {
+    let legacy = prompt;
+    legacy = legacy.replace('{CONTEXT}', context);
+    legacy = legacy.split('{CALENDLY_LINK}').join(calendlyLink);
+    return legacy;
+  }
+
   return prompt;
 }

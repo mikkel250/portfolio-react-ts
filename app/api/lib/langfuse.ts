@@ -29,7 +29,8 @@ export async function traceLLMCall(
   systemPrompt: string,
   response: ChatResponse,
   startTime: number,
-  options: ChatOptions | Record<string, unknown> = {}
+  options: ChatOptions | Record<string, unknown> = {},
+  langfusePrompt?: { name: string; version?: number } | null
 ): Promise<void> {
   try {
     if (
@@ -79,6 +80,7 @@ export async function traceLLMCall(
             duration_ms: durationMs,
             temperature: opts.temperature,
             max_tokens: opts.maxTokens,
+            ...(langfusePrompt ? { prompt_name: langfusePrompt.name, prompt_version: langfusePrompt.version } : {}),
           },
           model,
           ...(Object.keys(modelParameters).length > 0

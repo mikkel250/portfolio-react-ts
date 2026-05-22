@@ -43,6 +43,8 @@ export interface ChatOptions {
   temperature?: number;
   maxTokens?: number;
   model?: string;
+  /** Optional Langfuse prompt info to link in traces */
+  langfusePrompt?: { name: string; version?: number } | null;
 }
 
 // Initialize OpenAI client
@@ -338,7 +340,16 @@ export async function chat(
       // Trace the successful call (fire and forget — LangSmith + LangFuse)
       traceLLMCall(provider, model, messages as ChatMessage[], systemPrompt, response, startTime, options)
         .catch(err => console.error('Tracing error (LangSmith):', err));
-      traceLLMCallLangFuse(provider, model, messages as ChatMessage[], systemPrompt, response, startTime, options)
+      traceLLMCallLangFuse(
+        provider,
+        model,
+        messages as ChatMessage[],
+        systemPrompt,
+        response,
+        startTime,
+        options,
+        (options as any).langfusePrompt
+      )
         .catch(err => console.error('Tracing error (Langfuse):', err));
       
       // Log usage for monitoring

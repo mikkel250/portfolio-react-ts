@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
     // const jobTitle = extractJobTitle(query);
 
     // build system prompt with context and optional job title
-    const systemPrompt = buildChatSystemPrompt(context, {
+    const systemPrompt = await buildChatSystemPrompt(context, {
       calendlyLink: process.env.NEXT_PUBLIC_CALENDLY_LINK,
     });
 
@@ -134,6 +134,7 @@ export async function POST(request: NextRequest) {
     // or use defaults configured in lib/llm.ts
     const llmResponse = await chat(messages, systemPrompt, {
       model: process.env.AI_MODEL || process.env.AI_MODEL_FALLBACKS, // Easy model switching via env var
+      langfusePrompt: { name: 'portfolio-chat-system' },
     });
 
     // return successful response

@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "eval:langfuse": "npx tsx tests/langfuse-evaluation.ts"
+    "eval:langfuse": "npx tsx tests/langfuse-evaluation.ts",
+    "migrate:prompts": "npx tsx scripts/migrate-prompts.ts"
   },
   "dependencies": {
     "@acebuilder/component-tagger": "^0.0.1",
