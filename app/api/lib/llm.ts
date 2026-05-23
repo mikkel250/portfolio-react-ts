@@ -512,7 +512,7 @@ function logUsage(provider: string, model: string, tokens: number): void {
 // Testing function to check the OpenAI connection
 export async function testConnection(): Promise<boolean> {
   try {
-    await openai.models.list();
+    await getOpenAI().models.list();
     return true;
   } catch (error) {
     console.error('OpenAI connection test failed:', error);
