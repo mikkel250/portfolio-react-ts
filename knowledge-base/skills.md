@@ -382,8 +382,8 @@ Technologies explored through unpaid side projects, demonstrating initiative and
 **Criteria:** Multiple professional uses or single role with significant depth
 
 **Technologies:**
-- **Shopify:** 2 professional roles (Kul 2020-2021, Jefferson Health 2021-2023) totaling ~2.~6 years, learned from zero to expert, led platform migration
-- **ASP.NET Core/Razor Pages:** 1 professional role (SFMOMA 2023-2025) totaling 1.~6 years, sole frontend engineer, complex CRM integrations
+- **Shopify:** 2 professional roles (Kul 2020-2021, Jefferson Health 2021-2023) totaling ~2.5 years, learned from zero to expert, led platform migration
+- **ASP.NET Core/Razor Pages:** 1 professional role (SFMOMA 2023-2025) totaling 1.5 years, sole frontend engineer, complex CRM integrations
 - **Node.js:** Multiple professional roles
 - **CI/CD Pipelines:** Built from scratch at Jefferson Health, professional use across roles
 - **Webpack/Bazel:** Professional build system experience including Google-scale Bazel

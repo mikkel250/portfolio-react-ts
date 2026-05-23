@@ -85,13 +85,17 @@ export async function getPrompt(name: PromptName) {
     }
   }
 
-  // Fallback: use the hardcoded template with simple {{var}} replacement
+  // Fallback: use the hardcoded template with simple variable replacement.
+  // Supports both Langfuse-style {{var}} and legacy {VAR} placeholders.
   return {
     name,
     compile: (vars: Record<string, string>) => {
       let tpl = entry.local;
       for (const [key, value] of Object.entries(vars)) {
         tpl = tpl.split(`{{${key}}}`).join(value);
+        // Also replace legacy single-brace uppercase placeholders (e.g. {CONTEXT})
+        const legacyKey = key.toUpperCase();
+        tpl = tpl.split(`{${legacyKey}}`).join(value);
       }
       return tpl;
     },

@@ -1,11 +1,10 @@
 # .coderabbit.yaml
 
 reviews:
-profile:"chill"
-high_level_summary:true
-request_review_command:"rabbit review"
-
-  instructions:>
+  profile: "chill"
+  high_level_summary: true
+  request_review_command: "rabbit review"
+  instructions: >
     Focus on:
     - logic errors
     - security issues
