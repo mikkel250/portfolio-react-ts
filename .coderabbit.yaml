@@ -3,21 +3,22 @@
 reviews:
   profile: "chill"
   high_level_summary: true
-  request_review_command: "rabbit review"
-  instructions: >
-    Focus on:
-    - logic errors
-    - security issues
-    - race conditions
-    - architectural inconsistencies
+  path_instructions:
+    - path: "**/*"
+      instructions: >
+        Focus on:
+        - logic errors
+        - security issues
+        - race conditions
+        - architectural inconsistencies
 
-    Ignore:
-    - formatting
-    - stylistic nitpicks
-    - lint-level concerns
+        Ignore:
+        - formatting
+        - stylistic nitpicks
+        - lint-level concerns
 
-    Prioritize:
-    - React state correctness
-    - auth/security boundaries
-    - async correctness
-    - API contract mismatches
+        Prioritize:
+        - React state correctness
+        - auth/security boundaries
+        - async correctness
+        - API contract mismatches
