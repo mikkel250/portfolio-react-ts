@@ -47,18 +47,37 @@ export interface ChatOptions {
   langfusePrompt?: { name: string; version?: number } | null;
 }
 
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Lazy initialization of clients to avoid errors during build time
+let openai: OpenAI | null = null;
+let anthropic: Anthropic | null = null;
+let google: GoogleGenAI | null = null;
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+function getOpenAI(): OpenAI {
+  if (!openai) {
+    openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+  }
+  return openai;
+}
 
-const google = new GoogleGenAI({
-  apiKey: process.env.GOOGLE_API_KEY || ''
-});
+function getAnthropic(): Anthropic {
+  if (!anthropic) {
+    anthropic = new Anthropic({
+      apiKey: process.env.ANTHROPIC_API_KEY,
+    });
+  }
+  return anthropic;
+}
+
+function getGoogle(): GoogleGenAI {
+  if (!google) {
+    google = new GoogleGenAI({
+      apiKey: process.env.GOOGLE_API_KEY || ''
+    });
+  }
+  return google;
+}
 
 // detect which provider to use based on model name 
 type Provider = 'openai' | 'anthropic' | 'google';
@@ -109,7 +128,7 @@ async function callOpenAI(
   ];
 
   // Call OpenAI API
-  const response = await openai.chat.completions.create({
+  const response = await getOpenAI().chat.completions.create({
     model,
     messages: fullMessages,
     temperature,
@@ -165,8 +184,8 @@ async function callAnthropic(
       content: msg.content,
     }));
 
-  // call Anthropic API 
-  const response = await anthropic.messages.create({
+  // call Anthropic API
+  const response = await getAnthropic().messages.create({
     model,
     system: systemPrompt,
     messages: claudeMessages,
@@ -230,7 +249,7 @@ async function callGoogle(
   fullPrompt += `User: ${formattedMessages[formattedMessages.length - 1]?.content || ''}`;
 
   // Call the @google/genai API
-  const response = await google.models.generateContent({
+  const response = await getGoogle().models.generateContent({
     model: model,
     contents: fullPrompt,
     config: {
@@ -493,7 +512,7 @@ function logUsage(provider: string, model: string, tokens: number): void {
 // Testing function to check the OpenAI connection
 export async function testConnection(): Promise<boolean> {
   try {
-    await openai.models.list();
+    await getOpenAI().models.list();
     return true;
   } catch (error) {
     console.error('OpenAI connection test failed:', error);

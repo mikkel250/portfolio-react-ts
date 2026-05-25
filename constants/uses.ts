@@ -62,7 +62,7 @@ export const uses = [
   {
     name: "Shopify & Liquid",
     description:
-      "E-commerce platform expertise from 2 professional roles (Kul Inc 2020-2021, Jefferson Health 2021-2023, ~2.~6 years total). Work extensively with Shopify, Liquid templating, theme development, and APIs. Led platform migrations from 1.x to 2.0 and established modern development workflows.",
+      "E-commerce platform expertise from 2 professional roles (Kul Inc 2020-2021, Jefferson Health 2021-2023, ~2.5 years total). Worked extensively with Shopify, Liquid templating, theme development, and APIs. Led platform migrations from 1.x to 2.0 and established modern development workflows.",
   },
   {
     name: "Git & GitHub",

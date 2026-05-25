@@ -47,18 +47,8 @@ export async function buildChatSystemPrompt(
 ): Promise<string> {
   const calendlyLink = options?.calendlyLink || process.env.NEXT_PUBLIC_CALENDLY_LINK || '';
 
-  const prompt = await compilePrompt('portfolio-chat-system', {
+  return await compilePrompt('portfolio-chat-system', {
     context,
     calendly_link: calendlyLink,
   });
-
-  // If compilePrompt fell back to local, replace the legacy {VAR} syntax
-  if (!process.env.LANGFUSE_PUBLIC_KEY) {
-    let legacy = prompt;
-    legacy = legacy.replace('{CONTEXT}', context);
-    legacy = legacy.split('{CALENDLY_LINK}').join(calendlyLink);
-    return legacy;
-  }
-
-  return prompt;
 }
