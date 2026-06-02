@@ -3,6 +3,11 @@ import Anthropic from '@anthropic-ai/sdk';
 import { GoogleGenAI } from '@google/genai';
 import { traceLLMCall, traceableChat } from './langsmith';
 import { traceLLMCall as traceLLMCallLangFuse } from './langfuse';
+import {
+  buildFallbackChain,
+  isRetryableError,
+  type Provider,
+} from './llm-fallback-chain';
 
 // Configuration helper
 function getLLMConfig() {
@@ -88,27 +93,6 @@ function getDeepSeek(): OpenAI {
     });
   }
   return deepseek;
-}
-
-// detect which provider to use based on model name 
-type Provider = 'openai' | 'anthropic' | 'google' | 'deepseek';
-
-function detectProvider(model: string): Provider {
-  const modelToLower = model.toLowerCase();
-
-  if (modelToLower.includes('claude')) {
-    return 'anthropic';
-  }
-
-  if (modelToLower.includes('gemini')) {
-    return 'google';
-  }
-
-  if (modelToLower.includes('deepseek')) {
-    return 'deepseek';
-  }
-
-  return 'openai';
 }
 
 async function callOpenAI(
@@ -349,61 +333,6 @@ async function callGoogle(
   };
 };
 
-// Build fallback chain from environment variables
-function buildFallbackChain(primaryModel: string): Array<{ provider: Provider; model: string; reason: string }> {
-  const fallbackChain: Array<{ provider: Provider; model: string; reason: string }> = [];
-  
-  // Add primary model first
-  const primaryProvider = detectProvider(primaryModel);
-  fallbackChain.push({
-    provider: primaryProvider,
-    model: primaryModel,
-    reason: 'Primary model'
-  });
-  
-  // Try to parse fallback models from JSON array in environment variable
-  try {
-    const fallbackModelsJson = process.env.AI_MODEL_FALLBACKS;
-    if (fallbackModelsJson) {
-      const fallbackModels = JSON.parse(fallbackModelsJson);
-      if (Array.isArray(fallbackModels)) {
-        fallbackModels.forEach((model, index) => {
-          if (typeof model === 'string' && model.trim()) {
-            const provider = detectProvider(model);
-            fallbackChain.push({
-              provider,
-              model: model.trim(),
-              reason: `Fallback ${index + 1}`
-            });
-          }
-        });
-        console.log(`Loaded ${fallbackModels.length} fallback models from AI_MODEL_FALLBACKS`);
-      } else {
-        console.log('AI_MODEL_FALLBACKS is not a valid JSON array');
-      }
-    }
-  } catch (error) {
-    console.log('Failed to parse AI_MODEL_FALLBACKS JSON:', error);
-  }
-  
-  // If no fallbacks are configured, add default fallbacks
-  if (fallbackChain.length === 1) {
-    console.log('No fallback models configured in AI_MODEL_FALLBACKS. Using default fallbacks.');
-    fallbackChain.push(
-      { provider: 'deepseek', model: 'deepseek-v4-pro', reason: 'Default fallback 1 (DeepSeek)' },
-      { provider: 'anthropic', model: 'claude-haiku-4-5-20251001', reason: 'Default fallback 2' },
-      { provider: 'openai', model: 'gpt-4o', reason: 'Default fallback 3' }
-    );
-  }
-
-  return fallbackChain.filter((entry) => {
-    if (entry.provider === 'deepseek' && !process.env.DEEPSEEK_API_KEY?.trim()) {
-      return false;
-    }
-    return true;
-  });
-}
-
 // Intelligent fallback system with configurable environment variables
 export async function chat(
   messages: Omit<ChatMessage, 'role'>[] | ChatMessage[],
@@ -504,55 +433,6 @@ async function callProvider(
     default:
       throw new Error(`Unknown provider: ${provider}`);
   }
-}
-
-// Check if an error is retryable (rate limits, temporary failures)
-function isRetryableError(error: any): boolean {
-  // Rate limit errors
-  if (error.status === 429) {
-    return true;
-  }
-  
-  // Quota exceeded
-  if (error.message?.includes('quota') || error.message?.includes('Quota')) {
-    return true;
-  }
-  
-  // Rate limit exceeded
-  if (error.message?.includes('rate limit') || error.message?.includes('Rate limit')) {
-    return true;
-  }
-  
-  // Temporary server errors
-  if (error.status === 500 || error.status === 503 || error.status === 502) {
-    return true;
-  }
-  
-  // Google-specific errors
-  if (error.message?.includes('MAX_TOKENS') || error.message?.includes('RESOURCE_EXHAUSTED')) {
-    return true;
-  }
-  
-  // Network errors (might be temporary)
-  if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT') {
-    return true;
-  }
-  
-  // Non-retryable errors
-  if (error.status === 401) {
-    return false; // Invalid API key
-  }
-  
-  if (error.status === 400) {
-    return false; // Bad request (malformed input)
-  }
-  
-  if (error.status === 403) {
-    return false; // Forbidden (API key issues)
-  }
-  
-  // Default to retryable for unknown errors
-  return true;
 }
 
 // Cost tracking and usage monitoring
