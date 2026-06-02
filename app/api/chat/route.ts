@@ -133,7 +133,7 @@ export async function POST(request: NextRequest) {
     // Temperature and maxTokens come from environment variables (AI_TEMPERATURE, AI_MAX_TOKENS)
     // or use defaults configured in lib/llm.ts
     const llmResponse = await chat(messages, systemPrompt, {
-      model: process.env.AI_MODEL || process.env.AI_MODEL_FALLBACKS, // Easy model switching via env var
+      ...(process.env.AI_MODEL ? { model: process.env.AI_MODEL } : {}),
       langfusePrompt: { name: 'portfolio-chat-system' },
     });
 

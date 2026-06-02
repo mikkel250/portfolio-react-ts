@@ -106,7 +106,7 @@ async function callOpenAI(
   const {
     temperature = defaultTemperature,
     maxTokens = defaultMaxTokens,
-    model = process.env.AI_MODEL || process.env.AI_MODEL_FALLBACKS || 'gpt-4o-mini',
+    model = process.env.AI_MODEL || 'gpt-4o-mini',
   } = options;
 
   // Format messages - handle both user strings and full message objects
