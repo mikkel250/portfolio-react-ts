@@ -415,7 +415,7 @@ export async function chat(
         console.log(`Retrying with next provider...`);
         continue;
       } else {
-        // Non-retryable error (e.g., invalid API key), don't try other providers
+        // Non-retryable error (e.g., bad request), don't try other providers
         throw error;
       }
     }

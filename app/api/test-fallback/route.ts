@@ -120,6 +120,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { chat } from '../lib/llm';
+import { detectProvider } from '../lib/llm-fallback-chain';
 
 export async function GET(request: NextRequest) {
   const startTime = Date.now();
@@ -537,24 +538,6 @@ async function testEnvironment() {
 }
 
 // Helper function to detect provider (copied from llm.ts)
-function detectProvider(model: string): string {
-  const modelToLower = model.toLowerCase();
-  
-  if (modelToLower.includes('claude')) {
-    return 'anthropic';
-  }
-  
-  if (modelToLower.includes('gemini')) {
-    return 'google';
-  }
-
-  if (modelToLower.includes('deepseek')) {
-    return 'deepseek';
-  }
-  
-  return 'openai';
-}
-
 // Helper function to test Google Gemini empty response handling
 async function testGoogleEmptyResponse() {
   const startTime = Date.now();

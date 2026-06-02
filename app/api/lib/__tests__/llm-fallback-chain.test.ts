@@ -67,7 +67,8 @@ describe('isRetryableError', () => {
     expect(isRetryableError({ message: 'Quota exceeded for metric' })).toBe(true);
   });
 
-  it('treats auth errors as non-retryable', () => {
-    expect(isRetryableError({ status: 401 })).toBe(false);
+  it('treats provider-scoped auth errors as retryable for fallback', () => {
+    expect(isRetryableError({ status: 401 })).toBe(true);
+    expect(isRetryableError({ status: 403 })).toBe(true);
   });
 });

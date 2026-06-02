@@ -78,6 +78,10 @@ export function buildFallbackChain(
 }
 
 export function isRetryableError(error: unknown): boolean {
+  if (!error || typeof error !== 'object') {
+    return true;
+  }
+
   const err = error as { status?: number; message?: string; code?: string };
 
   if (err.status === 429) {
@@ -104,15 +108,12 @@ export function isRetryableError(error: unknown): boolean {
     return true;
   }
 
-  if (err.status === 401) {
-    return false;
+  // Provider-scoped auth failures (wrong/missing key, disabled API) — advance fallback, not abort chain
+  if (err.status === 401 || err.status === 403) {
+    return true;
   }
 
   if (err.status === 400) {
-    return false;
-  }
-
-  if (err.status === 403) {
     return false;
   }
 
