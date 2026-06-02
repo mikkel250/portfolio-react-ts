@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "eval:langfuse": "npx tsx tests/langfuse-evaluation.ts",
     "migrate:prompts": "npx tsx scripts/migrate-prompts.ts"
   },
@@ -52,7 +54,8 @@
   "devDependencies": {
     "@types/node-fetch": "^2.6.13",
     "@types/uuid": "^10.0.0",
-    "dotenv": "^17.2.3"
+    "dotenv": "^17.2.3",
+    "vitest": "^3.2.4"
   },
   "overrides": {
     "postcss": "^8.5.14",

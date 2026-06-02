@@ -3,6 +3,11 @@ import Anthropic from '@anthropic-ai/sdk';
 import { GoogleGenAI } from '@google/genai';
 import { traceLLMCall, traceableChat } from './langsmith';
 import { traceLLMCall as traceLLMCallLangFuse } from './langfuse';
+import {
+  buildFallbackChain,
+  isRetryableError,
+  type Provider,
+} from './llm-fallback-chain';
 
 // Configuration helper
 function getLLMConfig() {
@@ -51,6 +56,7 @@ export interface ChatOptions {
 let openai: OpenAI | null = null;
 let anthropic: Anthropic | null = null;
 let google: GoogleGenAI | null = null;
+let deepseek: OpenAI | null = null;
 
 function getOpenAI(): OpenAI {
   if (!openai) {
@@ -79,21 +85,14 @@ function getGoogle(): GoogleGenAI {
   return google;
 }
 
-// detect which provider to use based on model name 
-type Provider = 'openai' | 'anthropic' | 'google';
-
-function detectProvider(model: string): Provider {
-  const modelToLower = model.toLowerCase();
-
-  if (modelToLower.includes('claude')) {
-    return 'anthropic';
+function getDeepSeek(): OpenAI {
+  if (!deepseek) {
+    deepseek = new OpenAI({
+      baseURL: 'https://api.deepseek.com',
+      apiKey: process.env.DEEPSEEK_API_KEY,
+    });
   }
-
-  if (modelToLower.includes('gemini')) {
-    return 'google';
-  }
-
-  return 'openai';
+  return deepseek;
 }
 
 async function callOpenAI(
@@ -106,7 +105,7 @@ async function callOpenAI(
   const {
     temperature = defaultTemperature,
     maxTokens = defaultMaxTokens,
-    model = process.env.AI_MODEL || process.env.AI_MODEL_FALLBACKS || 'gpt-4o-mini',
+    model = process.env.AI_MODEL || 'gpt-4o-mini',
   } = options;
 
   // Format messages - handle both user strings and full message objects
@@ -144,6 +143,70 @@ async function callOpenAI(
   // Return structured response
   return {
     content: choice.message.content || '',
+    usage: {
+      promptTokens: response.usage?.prompt_tokens || 0,
+      completionTokens: response.usage?.completion_tokens || 0,
+      totalTokens: response.usage?.total_tokens || 0,
+    },
+    model: response.model,
+    finishReason: choice.finish_reason,
+  };
+}
+
+async function callDeepseek(
+  messages: Omit<ChatMessage, 'role'>[] | ChatMessage[],
+  systemPrompt: string,
+  options: ChatOptions = {}
+): Promise<ChatResponse> {
+  const { maxTokens: defaultMaxTokens, temperature: defaultTemperature } = getLLMConfig();
+  const {
+    temperature = defaultTemperature,
+    maxTokens = defaultMaxTokens,
+    model = 'deepseek-v4-pro',
+  } = options;
+
+  const formattedMessages: ChatMessage[] = messages.map((msg) => {
+    if (typeof msg === 'string') {
+      return { role: 'user', content: msg };
+    }
+    if ('role' in msg && 'content' in msg) {
+      return msg as ChatMessage;
+    }
+    return { role: 'user', content: (msg as any).content || String(msg) };
+  });
+
+  // DeepSeek rejects reasoning_content on prior assistant turns; send role + content only.
+  const fullMessages = [
+    { role: 'system' as const, content: systemPrompt },
+    ...formattedMessages.map((msg) => ({
+      role: msg.role,
+      content: msg.content,
+    })),
+  ];
+
+  // [SIDE-EFFECT] Calls DeepSeek chat completions API; failure triggers fallback in chat().
+  const response = await getDeepSeek().chat.completions.create({
+    model,
+    messages: fullMessages,
+    temperature,
+    max_tokens: maxTokens,
+    reasoning_effort: 'high',
+    extra_body: {
+      thinking: { type: 'enabled' },
+    },
+  } as OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming);
+
+  const choice = response.choices[0];
+  if (!choice || !choice.message) {
+    throw new Error('No response from DeepSeek');
+  }
+
+  const message = choice.message as OpenAI.Chat.Completions.ChatCompletionMessage & {
+    reasoning_content?: string | null;
+  };
+
+  return {
+    content: message.content || '',
     usage: {
       promptTokens: response.usage?.prompt_tokens || 0,
       completionTokens: response.usage?.completion_tokens || 0,
@@ -282,55 +345,6 @@ async function callGoogle(
   };
 };
 
-// Build fallback chain from environment variables
-function buildFallbackChain(primaryModel: string): Array<{ provider: Provider; model: string; reason: string }> {
-  const fallbackChain: Array<{ provider: Provider; model: string; reason: string }> = [];
-  
-  // Add primary model first
-  const primaryProvider = detectProvider(primaryModel);
-  fallbackChain.push({
-    provider: primaryProvider,
-    model: primaryModel,
-    reason: 'Primary model'
-  });
-  
-  // Try to parse fallback models from JSON array in environment variable
-  try {
-    const fallbackModelsJson = process.env.AI_MODEL_FALLBACKS;
-    if (fallbackModelsJson) {
-      const fallbackModels = JSON.parse(fallbackModelsJson);
-      if (Array.isArray(fallbackModels)) {
-        fallbackModels.forEach((model, index) => {
-          if (typeof model === 'string' && model.trim()) {
-            const provider = detectProvider(model);
-            fallbackChain.push({
-              provider,
-              model: model.trim(),
-              reason: `Fallback ${index + 1}`
-            });
-          }
-        });
-        console.log(`Loaded ${fallbackModels.length} fallback models from AI_MODEL_FALLBACKS`);
-      } else {
-        console.log('AI_MODEL_FALLBACKS is not a valid JSON array');
-      }
-    }
-  } catch (error) {
-    console.log('Failed to parse AI_MODEL_FALLBACKS JSON:', error);
-  }
-  
-  // If no fallbacks are configured, add default fallbacks
-  if (fallbackChain.length === 1) {
-    console.log('No fallback models configured in AI_MODEL_FALLBACKS. Using default fallbacks.');
-    fallbackChain.push(
-      { provider: 'anthropic', model: 'claude-haiku-4-5-20251001', reason: 'Default fallback 1' },
-      { provider: 'openai', model: 'gpt-4o', reason: 'Default fallback 2' }
-    );
-  }
-  
-  return fallbackChain;
-}
-
 // Intelligent fallback system with configurable environment variables
 export async function chat(
   messages: Omit<ChatMessage, 'role'>[] | ChatMessage[],
@@ -401,7 +415,7 @@ export async function chat(
         console.log(`Retrying with next provider...`);
         continue;
       } else {
-        // Non-retryable error (e.g., invalid API key), don't try other providers
+        // Non-retryable error (e.g., bad request), don't try other providers
         throw error;
       }
     }
@@ -426,58 +440,11 @@ async function callProvider(
       return await callAnthropic(messages, systemPrompt, options);
     case 'google':
       return await callGoogle(messages, systemPrompt, options);
+    case 'deepseek':
+      return await callDeepseek(messages, systemPrompt, options);
     default:
       throw new Error(`Unknown provider: ${provider}`);
   }
-}
-
-// Check if an error is retryable (rate limits, temporary failures)
-function isRetryableError(error: any): boolean {
-  // Rate limit errors
-  if (error.status === 429) {
-    return true;
-  }
-  
-  // Quota exceeded
-  if (error.message?.includes('quota') || error.message?.includes('Quota')) {
-    return true;
-  }
-  
-  // Rate limit exceeded
-  if (error.message?.includes('rate limit') || error.message?.includes('Rate limit')) {
-    return true;
-  }
-  
-  // Temporary server errors
-  if (error.status === 500 || error.status === 503 || error.status === 502) {
-    return true;
-  }
-  
-  // Google-specific errors
-  if (error.message?.includes('MAX_TOKENS') || error.message?.includes('RESOURCE_EXHAUSTED')) {
-    return true;
-  }
-  
-  // Network errors (might be temporary)
-  if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT') {
-    return true;
-  }
-  
-  // Non-retryable errors
-  if (error.status === 401) {
-    return false; // Invalid API key
-  }
-  
-  if (error.status === 400) {
-    return false; // Bad request (malformed input)
-  }
-  
-  if (error.status === 403) {
-    return false; // Forbidden (API key issues)
-  }
-  
-  // Default to retryable for unknown errors
-  return true;
 }
 
 // Cost tracking and usage monitoring
@@ -496,6 +463,8 @@ const COST_PER_1K_TOKENS = {
   'claude-haiku-4-5-20251001': 0.00025, // $0.25 per 1M tokens
   'gpt-4o': 0.005, // $5 per 1M tokens
   'gpt-4o-mini': 0.00015, // $0.15 per 1M tokens
+  'deepseek-v4-pro': 0.00014, // approximate; see DeepSeek pricing
+  'deepseek-chat': 0.00014,
 };
 
 function calculateCost(model: string, tokens: number): number {

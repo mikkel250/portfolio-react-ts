@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
     // call the LLM with specialized JD analysis prompt
     // Temperature and maxTokens come from environment variables (AI_TEMPERATURE, AI_MAX_TOKENS)
     const llmResponse = await chat(messages, finalSystemPrompt, {
-      model: process.env.AI_MODEL || process.env.AI_MODEL_FALLBACKS || 'gemini-2.5-pro', // Easy model switching via env var
+      model: process.env.AI_MODEL || 'gemini-2.5-pro',
       langfusePrompt: { name: 'portfolio-jd-analysis' },
     });
 
