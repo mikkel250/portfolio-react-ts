@@ -13,6 +13,7 @@
  *    curl "http://localhost:3000/api/test-fallback?provider=google"
  *    curl "http://localhost:3000/api/test-fallback?provider=anthropic" 
  *    curl "http://localhost:3000/api/test-fallback?provider=openai"
+ *    curl "http://localhost:3000/api/test-fallback?provider=deepseek"
  * 
  * 3. FALLBACK SYSTEM TEST:
  *    curl "http://localhost:3000/api/test-fallback?test=fallback"
@@ -31,6 +32,7 @@
  * ✅ Google Gemini (gemini-2.5-pro) - Free tier (100 requests/day)
  * ✅ Anthropic Claude (claude-haiku-4-5-20251001) - Cost-effective fallback  
  * ✅ OpenAI (gpt-4o-mini) - Reliable backup
+ * ✅ DeepSeek (deepseek-v4-pro) - Inexpensive fallback (OpenAI-compatible API)
  * ✅ Fallback system with invalid models
  * ✅ Rate limit handling with rapid requests
  * ✅ Environment validation (API keys, configuration)
@@ -335,7 +337,8 @@ export async function GET(request: NextRequest) {
         nodeEnv: process.env.NODE_ENV,
         hasOpenAIKey: !!process.env.OPENAI_API_KEY,
         hasAnthropicKey: !!process.env.ANTHROPIC_API_KEY,
-        hasGoogleKey: !!process.env.GOOGLE_API_KEY
+        hasGoogleKey: !!process.env.GOOGLE_API_KEY,
+        hasDeepSeekKey: !!process.env.DEEPSEEK_API_KEY
       }
     });
     
@@ -371,6 +374,9 @@ async function testSpecificProvider(provider: string, startTime: number) {
         break;
       case 'openai':
         model = 'gpt-4o-mini';
+        break;
+      case 'deepseek':
+        model = 'deepseek-v4-pro';
         break;
       default:
         throw new Error(`Unknown provider: ${provider}`);
@@ -520,6 +526,7 @@ async function testEnvironment() {
       hasOpenAIKey: !!process.env.OPENAI_API_KEY,
       hasAnthropicKey: !!process.env.ANTHROPIC_API_KEY,
       hasGoogleKey: !!process.env.GOOGLE_API_KEY,
+      hasDeepSeekKey: !!process.env.DEEPSEEK_API_KEY,
       openaiKeyLength: process.env.OPENAI_API_KEY?.length || 0,
       anthropicKeyLength: process.env.ANTHROPIC_API_KEY?.length || 0,
       googleKeyLength: process.env.GOOGLE_API_KEY?.length || 0
@@ -539,6 +546,10 @@ function detectProvider(model: string): string {
   
   if (modelToLower.includes('gemini')) {
     return 'google';
+  }
+
+  if (modelToLower.includes('deepseek')) {
+    return 'deepseek';
   }
   
   return 'openai';
