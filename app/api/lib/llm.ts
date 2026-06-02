@@ -51,6 +51,7 @@ export interface ChatOptions {
 let openai: OpenAI | null = null;
 let anthropic: Anthropic | null = null;
 let google: GoogleGenAI | null = null;
+let deepseek: OpenAI | null = null;
 
 function getOpenAI(): OpenAI {
   if (!openai) {
@@ -79,8 +80,18 @@ function getGoogle(): GoogleGenAI {
   return google;
 }
 
+function getDeepSeek(): OpenAI {
+  if (!deepseek) {
+    deepseek = new OpenAI({
+      baseURL: 'https://api.deepseek.com',
+      apiKey: process.env.DEEPSEEK_API_KEY,
+    });
+  }
+  return deepseek;
+}
+
 // detect which provider to use based on model name 
-type Provider = 'openai' | 'anthropic' | 'google';
+type Provider = 'openai' | 'anthropic' | 'google' | 'deepseek';
 
 function detectProvider(model: string): Provider {
   const modelToLower = model.toLowerCase();
@@ -91,6 +102,10 @@ function detectProvider(model: string): Provider {
 
   if (modelToLower.includes('gemini')) {
     return 'google';
+  }
+
+  if (modelToLower.includes('deepseek')) {
+    return 'deepseek';
   }
 
   return 'openai';
@@ -142,6 +157,58 @@ async function callOpenAI(
   }
 
   // Return structured response
+  return {
+    content: choice.message.content || '',
+    usage: {
+      promptTokens: response.usage?.prompt_tokens || 0,
+      completionTokens: response.usage?.completion_tokens || 0,
+      totalTokens: response.usage?.total_tokens || 0,
+    },
+    model: response.model,
+    finishReason: choice.finish_reason,
+  };
+}
+
+async function callDeepseek(
+  messages: Omit<ChatMessage, 'role'>[] | ChatMessage[],
+  systemPrompt: string,
+  options: ChatOptions = {}
+): Promise<ChatResponse> {
+  const { maxTokens: defaultMaxTokens, temperature: defaultTemperature } = getLLMConfig();
+  const {
+    temperature = defaultTemperature,
+    maxTokens = defaultMaxTokens,
+    model = 'deepseek-v4-pro',
+  } = options;
+
+  const formattedMessages: ChatMessage[] = messages.map((msg) => {
+    if (typeof msg === 'string') {
+      return { role: 'user', content: msg };
+    }
+    if ('role' in msg && 'content' in msg) {
+      return msg as ChatMessage;
+    }
+    return { role: 'user', content: (msg as any).content || String(msg) };
+  });
+
+  const fullMessages: ChatMessage[] = [
+    { role: 'system', content: systemPrompt },
+    ...formattedMessages,
+  ];
+
+  // [SIDE-EFFECT] Calls DeepSeek chat completions API; failure triggers fallback in chat().
+  const response = await getDeepSeek().chat.completions.create({
+    model,
+    messages: fullMessages,
+    temperature,
+    max_tokens: maxTokens,
+  });
+
+  const choice = response.choices[0];
+  if (!choice || !choice.message) {
+    throw new Error('No response from DeepSeek');
+  }
+
   return {
     content: choice.message.content || '',
     usage: {
@@ -323,12 +390,18 @@ function buildFallbackChain(primaryModel: string): Array<{ provider: Provider; m
   if (fallbackChain.length === 1) {
     console.log('No fallback models configured in AI_MODEL_FALLBACKS. Using default fallbacks.');
     fallbackChain.push(
-      { provider: 'anthropic', model: 'claude-haiku-4-5-20251001', reason: 'Default fallback 1' },
-      { provider: 'openai', model: 'gpt-4o', reason: 'Default fallback 2' }
+      { provider: 'deepseek', model: 'deepseek-v4-pro', reason: 'Default fallback 1 (DeepSeek)' },
+      { provider: 'anthropic', model: 'claude-haiku-4-5-20251001', reason: 'Default fallback 2' },
+      { provider: 'openai', model: 'gpt-4o', reason: 'Default fallback 3' }
     );
   }
-  
-  return fallbackChain;
+
+  return fallbackChain.filter((entry) => {
+    if (entry.provider === 'deepseek' && !process.env.DEEPSEEK_API_KEY?.trim()) {
+      return false;
+    }
+    return true;
+  });
 }
 
 // Intelligent fallback system with configurable environment variables
@@ -426,6 +499,8 @@ async function callProvider(
       return await callAnthropic(messages, systemPrompt, options);
     case 'google':
       return await callGoogle(messages, systemPrompt, options);
+    case 'deepseek':
+      return await callDeepseek(messages, systemPrompt, options);
     default:
       throw new Error(`Unknown provider: ${provider}`);
   }
@@ -496,6 +571,8 @@ const COST_PER_1K_TOKENS = {
   'claude-haiku-4-5-20251001': 0.00025, // $0.25 per 1M tokens
   'gpt-4o': 0.005, // $5 per 1M tokens
   'gpt-4o-mini': 0.00015, // $0.15 per 1M tokens
+  'deepseek-v4-pro': 0.00014, // approximate; see DeepSeek pricing
+  'deepseek-chat': 0.00014,
 };
 
 function calculateCost(model: string, tokens: number): number {
