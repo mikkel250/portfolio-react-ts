@@ -175,9 +175,13 @@ async function callDeepseek(
     return { role: 'user', content: (msg as any).content || String(msg) };
   });
 
-  const fullMessages: ChatMessage[] = [
-    { role: 'system', content: systemPrompt },
-    ...formattedMessages,
+  // DeepSeek rejects reasoning_content on prior assistant turns; send role + content only.
+  const fullMessages = [
+    { role: 'system' as const, content: systemPrompt },
+    ...formattedMessages.map((msg) => ({
+      role: msg.role,
+      content: msg.content,
+    })),
   ];
 
   // [SIDE-EFFECT] Calls DeepSeek chat completions API; failure triggers fallback in chat().
@@ -186,15 +190,23 @@ async function callDeepseek(
     messages: fullMessages,
     temperature,
     max_tokens: maxTokens,
-  });
+    reasoning_effort: 'high',
+    extra_body: {
+      thinking: { type: 'enabled' },
+    },
+  } as OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming);
 
   const choice = response.choices[0];
   if (!choice || !choice.message) {
     throw new Error('No response from DeepSeek');
   }
 
+  const message = choice.message as OpenAI.Chat.Completions.ChatCompletionMessage & {
+    reasoning_content?: string | null;
+  };
+
   return {
-    content: choice.message.content || '',
+    content: message.content || '',
     usage: {
       promptTokens: response.usage?.prompt_tokens || 0,
       completionTokens: response.usage?.completion_tokens || 0,
