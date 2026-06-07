@@ -1,3 +1,34 @@
+// ---------------------------------------------------------------------------
+// LLM Abstraction Layer — Multi-Provider Chat Interface
+// ---------------------------------------------------------------------------
+// This is the CORE of the AI system. It provides a unified interface
+// (`chat()`) for calling any supported LLM provider with automatic
+// fallback, dual tracing, and cost tracking.
+//
+// Supported providers:
+//   - Google Gemini  (via @google/genai)       — Primary (free tier)
+//   - OpenAI GPT     (via openai SDK)           — Fallback
+//   - Anthropic Claude (via @anthropic-ai/sdk)  — Fallback
+//   - DeepSeek       (via OpenAI-compatible API)— Fallback
+//
+// Architecture:
+//   chat(messages, systemPrompt, options)
+//     ├── buildFallbackChain(primaryModel)
+//     ├── for each provider in chain:
+//     │   ├── callProvider() → callGoogle/callOpenAI/callAnthropic/callDeepseek
+//     │   ├── traceLLMCall() → LangSmith + LangFuse (fire-and-forget)
+//     │   ├── on success: logUsage(), return ChatResponse
+//     │   └── on failure: if isRetryableError → continue, else throw
+//     └── all providers failed → throw
+//
+// Key design decisions:
+//   - Lazy client initialization (avoids build-time errors)
+//   - Unified ChatResponse type across all providers
+//   - Provider-specific adapters handle API differences internally
+//   - Dual tracing (LangSmith + LangFuse) for observability redundancy
+//   - Cost tracking per call for monitoring spend
+// ---------------------------------------------------------------------------
+
 import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
 import { GoogleGenAI } from '@google/genai';
@@ -401,13 +432,17 @@ export async function chat(
       // Trace the failure (fire and forget)
       traceLLMCall(provider, model, messages as ChatMessage[], systemPrompt, {
         content: `Error: ${error.message}`,
-        usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 }
-      } as ChatResponse, startTime, options)
+        usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+        model,
+        finishReason: null,
+      }, startTime, options)
         .catch(err => console.error('Tracing error (LangSmith):', err));
       traceLLMCallLangFuse(provider, model, messages as ChatMessage[], systemPrompt, {
         content: `Error: ${error.message}`,
-        usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 }
-      } as ChatResponse, startTime, options)
+        usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+        model,
+        finishReason: null,
+      }, startTime, options)
         .catch(err => console.error('Tracing error (Langfuse):', err));
       
       // Check if this is a retryable error

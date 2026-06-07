@@ -1,6 +1,24 @@
-// tracks message count per session ID and enforces limits to control costs and/or prevent abuse
+// ---------------------------------------------------------------------------
+// Rate Limiter — In-Memory Per-Session Message Tracking
+// ---------------------------------------------------------------------------
+// Tracks message count per session ID and enforces limits to control
+// LLM API costs and prevent abuse.
+//
+// Architecture: In-memory Map (no external DB/Redis)
+//   - Deliberate MVP trade-off: cold starts reset limits on new deployment
+//   - Acceptable for validation phase with generous limits (15 msgs/hr)
+//   - Can upgrade to Vercel KV or Redis when persistent limits are needed
+//
+// Two tiers of protection:
+//   1. HOUR LIMIT: Max messages per session per rolling hour window
+//   2. BURST DETECTION: Max messages in rapid succession (bot detection)
+//
+// Env vars:
+//   RATE_LIMIT_MAX=15 (default: 15 messages per hour)
+//   RATE_LIMIT_WINDOW=3600 (default: 3600 seconds = 1 hour)
+// ---------------------------------------------------------------------------
 
-// in-memory session store
+// In-memory session store (serverless: resets on cold starts)
 const sessionStore = new Map<string, SessionData>();
 
 // Rate limiting configuration
@@ -9,28 +27,53 @@ const RATE_LIMIT_WINDOW = parseInt(process.env.RATE_LIMIT_WINDOW || '3600'); // 
 const BURST_LIMIT = 3;           // Max messages...
 const BURST_WINDOW = 1000;       // ...within 1 second (1000ms)
 
+/** Single session's rate limit data */
 interface SessionData {
-  count: number;
-  firstMessage: number; // timestamp of first message in session
-  lastMessage: number; // timestamp of last message in session
-  recentMessages: number[];
+  count: number;              // Total messages in current window
+  firstMessage: number;       // Timestamp of first message (window start)
+  lastMessage: number;        // Timestamp of most recent message
+  recentMessages: number[];   // Last 10 message timestamps (for burst detection)
 }
 
+/** Returned by checkRateLimit — whether the message is allowed */
 interface RateLimitResult {
   allowed: boolean;
   remaining: number;
-  resetTime?: number;
-  message?: string;
+  resetTime?: number;         // Unix timestamp when window resets
+  message?: string;           // Human-readable reason when blocked
 }
 
+/**
+ * isBurstLimitExceeded: Bot detection — checks if messages are arriving
+ * too fast (more than BURST_LIMIT within BURST_WINDOW ms).
+ *
+ * Example: If BURST_LIMIT=3 and BURST_WINDOW=1000ms, more than 3
+ * messages in 1 second triggers a block. This catches scripted/bot
+ * behavior while allowing normal human typing speed.
+ */
 function isBurstLimitExceeded(recentMessages: number[], now: number): boolean {
-  // detect more than the allowed number of messages within a given time window (bot detection/blocking), e.g. 3 msgs in < 1sec
+  // Count messages that arrived within the burst window
   const messagesInWindow = recentMessages.filter(timestamp => (now - timestamp) < BURST_WINDOW);
 
-  // if too fast, likely a bot
+  // If too many messages too fast, likely a bot
   return messagesInWindow.length >= BURST_LIMIT;
 }
 
+/**
+ * checkRateLimit: Main entry point — called on every chat API request.
+ *
+ * Flow:
+ *   1. New session? → Create session, allow (1 message used)
+ *   2. Window expired? → Reset session, allow (1 message used)
+ *   3. Burst detected? → Block (bot protection)
+ *   4. Limit exceeded? → Block with Calendly redirect message
+ *   5. Otherwise → Allow, increment count, return remaining
+ *
+ * Design notes:
+ *   - Tracks timestamps of last 10 messages for burst detection
+ *   - Older timestamps are discarded to prevent memory bloat
+ *   - Block messages include Calendly link so blocked users can still reach out
+ */
 export function checkRateLimit(sessionId: string, ipAddress: string): RateLimitResult {
   const now = Date.now();
   const session = sessionStore.get(sessionId);

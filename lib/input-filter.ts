@@ -1,5 +1,24 @@
-// Input validation and filtering to prevent BS being sent to the AI
-// Client-safe job filtering functions (without fs imports)
+// ---------------------------------------------------------------------------
+// Input Filter — Client-Side & Server-Side Query Validation
+// ---------------------------------------------------------------------------
+// Filters user input BEFORE it hits the LLM API to save costs and
+// prevent abuse. Filtered queries get instant canned responses instead
+// of expensive LLM calls, and don't count against rate limits.
+//
+// Filter categories (in order of priority):
+//   1. Job-specific (salary, work auth, role mismatch, work arrangement)
+//   2. Location queries (pre-written SF location answer)
+//   3. Length check (< 10 chars → too short)
+//   4. Spam detection (repeated chars, keyboard mashing patterns)
+//   5. Generic/greeting queries (offer suggestions instead)
+//
+// Design notes:
+//   - Long queries (> 150-200 chars) bypass most filters because they're
+//     likely legitimate complex queries or pasted job descriptions
+//   - Filter functions return FilterResult or JobFilterResult depending on
+//     whether they produce a canned chat response or just a routing decision
+//   - Moved here from knowledge-base.ts to avoid 'fs' import issues on client
+// ---------------------------------------------------------------------------
 
 export interface FilterResult {
   shouldCallAPI: boolean;
@@ -235,6 +254,19 @@ function checkWorkArrangementQuery(query: string): FilterResult {
   return { shouldCallAPI: true };
 }
 
+/**
+ * filterJobCriteria: Checks job-specific criteria that can be answered
+ * without calling the LLM.
+ *
+ * Three checks (each returns early if a match is found):
+ *   1. Work authorization → pre-written answer about US work eligibility
+ *   2. Salary questions → polite redirect to discuss later
+ *   3. Obviously non-matching roles (doctor, teacher, etc.) → polite decline
+ *
+ * Only triggers for job-related queries (isJobDescriptionQuery or
+ * isJobRelatedQuery). Software engineering indicators bypass the role
+ * mismatch check to avoid false positives on terms like "delivery".
+ */
 export function filterJobCriteria(query: string): JobFilterResult {
   // Check if this is a job-related query
   if (!isJobDescriptionQuery(query) && !isJobRelatedQuery(query)) {
@@ -262,6 +294,28 @@ export function filterJobCriteria(query: string): JobFilterResult {
   return { shouldProceed: true };
 }
 
+/**
+ * filterInput: Main entry point for input filtering.
+ *
+ * Called from ChatInterface.tsx (client-side, before API call) and
+ * from app/api/chat/route.ts (server-side, as defense-in-depth).
+ *
+ * Pipeline (in order):
+ *   1. filterJobCriteria() — role mismatch, work auth, salary
+ *   2. checkLocationQuery() — SF location canned response
+ *   3. checkWorkArrangementQuery() — W2/C2C/1099 info
+ *   4. Follow-up detection — if previous message had '?' and this is short
+ *   5. Length check — too short (< 10 chars)
+ *   6. Spam detection — repeated chars, keyboard patterns
+ *   7. Generic queries — greetings, vague questions
+ *
+ * Returns FilterResult with shouldCallAPI=false for filtered queries
+ * (skip API, show canned response). Filtered queries don't count
+ * against rate limits.
+ *
+ * @param query - The user's input text
+ * @param conversationHistory - Array of previous message contents (for context)
+ */
 export function filterInput(query: string, conversationHistory: string[]): FilterResult {
   const trimmed = query.trim();
   
