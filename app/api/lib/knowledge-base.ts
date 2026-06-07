@@ -179,6 +179,7 @@ export function getRelevantContext(query: string): string {
     contexts.push(loadKBFile(KB_CONFIG.files.skills));
     contexts.push(loadKBFile(KB_CONFIG.files.projects));
     contexts.push(loadKBFile(KB_CONFIG.files.careerStory));
+    contexts.push(loadKBFile(KB_CONFIG.files.metaProject));
     return contexts.filter(context => context.length > 0).join('\n\n--\n\n');
   }
 

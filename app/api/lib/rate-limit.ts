@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------
-// Rate Limiter — In-Memory Per-Session Message Tracking
+// Rate Limiter — In-Memory Per-IP Message Tracking
 // ---------------------------------------------------------------------------
-// Tracks message count per session ID and enforces limits to control
+// Tracks message count per IP address and enforces limits to control
 // LLM API costs and prevent abuse.
 //
 // Architecture: In-memory Map (no external DB/Redis)
@@ -10,15 +10,18 @@
 //   - Can upgrade to Vercel KV or Redis when persistent limits are needed
 //
 // Two tiers of protection:
-//   1. HOUR LIMIT: Max messages per session per rolling hour window
+//   1. HOUR LIMIT: Max messages per IP per rolling hour window
 //   2. BURST DETECTION: Max messages in rapid succession (bot detection)
+//
+// Rate limiting by IP address (server-derived) instead of sessionId
+// (client-controlled) to prevent trivial bypass attacks.
 //
 // Env vars:
 //   RATE_LIMIT_MAX=15 (default: 15 messages per hour)
 //   RATE_LIMIT_WINDOW=3600 (default: 3600 seconds = 1 hour)
 // ---------------------------------------------------------------------------
 
-// In-memory session store (serverless: resets on cold starts)
+// In-memory IP store (serverless: resets on cold starts)
 const sessionStore = new Map<string, SessionData>();
 
 // Rate limiting configuration
@@ -27,7 +30,7 @@ const RATE_LIMIT_WINDOW = parseInt(process.env.RATE_LIMIT_WINDOW || '3600'); // 
 const BURST_LIMIT = 3;           // Max messages...
 const BURST_WINDOW = 1000;       // ...within 1 second (1000ms)
 
-/** Single session's rate limit data */
+/** Single IP's rate limit data */
 interface SessionData {
   count: number;              // Total messages in current window
   firstMessage: number;       // Timestamp of first message (window start)
@@ -70,13 +73,14 @@ function isBurstLimitExceeded(recentMessages: number[], now: number): boolean {
  *   5. Otherwise → Allow, increment count, return remaining
  *
  * Design notes:
+ *   - Keys by ipAddress (server-derived) instead of sessionId (client-controlled)
  *   - Tracks timestamps of last 10 messages for burst detection
  *   - Older timestamps are discarded to prevent memory bloat
  *   - Block messages include Calendly link so blocked users can still reach out
  */
 export function checkRateLimit(sessionId: string, ipAddress: string): RateLimitResult {
   const now = Date.now();
-  const session = sessionStore.get(sessionId);
+  const session = sessionStore.get(ipAddress);
 
   // if no session exists, create a new one
   if (!session) {
@@ -87,7 +91,7 @@ export function checkRateLimit(sessionId: string, ipAddress: string): RateLimitR
       recentMessages: [now]
     };
 
-    sessionStore.set(sessionId, newSession);
+    sessionStore.set(ipAddress, newSession);
 
     return {
       allowed: true,
@@ -138,7 +142,7 @@ export function checkRateLimit(sessionId: string, ipAddress: string): RateLimitR
     session.recentMessages = session.recentMessages.slice(-10);
   }
 
-  sessionStore.set(sessionId, session);
+  sessionStore.set(ipAddress, session);
 
   // check if limit exceeded
   if (session.count > RATE_LIMIT_MAX) {
@@ -159,9 +163,9 @@ export function checkRateLimit(sessionId: string, ipAddress: string): RateLimitR
   };
 }
 
-export function getRateLimitStatus(sessionId: string): RateLimitResult {
+export function getRateLimitStatus(ipAddress: string): RateLimitResult {
   const now = Date.now();
-  const session = sessionStore.get(sessionId);
+  const session = sessionStore.get(ipAddress);
 
   if (!session) {
     return {
@@ -192,9 +196,9 @@ export function getRateLimitStatus(sessionId: string): RateLimitResult {
   };
 }
 
-// reset limit for specific session (admin function)
-export function resetRateLimit(sessionId: string): void {
-  sessionStore.delete(sessionId);
+// reset limit for specific IP address (admin function)
+export function resetRateLimit(ipAddress: string): void {
+  sessionStore.delete(ipAddress);
 }
 
 // get rate limit configuration
@@ -211,9 +215,9 @@ export function cleanupExpiredSessions(): number {
   const windowMs = RATE_LIMIT_WINDOW * 1000;
   let cleanedCount = 0;
 
-  for (const [sessionId, session] of sessionStore.entries()) {
+  for (const [ipAddress, session] of sessionStore.entries()) {
     if ((now - session.lastMessage) > windowMs) {
-      sessionStore.delete(sessionId);
+      sessionStore.delete(ipAddress);
       cleanedCount++;
     }
   }
@@ -221,7 +225,7 @@ export function cleanupExpiredSessions(): number {
   return cleanedCount;
 }
 
-// get session statistics (for monitoring/debugging)
+// get IP statistics (for monitoring/debugging)
 export function getSessionStats() {
   const now = Date.now();
   const windowMs = RATE_LIMIT_WINDOW * 1000;
