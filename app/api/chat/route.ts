@@ -69,23 +69,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get client IP for rate limiting (from Vercel edge headers)
-    const ipAddress = resolveClientIp(request.headers);
-
-    // STEP 2: Rate limiting — check hourly quota + burst detection
-    const rateLimit = checkRateLimit(sessionId, ipAddress);
-
-    if (!rateLimit.allowed) {
-      return NextResponse.json(
-        {
-          error: rateLimit.message || 'Rate Limit exceeded',
-          remaining: rateLimit.remaining,
-          resetTime: rateLimit.resetTime
-        },
-        { status: 429 }
-      );
-    }
-
     // Get the latest user message (the one they just sent)
     const latestMessage = messages[messages.length - 1];
     if (!latestMessage || latestMessage.role !== 'user') {
@@ -97,15 +80,16 @@ export async function POST(request: NextRequest) {
 
     const query = latestMessage.content;
 
-    // STEP 3: Server-side input filtering (defense-in-depth).
+    // STEP 2: Server-side input filtering (defense-in-depth).
     // The client also filters, but server-side catches edge cases and
     // prevents direct API abuse. Filtered queries get canned responses
     // without hitting the LLM, saving costs.
-    const conversationHistory = messages.map(m => m.content);
+    // IMPORTANT: This runs BEFORE rate limiting so filtered queries don't count.
+    const conversationHistory = messages.slice(0, -1).map(m => m.content);
     const filterResult = filterInput(query, conversationHistory);
 
     if (!filterResult.shouldCallAPI) {
-      console.log(`[Filter] Blocked query (${filterResult.reason}): ${query.substring(0, 50)}...`);
+      console.log(`[Filter] Blocked query (${filterResult.reason}), length: ${query.length}, sessionId: ${sessionId}`);
 
       // Return canned response — no LLM tokens used, no rate limit counted
       return NextResponse.json({
@@ -118,6 +102,28 @@ export async function POST(request: NextRequest) {
         model: 'filtered',
         remaining: null, // Filtered queries don't count against rate limit
       });
+    }
+
+    // Get client IP for rate limiting (from Vercel edge headers)
+    // Normalize x-forwarded-for by taking the first entry (original client IP)
+    const forwardedFor = request.headers.get('x-forwarded-for');
+    const ipAddress = forwardedFor
+      ? forwardedFor.split(',')[0].trim()
+      : request.headers.get('x-real-ip') || 'unknown';
+
+    // STEP 3: Rate limiting — check hourly quota + burst detection
+    // Only called for non-filtered requests
+    const rateLimit = checkRateLimit(sessionId, ipAddress);
+
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          error: rateLimit.message || 'Rate Limit exceeded',
+          remaining: rateLimit.remaining,
+          resetTime: rateLimit.resetTime
+        },
+        { status: 429 }
+      );
     }
 
     // STEP 4: Knowledge base retrieval (keyword-based RAG).

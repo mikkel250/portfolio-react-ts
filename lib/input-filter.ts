@@ -311,10 +311,12 @@ export function filterJobCriteria(query: string): JobFilterResult {
  *
  * Returns FilterResult with shouldCallAPI=false for filtered queries
  * (skip API, show canned response). Filtered queries don't count
- * against rate limits.
+ * against rate limits (the chat route checks filters before calling
+ * checkRateLimit).
  *
  * @param query - The user's input text
- * @param conversationHistory - Array of previous message contents (for context)
+ * @param conversationHistory - Array of previous message contents (for context),
+ *   excluding the current user message being filtered
  */
 export function filterInput(query: string, conversationHistory: string[]): FilterResult {
   const trimmed = query.trim();

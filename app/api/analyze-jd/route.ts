@@ -71,7 +71,10 @@ export async function POST(request: NextRequest) {
     }
 
     // get IP address for rate limiting
-    const ipAddress = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+    // Normalize x-forwarded-for by taking the first entry (original client IP)
+    const forwardedFor = request.headers.get('x-forwarded-for');
+    const firstIp = forwardedFor ? forwardedFor.split(',')[0].trim() : '';
+    const ipAddress = firstIp || request.headers.get('x-real-ip') || 'unknown';
 
     // check rate limit
     const rateLimit = checkRateLimit(sessionId, ipAddress);
