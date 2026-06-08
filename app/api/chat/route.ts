@@ -24,7 +24,7 @@ import { FilterResult } from './../../../lib/input-filter';
 /* eslint-disable import/first */
 export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
-import { checkRateLimit } from '../lib/rate-limit';
+import { checkRateLimit, resolveClientIp } from '../lib/rate-limit';
 import { getRelevantContext, extractJobTitle } from '../lib/knowledge-base';
 import { buildChatSystemPrompt } from '../lib/prompts';
 import { chat, ChatMessage } from '../lib/llm';
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get client IP for rate limiting (from Vercel edge headers)
-    const ipAddress = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+    const ipAddress = resolveClientIp(request.headers);
 
     // STEP 2: Rate limiting — check hourly quota + burst detection
     const rateLimit = checkRateLimit(sessionId, ipAddress);

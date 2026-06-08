@@ -21,6 +21,29 @@
 // In-memory session store (serverless: resets on cold starts)
 const sessionStore = new Map<string, SessionData>();
 
+// Per-IP store — missing IPs share one globally throttled bucket
+const ipStore = new Map<string, SessionData>();
+
+/** Sentinel for requests without x-forwarded-for / x-real-ip (shared global bucket) */
+export const MISSING_IP_KEY = '__missing-ip__';
+
+/**
+ * resolveClientIp: Extract client IP from proxy headers.
+ * Returns MISSING_IP_KEY when headers are absent so callers cannot share an 'unknown' slot.
+ */
+export function resolveClientIp(headers: Headers): string {
+  const forwarded = headers.get('x-forwarded-for');
+  if (forwarded) {
+    const clientIp = forwarded.split(',')[0]?.trim();
+    if (clientIp) return clientIp;
+  }
+
+  const realIp = headers.get('x-real-ip')?.trim();
+  if (realIp) return realIp;
+
+  return MISSING_IP_KEY;
+}
+
 // Rate limiting configuration
 const RATE_LIMIT_MAX = parseInt(process.env.RATE_LIMIT_MAX || '15');
 const RATE_LIMIT_WINDOW = parseInt(process.env.RATE_LIMIT_WINDOW || '3600'); // 1 hour in seconds
@@ -59,6 +82,89 @@ function isBurstLimitExceeded(recentMessages: number[], now: number): boolean {
   return messagesInWindow.length >= BURST_LIMIT;
 }
 
+function consumeRateLimitBucket(
+  store: Map<string, SessionData>,
+  key: string,
+  now: number,
+  burstMessage: string,
+  limitMessage: (resetTime: number) => string
+): RateLimitResult {
+  const session = store.get(key);
+
+  if (!session) {
+    const newSession: SessionData = {
+      count: 1,
+      firstMessage: now,
+      lastMessage: now,
+      recentMessages: [now]
+    };
+
+    store.set(key, newSession);
+
+    return {
+      allowed: true,
+      remaining: RATE_LIMIT_MAX - 1,
+      resetTime: now + (RATE_LIMIT_WINDOW * 1000)
+    };
+  }
+
+  const windowExpired = (now - session.firstMessage) > (RATE_LIMIT_WINDOW * 1000);
+
+  if (windowExpired) {
+    const resetSession: SessionData = {
+      count: 1,
+      firstMessage: now,
+      lastMessage: now,
+      recentMessages: [now]
+    };
+
+    store.set(key, resetSession);
+
+    return {
+      allowed: true,
+      remaining: RATE_LIMIT_MAX - 1,
+      resetTime: now + (RATE_LIMIT_WINDOW * 1000)
+    };
+  }
+
+  if (isBurstLimitExceeded(session.recentMessages || [], now)) {
+    return {
+      allowed: false,
+      remaining: 0,
+      message: burstMessage
+    };
+  }
+
+  session.count++;
+  session.lastMessage = now;
+
+  session.recentMessages = session.recentMessages || [];
+  session.recentMessages.push(now);
+
+  if (session.recentMessages.length > 10) {
+    session.recentMessages = session.recentMessages.slice(-10);
+  }
+
+  store.set(key, session);
+
+  if (session.count > RATE_LIMIT_MAX) {
+    const resetTime = session.firstMessage + (RATE_LIMIT_WINDOW * 1000);
+
+    return {
+      allowed: false,
+      remaining: 0,
+      resetTime,
+      message: limitMessage(resetTime)
+    };
+  }
+
+  return {
+    allowed: true,
+    remaining: RATE_LIMIT_MAX - session.count,
+    resetTime: session.firstMessage + (RATE_LIMIT_WINDOW * 1000)
+  };
+}
+
 /**
  * checkRateLimit: Main entry point — called on every chat API request.
  *
@@ -76,86 +182,41 @@ function isBurstLimitExceeded(recentMessages: number[], now: number): boolean {
  */
 export function checkRateLimit(sessionId: string, ipAddress: string): RateLimitResult {
   const now = Date.now();
-  const session = sessionStore.get(sessionId);
 
-  // if no session exists, create a new one
-  if (!session) {
-    const newSession: SessionData = {
-      count: 1,
-      firstMessage: now,
-      lastMessage: now,
-      recentMessages: [now]
-    };
+  const ipResult = consumeRateLimitBucket(
+    ipStore,
+    ipAddress,
+    now,
+    ipAddress === MISSING_IP_KEY
+      ? 'Too many requests without verifiable origin. Please try again later.'
+      : 'Too many requests from this network. Please slow down and try again.',
+    (resetTime) =>
+      ipAddress === MISSING_IP_KEY
+        ? `Request limit reached for unverified origins. Please try again in ${Math.ceil((resetTime - now) / 60000)} minutes.`
+        : `Network request limit reached (${RATE_LIMIT_MAX} messages per hour). Please try again in ${Math.ceil((resetTime - now) / 60000)} minutes.`
+  );
 
-    sessionStore.set(sessionId, newSession);
-
-    return {
-      allowed: true,
-      remaining: RATE_LIMIT_MAX - 1,
-      resetTime: now + (RATE_LIMIT_WINDOW * 1000)
-    };
+  if (!ipResult.allowed) {
+    return ipResult;
   }
 
-  // check if window has expired
-  const windowExpired = (now - session.firstMessage) > (RATE_LIMIT_WINDOW * 1000);  // more than 1hr in milliseconds
+  const sessionResult = consumeRateLimitBucket(
+    sessionStore,
+    sessionId,
+    now,
+    'This session has been flagged by bot detection! Too many messages sent too quickly, slow down and try again.',
+    (resetTime) =>
+      `Message limit reached (${RATE_LIMIT_MAX} messages per hour). Please try again in ${Math.ceil((resetTime - now) / 60000)} minutes, or you can speak with ${process.env.CANDIDATE_FIRSTNAME} directly by booking an appointment: ${process.env.NEXT_PUBLIC_CALENDLY_LINK || process.env.ADMIN_EMAIL}.`
+  );
 
-  if (windowExpired) {
-    // reset the session
-    const resetSession: SessionData = {
-      count: 1,
-      firstMessage: now,
-      lastMessage: now,
-      recentMessages: [now]
-    };
-
-    sessionStore.set(sessionId, resetSession);
-
-    return {
-      allowed: true,
-      remaining: RATE_LIMIT_MAX - 1,
-      resetTime: now + (RATE_LIMIT_WINDOW * 1000)
-    }
-  }
-
-  if (isBurstLimitExceeded(session.recentMessages || [], now)) {
-    return {
-      allowed: false,
-      remaining: 0,
-      message: 'This session has been flagged by bot detection! Too many messages sent too quickly, slow down and try again.'
-    }
-  }
-
-  // increment message count
-  session.count++;
-  session.lastMessage = now;
-
-  // track this message timestamp for burst detection
-  session.recentMessages = session.recentMessages || [];
-  session.recentMessages.push(now);
-
-  // keep only 10 timestamps to prevent memory bloat
-  if (session.recentMessages.length > 10) {
-    session.recentMessages = session.recentMessages.slice(-10);
-  }
-
-  sessionStore.set(sessionId, session);
-
-  // check if limit exceeded
-  if (session.count > RATE_LIMIT_MAX) {
-    const resetTime = session.firstMessage + (RATE_LIMIT_WINDOW * 1000);
-
-    return {
-      allowed: false,
-      remaining: 0,
-      resetTime,
-      message: `Message limit reached (${RATE_LIMIT_MAX} messages per hour). Please try again in ${Math.ceil((resetTime - now) / 60000)} minutes, or you can speak with ${process.env.CANDIDATE_FIRSTNAME} directly by booking an appointment: ${process.env.NEXT_PUBLIC_CALENDLY_LINK || process.env.ADMIN_EMAIL}.`
-    }
+  if (!sessionResult.allowed) {
+    return sessionResult;
   }
 
   return {
     allowed: true,
-    remaining: RATE_LIMIT_MAX - session.count,
-    resetTime: session.firstMessage + (RATE_LIMIT_WINDOW * 1000)
+    remaining: Math.min(ipResult.remaining, sessionResult.remaining),
+    resetTime: Math.max(ipResult.resetTime ?? 0, sessionResult.resetTime ?? 0)
   };
 }
 
