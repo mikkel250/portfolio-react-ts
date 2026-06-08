@@ -25,10 +25,12 @@
 
 export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
-import { checkRateLimit } from '../lib/rate-limit';
+import { checkRateLimit, resolveClientIp } from '../lib/rate-limit';
 import { getAllContext, extractJobTitle } from '../lib/knowledge-base';
 import { compilePrompt } from '../lib/langfuse-prompts';
 import { chat } from '../lib/llm';
+
+const MAX_JD_CHARS = 50_000;
 
 /** Shape of the JSON body expected from the client for JD analysis */
 interface JDAnalysisRequest {
@@ -63,6 +65,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (jobDescription.length > MAX_JD_CHARS) {
+      return NextResponse.json(
+        { error: `Job description must not exceed ${MAX_JD_CHARS} characters.` },
+        { status: 400 }
+      );
+    }
+
     if (!sessionId) {
       return NextResponse.json(
         { error: 'Session ID is required.' },
@@ -70,11 +79,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // get IP address for rate limiting
-    // Normalize x-forwarded-for by taking the first entry (original client IP)
-    const forwardedFor = request.headers.get('x-forwarded-for');
-    const firstIp = forwardedFor ? forwardedFor.split(',')[0].trim() : '';
-    const ipAddress = firstIp || request.headers.get('x-real-ip') || 'unknown';
+    const ipAddress = resolveClientIp(request.headers);
 
     // check rate limit
     const rateLimit = checkRateLimit(sessionId, ipAddress);

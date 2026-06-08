@@ -437,12 +437,21 @@ export async function chat(
         finishReason: null,
       }, startTime, options)
         .catch(err => console.error('Tracing error (LangSmith):', err));
-      traceLLMCallLangFuse(provider, model, messages as ChatMessage[], systemPrompt, {
-        content: `Error: ${error.message}`,
-        usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+      traceLLMCallLangFuse(
+        provider,
         model,
-        finishReason: null,
-      }, startTime, options)
+        messages as ChatMessage[],
+        systemPrompt,
+        {
+          content: `Error: ${error.message}`,
+          usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+          model,
+          finishReason: null,
+        },
+        startTime,
+        options,
+        (options as any).langfusePrompt
+      )
         .catch(err => console.error('Tracing error (Langfuse):', err));
       
       // Check if this is a retryable error

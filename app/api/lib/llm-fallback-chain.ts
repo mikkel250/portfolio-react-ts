@@ -52,6 +52,21 @@ export function detectProvider(model: string): Provider {
   return 'openai';
 }
 
+function providerHasApiKey(provider: Provider, env: NodeJS.ProcessEnv): boolean {
+  switch (provider) {
+    case 'openai':
+      return !!env.OPENAI_API_KEY?.trim();
+    case 'anthropic':
+      return !!env.ANTHROPIC_API_KEY?.trim();
+    case 'google':
+      return !!env.GOOGLE_API_KEY?.trim();
+    case 'deepseek':
+      return !!env.DEEPSEEK_API_KEY?.trim();
+    default:
+      return false;
+  }
+}
+
 /**
  * buildFallbackChain: Constructs the ordered fallback chain for LLM calls.
  *
@@ -125,13 +140,15 @@ export function buildFallbackChain(
   }
 
   // Step 4: Filter out providers that don't have API keys configured
-  // This avoids trying providers that will definitely fail (401/403)
-  return fallbackChain.filter((entry) => {
-    if (entry.provider === 'deepseek' && !env.DEEPSEEK_API_KEY?.trim()) {
-      return false;
-    }
-    return true;
-  });
+  const configuredChain = fallbackChain.filter((entry) =>
+    providerHasApiKey(entry.provider, env)
+  );
+
+  if (configuredChain.length === 0) {
+    throw new Error('No LLM providers configured with valid API keys');
+  }
+
+  return configuredChain;
 }
 
 /**

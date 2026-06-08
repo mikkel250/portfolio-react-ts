@@ -6,7 +6,7 @@
 //
 // Request Flow (in order):
 //   1. Request validation (messages array, sessionId)
-//   2. Rate limiting check (per-session, per-hour + burst detection)
+//   2. Rate limiting check (per-IP + per-session, hourly + burst)
 //   3. Server-side input filtering (defense-in-depth, catches what client missed)
 //   4. Knowledge base retrieval (keyword-based RAG from markdown files)
 //   5. System prompt assembly (LangFuse → hardcoded fallback)
@@ -15,21 +15,23 @@
 //
 // Key Design Decisions:
 //   - Runtime: 'nodejs' (required for fs module in KB, gRPC in OpenTelemetry)
-//   - Filtered queries don't count against rate limits (saves costs)
+//   - All requests are rate-limited; filtered queries skip LLM cost only
 //   - Failed LLM calls automatically fall back through provider chain
 //   - Tracing (LangSmith + LangFuse) is fire-and-forget
 // ---------------------------------------------------------------------------
 
-import { FilterResult } from './../../../lib/input-filter';
 /* eslint-disable import/first */
 export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
 import { checkRateLimit, resolveClientIp } from '../lib/rate-limit';
-import { getRelevantContext, extractJobTitle } from '../lib/knowledge-base';
+import { getRelevantContext } from '../lib/knowledge-base';
 import { buildChatSystemPrompt } from '../lib/prompts';
 import { chat, ChatMessage } from '../lib/llm';
 import { filterInput } from '@/lib/input-filter';
 /* eslint-disable import/first */
+
+const MAX_MESSAGES = 50;
+const MAX_MESSAGE_CHARS = 32_768;
 
 /** Shape of the JSON body expected from the client */
 interface ChatRequest {
@@ -69,6 +71,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (messages.length > MAX_MESSAGES) {
+      return NextResponse.json(
+        { error: `Messages array must not exceed ${MAX_MESSAGES} entries.` },
+        { status: 400 }
+      );
+    }
+
+    for (const message of messages) {
+      if (
+        typeof message?.content !== 'string' ||
+        message.content.length > MAX_MESSAGE_CHARS
+      ) {
+        return NextResponse.json(
+          { error: `Each message must be a string of at most ${MAX_MESSAGE_CHARS} characters.` },
+          { status: 400 }
+        );
+      }
+    }
+
     // Get the latest user message (the one they just sent)
     const latestMessage = messages[messages.length - 1];
     if (!latestMessage || latestMessage.role !== 'user') {
@@ -79,40 +100,9 @@ export async function POST(request: NextRequest) {
     }
 
     const query = latestMessage.content;
+    const ipAddress = resolveClientIp(request.headers);
 
-    // STEP 2: Server-side input filtering (defense-in-depth).
-    // The client also filters, but server-side catches edge cases and
-    // prevents direct API abuse. Filtered queries get canned responses
-    // without hitting the LLM, saving costs.
-    // IMPORTANT: This runs BEFORE rate limiting so filtered queries don't count.
-    const conversationHistory = messages.slice(0, -1).map(m => m.content);
-    const filterResult = filterInput(query, conversationHistory);
-
-    if (!filterResult.shouldCallAPI) {
-      console.log(`[Filter] Blocked query (${filterResult.reason}), length: ${query.length}, sessionId: ${sessionId}`);
-
-      // Return canned response — no LLM tokens used, no rate limit counted
-      return NextResponse.json({
-        content: filterResult.response || 'Invalid input',
-        usage: {
-          promptTokens: 0,
-          completionTokens: 0,
-          totalTokens: 0,
-        },
-        model: 'filtered',
-        remaining: null, // Filtered queries don't count against rate limit
-      });
-    }
-
-    // Get client IP for rate limiting (from Vercel edge headers)
-    // Normalize x-forwarded-for by taking the first entry (original client IP)
-    const forwardedFor = request.headers.get('x-forwarded-for');
-    const ipAddress = forwardedFor
-      ? forwardedFor.split(',')[0].trim()
-      : request.headers.get('x-real-ip') || 'unknown';
-
-    // STEP 3: Rate limiting — check hourly quota + burst detection
-    // Only called for non-filtered requests
+    // STEP 2: Rate limiting — per-IP + per-session before filter/LLM work
     const rateLimit = checkRateLimit(sessionId, ipAddress);
 
     if (!rateLimit.allowed) {
@@ -124,6 +114,26 @@ export async function POST(request: NextRequest) {
         },
         { status: 429 }
       );
+    }
+
+    // STEP 3: Server-side input filtering (defense-in-depth).
+    const conversationHistory = messages.slice(0, -1).map(m => m.content);
+    const filterResult = filterInput(query, conversationHistory);
+
+    if (!filterResult.shouldCallAPI) {
+      console.log(`[Filter] Blocked query (${filterResult.reason}), length: ${query.length}, sessionId: ${sessionId}`);
+
+      return NextResponse.json({
+        content: filterResult.response || 'Invalid input',
+        usage: {
+          promptTokens: 0,
+          completionTokens: 0,
+          totalTokens: 0,
+        },
+        model: 'filtered',
+        remaining: rateLimit.remaining,
+        resetTime: rateLimit.resetTime,
+      });
     }
 
     // STEP 4: Knowledge base retrieval (keyword-based RAG).
@@ -166,7 +176,10 @@ export async function POST(request: NextRequest) {
     console.error('Chat API Error:', error);
 
     // Specific error types → meaningful HTTP status codes
-    if (error.message?.includes('OpenAI')) {
+    if (
+      error.message?.includes('OpenAI') ||
+      error.message?.includes('All LLM providers failed')
+    ) {
       return NextResponse.json(
         { error: 'AI service error. Please try again.' },
         { status: 503 }

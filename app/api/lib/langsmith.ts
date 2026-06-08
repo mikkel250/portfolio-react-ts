@@ -63,23 +63,14 @@ export async function traceLLMCall(
   startTime: number,
   options: any = {}
 ): Promise<void> {
-  console.log('🔍 traceLLMCall invoked with:', {
-    hasTracing: !!process.env.LANGSMITH_TRACING,
-    tracingValue: process.env.LANGSMITH_TRACING,
-    hasApiKey: !!process.env.LANGSMITH_API_KEY,
-    provider,
-    model
-  });
   try {
     // Gate: Only trace when LANGSMITH_TRACING is explicitly 'true'
     if (!process.env.LANGSMITH_TRACING || process.env.LANGSMITH_TRACING !== 'true') {
-      console.log('❌ Tracing disabled or not set to true');
       return;
     }
 
     const client = initLangSmith();
     if (!client) {
-      console.log('LangSmith client not initialized!');
       return;
     }
 
@@ -114,7 +105,6 @@ export async function traceLLMCall(
 
     // Submit trace to LangSmith (blocking await, but called in fire-and-forget context)
     await client.createRun(traceData);
-    console.log(`Langsmith trace submitted for ${provider}/${model}`);
   } catch (error) {
     // CRITICAL: Never throw from tracing — let the request go through
     console.error('LangSmith trace failed:', error);

@@ -94,10 +94,6 @@ function checkWorkAuthorizationQuery(query: string): JobFilterResult {
   const hasAuthPattern = authPatterns.some(pattern => pattern.test(query));
   
   if (hasAuthPattern) {
-    if (query.length >= 200) {
-      return { shouldProceed: true };
-    }
-
     return {
       shouldProceed: false,
       response: "Mikkel is authorized to work in the United States and does not require visa sponsorship.",
@@ -127,7 +123,7 @@ function checkSalaryQuery(query: string): JobFilterResult {
   // Only trigger for questions, not for job descriptions that might mention these terms
   const isSalaryQuestion = salaryQuestionPatterns.some(pattern => pattern.test(query));
   
-  if (isSalaryQuestion && query.length < 200) { // Avoid matching job descriptions
+  if (isSalaryQuestion) {
     return {
       shouldProceed: false,
       response: "Mikkel would be happy to discuss compensation expectations once there's a conversation about the role and opportunity. His absolute minimum expectation is that the pay is equivalent to a living wage for someone living and paying rent in downtown San Francisco. Please feel free to reach out if you'd like to learn more about his background and experience!",
@@ -202,10 +198,6 @@ function checkLocationQuery(query: string): FilterResult {
   const hasLocationPattern = locationPatterns.some((pattern) => pattern.test(query));
   
   if (hasLocationPattern) {
-    if (query.length >= 200) {
-      return { shouldCallAPI: true };
-    }
-    
     return {
       shouldCallAPI: false,
       response: "Mikkel is located in San Francisco, CA. His recent roles at SFMOMA and Intrinsic (Alphabet/Google) were hybrid rolesbased in San Francisco Bay Area, and he also has extensive experience working effectively in fully remote environments for companies like Jefferson Health. He is also open to fully onsite roles, with preference for geographical proximity to downtown San Francisco.",
@@ -240,10 +232,6 @@ function checkWorkArrangementQuery(query: string): FilterResult {
   );
   
   if (hasWorkArrangementPattern) {
-    if (query.length >= 200) {
-      return { shouldCallAPI: true};
-    }
-
     return {
       shouldCallAPI: false,
       response: "Mikkel is flexible with work arrangements and has experience with multiple employment setups:\n\n**Full-time/Salary**: He is open to full-time salaried positions and has experience in both traditional employment and contract roles.\n\n**Contract**: He can work in all three types of contract arrangements:\n- **W2 Contract**: Standard W2 contractor arrangements\n- **1099**: Independent contractor (1099) arrangements\n- **C2C (Corp-to-Corp)**: Yes, he can work on a C2C basis.\n\nArrangements other than W2 would involve a 25% higher rate since he is paying all taxes, benefits, and unpaid time off on that income, this is the minimum increase to account for that difference.\n\nNote: While he can work in all three contract types, if C2C is a hard requirement, he would need to discuss the details of this arrangement directly with the client.\n\nHis background includes successful long and short-term contracts at major organizations like Intrinsic (Alphabet/Google) for 5 months and Jefferson Health, where an initial 4-month contract was extended to 1 year and 2 months due to outstanding performance.",

@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------
-// Rate Limiter — In-Memory Per-IP Message Tracking
+// Rate Limiter — In-Memory Per-Session Message Tracking
 // ---------------------------------------------------------------------------
-// Tracks message count per IP address and enforces limits to control
+// Tracks message count per session ID and enforces limits to control
 // LLM API costs and prevent abuse.
 //
 // Architecture: In-memory Map (no external DB/Redis)
@@ -10,18 +10,15 @@
 //   - Can upgrade to Vercel KV or Redis when persistent limits are needed
 //
 // Two tiers of protection:
-//   1. HOUR LIMIT: Max messages per IP per rolling hour window
+//   1. HOUR LIMIT: Max messages per session per rolling hour window
 //   2. BURST DETECTION: Max messages in rapid succession (bot detection)
-//
-// Rate limiting by IP address (server-derived) instead of sessionId
-// (client-controlled) to prevent trivial bypass attacks.
 //
 // Env vars:
 //   RATE_LIMIT_MAX=15 (default: 15 messages per hour)
 //   RATE_LIMIT_WINDOW=3600 (default: 3600 seconds = 1 hour)
 // ---------------------------------------------------------------------------
 
-// In-memory IP store (serverless: resets on cold starts)
+// In-memory session store (serverless: resets on cold starts)
 const sessionStore = new Map<string, SessionData>();
 
 // Per-IP store — missing IPs share one globally throttled bucket
@@ -53,7 +50,7 @@ const RATE_LIMIT_WINDOW = parseInt(process.env.RATE_LIMIT_WINDOW || '3600'); // 
 const BURST_LIMIT = 3;           // Max messages...
 const BURST_WINDOW = 1000;       // ...within 1 second (1000ms)
 
-/** Single IP's rate limit data */
+/** Single session's rate limit data */
 interface SessionData {
   count: number;              // Total messages in current window
   firstMessage: number;       // Timestamp of first message (window start)
@@ -85,27 +82,15 @@ function isBurstLimitExceeded(recentMessages: number[], now: number): boolean {
   return messagesInWindow.length >= BURST_LIMIT;
 }
 
-/**
- * checkRateLimit: Main entry point — called on every chat API request.
- *
- * Flow:
- *   1. New session? → Create session, allow (1 message used)
- *   2. Window expired? → Reset session, allow (1 message used)
- *   3. Burst detected? → Block (bot protection)
- *   4. Limit exceeded? → Block with Calendly redirect message
- *   5. Otherwise → Allow, increment count, return remaining
- *
- * Design notes:
- *   - Keys by ipAddress (server-derived) instead of sessionId (client-controlled)
- *   - Tracks timestamps of last 10 messages for burst detection
- *   - Older timestamps are discarded to prevent memory bloat
- *   - Block messages include Calendly link so blocked users can still reach out
- */
-export function checkRateLimit(sessionId: string, ipAddress: string): RateLimitResult {
-  const now = Date.now();
-  const session = sessionStore.get(ipAddress);
+function consumeRateLimitBucket(
+  store: Map<string, SessionData>,
+  key: string,
+  now: number,
+  burstMessage: string,
+  limitMessage: (resetTime: number) => string
+): RateLimitResult {
+  const session = store.get(key);
 
-  // if no session exists, create a new one
   if (!session) {
     const newSession: SessionData = {
       count: 1,
@@ -114,7 +99,7 @@ export function checkRateLimit(sessionId: string, ipAddress: string): RateLimitR
       recentMessages: [now]
     };
 
-    sessionStore.set(ipAddress, newSession);
+    store.set(key, newSession);
 
     return {
       allowed: true,
@@ -160,7 +145,7 @@ export function checkRateLimit(sessionId: string, ipAddress: string): RateLimitR
     session.recentMessages = session.recentMessages.slice(-10);
   }
 
-  sessionStore.set(ipAddress, session);
+  store.set(key, session);
 
   if (session.count > RATE_LIMIT_MAX) {
     const resetTime = session.firstMessage + (RATE_LIMIT_WINDOW * 1000);
@@ -180,9 +165,64 @@ export function checkRateLimit(sessionId: string, ipAddress: string): RateLimitR
   };
 }
 
-export function getRateLimitStatus(ipAddress: string): RateLimitResult {
+/**
+ * checkRateLimit: Main entry point — called on every chat API request.
+ *
+ * Flow:
+ *   1. New session? → Create session, allow (1 message used)
+ *   2. Window expired? → Reset session, allow (1 message used)
+ *   3. Burst detected? → Block (bot protection)
+ *   4. Limit exceeded? → Block with Calendly redirect message
+ *   5. Otherwise → Allow, increment count, return remaining
+ *
+ * Design notes:
+ *   - Tracks timestamps of last 10 messages for burst detection
+ *   - Older timestamps are discarded to prevent memory bloat
+ *   - Block messages include Calendly link so blocked users can still reach out
+ */
+export function checkRateLimit(sessionId: string, ipAddress: string): RateLimitResult {
   const now = Date.now();
-  const session = sessionStore.get(ipAddress);
+
+  const ipResult = consumeRateLimitBucket(
+    ipStore,
+    ipAddress,
+    now,
+    ipAddress === MISSING_IP_KEY
+      ? 'Too many requests without verifiable origin. Please try again later.'
+      : 'Too many requests from this network. Please slow down and try again.',
+    (resetTime) =>
+      ipAddress === MISSING_IP_KEY
+        ? `Request limit reached for unverified origins. Please try again in ${Math.ceil((resetTime - now) / 60000)} minutes.`
+        : `Network request limit reached (${RATE_LIMIT_MAX} messages per hour). Please try again in ${Math.ceil((resetTime - now) / 60000)} minutes.`
+  );
+
+  if (!ipResult.allowed) {
+    return ipResult;
+  }
+
+  const sessionResult = consumeRateLimitBucket(
+    sessionStore,
+    sessionId,
+    now,
+    'This session has been flagged by bot detection! Too many messages sent too quickly, slow down and try again.',
+    (resetTime) =>
+      `Message limit reached (${RATE_LIMIT_MAX} messages per hour). Please try again in ${Math.ceil((resetTime - now) / 60000)} minutes, or you can speak with ${process.env.CANDIDATE_FIRSTNAME} directly by booking an appointment: ${process.env.NEXT_PUBLIC_CALENDLY_LINK || process.env.ADMIN_EMAIL}.`
+  );
+
+  if (!sessionResult.allowed) {
+    return sessionResult;
+  }
+
+  return {
+    allowed: true,
+    remaining: Math.min(ipResult.remaining, sessionResult.remaining),
+    resetTime: Math.max(ipResult.resetTime ?? 0, sessionResult.resetTime ?? 0)
+  };
+}
+
+export function getRateLimitStatus(sessionId: string): RateLimitResult {
+  const now = Date.now();
+  const session = sessionStore.get(sessionId);
 
   if (!session) {
     return {
@@ -213,9 +253,9 @@ export function getRateLimitStatus(ipAddress: string): RateLimitResult {
   };
 }
 
-// reset limit for specific IP address (admin function)
-export function resetRateLimit(ipAddress: string): void {
-  sessionStore.delete(ipAddress);
+// reset limit for specific session (admin function)
+export function resetRateLimit(sessionId: string): void {
+  sessionStore.delete(sessionId);
 }
 
 // get rate limit configuration
@@ -232,9 +272,9 @@ export function cleanupExpiredSessions(): number {
   const windowMs = RATE_LIMIT_WINDOW * 1000;
   let cleanedCount = 0;
 
-  for (const [ipAddress, session] of sessionStore.entries()) {
+  for (const [sessionId, session] of sessionStore.entries()) {
     if ((now - session.lastMessage) > windowMs) {
-      sessionStore.delete(ipAddress);
+      sessionStore.delete(sessionId);
       cleanedCount++;
     }
   }
@@ -242,7 +282,7 @@ export function cleanupExpiredSessions(): number {
   return cleanedCount;
 }
 
-// get IP statistics (for monitoring/debugging)
+// get session statistics (for monitoring/debugging)
 export function getSessionStats() {
   const now = Date.now();
   const windowMs = RATE_LIMIT_WINDOW * 1000;
