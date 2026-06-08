@@ -1,8 +1,33 @@
+// ---------------------------------------------------------------------------
+// LangSmith — LLM Observability & Tracing
+// ---------------------------------------------------------------------------
+// LangSmith (by LangChain) provides production tracing for LLM calls.
+// Every chat API call is traced with full inputs (messages, system prompt),
+// outputs (response, tokens, model), and metadata (duration, temperature).
+//
+// Tracing is fire-and-forget — it NEVER blocks or slows down the actual
+// LLM response. If tracing fails, the user still gets their answer.
+//
+// Toggle: LANGSMITH_TRACING=true in .env.local
+//
+// Why dual tracing (LangSmith + LangFuse)?
+//   - LangSmith: mature, great debugging UI, widely used in LangChain ecosystem
+//   - LangFuse: OpenTelemetry-native, lower latency, evaluation support
+//   - Together: observability redundancy. If one is down, the other still works.
+// ---------------------------------------------------------------------------
+
 import { Client } from 'langsmith';
 import { ChatMessage, ChatResponse } from './llm';
 
+/** Lazy singleton — client is reused across requests within a warm function */
 let client: Client | null = null;
 
+/**
+ * initLangSmith: Creates or returns the LangSmith client.
+ *
+ * Uses lazy initialization to avoid creating clients when tracing is disabled
+ * or at build time. Returns null if LANGSMITH_API_KEY is not configured.
+ */
 export function initLangSmith(): Client | null {
   if (!client && process.env.LANGSMITH_API_KEY) {
     client = new Client({
@@ -14,6 +39,21 @@ export function initLangSmith(): Client | null {
   return client;
 }
 
+/**
+ * traceLLMCall: Submits a trace to LangSmith for each LLM call.
+ *
+ * Captures the complete context of every LLM interaction:
+ *   - Inputs: provider, model, messages array, system prompt, options
+ *   - Outputs: response content, token usage
+ *   - Metadata: duration, temperature, max_tokens, provider, model
+ *   - Tags: llm, provider name, model name (for filtering in LangSmith UI)
+ *
+ * This is called asynchronously (fire-and-forget) in the chat() function.
+ * If it fails, the error is logged but the user response is unaffected.
+ *
+ * Also traces FAILED calls — so we can see in the LangSmith UI which
+ * providers failed and why, helping debug fallback chain behavior.
+ */
 export async function traceLLMCall(
   provider: string,
   model: string,
@@ -23,29 +63,21 @@ export async function traceLLMCall(
   startTime: number,
   options: any = {}
 ): Promise<void> {
-  console.log('🔍 traceLLMCall invoked with:', {
-    hasTracing: !!process.env.LANGSMITH_TRACING,
-    tracingValue: process.env.LANGSMITH_TRACING,
-    hasApiKey: !!process.env.LANGSMITH_API_KEY,
-    provider,
-    model
-  });
   try {
+    // Gate: Only trace when LANGSMITH_TRACING is explicitly 'true'
     if (!process.env.LANGSMITH_TRACING || process.env.LANGSMITH_TRACING !== 'true') {
-      console.log('❌ Tracing disabled or not set to true');
-      return; // disable tracing
+      return;
     }
 
     const client = initLangSmith();
     if (!client) {
-      console.log('LangSmith client not initialized!');
       return;
     }
 
     const endTime = Date.now();
     const duration = endTime - startTime;
 
-    // create trace data
+    // Build the trace payload
     const traceData = {
       name: `llm_call_${provider}_${model}`,
       project_name: process.env.LANGSMITH_PROJECT_NAME,
@@ -71,11 +103,10 @@ export async function traceLLMCall(
       tags: ['llm', provider, model],
     };
 
-    // submit to LangSmith
+    // Submit trace to LangSmith (blocking await, but called in fire-and-forget context)
     await client.createRun(traceData);
-    console.log(`Langsmith trace submitted for ${provider}/${model}`);
   } catch (error) {
-    // let the request go through even if tracing fails
+    // CRITICAL: Never throw from tracing — let the request go through
     console.error('LangSmith trace failed:', error);
   }
 }

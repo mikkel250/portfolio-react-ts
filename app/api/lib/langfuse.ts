@@ -1,3 +1,21 @@
+// ---------------------------------------------------------------------------
+// LangFuse — LLM Observability & Prompt Management Client
+// ---------------------------------------------------------------------------
+// LangFuse provides OpenTelemetry-native tracing for LLM calls and
+// a prompt management system that allows runtime prompt iteration.
+//
+// This file handles TRACING — submitting traces for each LLM call.
+// For PROMPT MANAGEMENT (runtime-updatable prompts), see langfuse-prompts.ts.
+//
+// Dual tracing with LangSmith gives observability redundancy.
+// If one observability system is down, the other still works.
+//
+// Tracing is fire-and-forget — NEVER blocks the actual LLM response.
+//
+// Toggle: LANGFUSE_TRACING=true in .env.local
+// Requires: LANGFUSE_PUBLIC_KEY + LANGFUSE_SECRET_KEY
+// ---------------------------------------------------------------------------
+
 import { LangfuseClient } from '@langfuse/client';
 import {
   startActiveObservation,
@@ -5,8 +23,15 @@ import {
 } from '@langfuse/tracing';
 import { ChatMessage, ChatOptions, ChatResponse } from './llm';
 
+/** Lazy singleton — reused across requests within a warm serverless function */
 let langfuseClient: LangfuseClient | null = null;
 
+/**
+ * initLangFuse: Creates or returns the LangFuse client.
+ *
+ * Lazy initialization avoids creating clients at build time or when
+ * tracing is disabled. Returns null if credentials are not configured.
+ */
 export function initLangFuse(): LangfuseClient | null {
   if (
     !langfuseClient &&
@@ -22,6 +47,23 @@ export function initLangFuse(): LangfuseClient | null {
   return langfuseClient;
 }
 
+/**
+ * traceLLMCall: Submits a trace to LangFuse for each LLM call.
+ *
+ * Creates an OpenTelemetry-compatible "generation" span with:
+ *   - Input: provider, model, messages, system prompt, options
+ *   - Output: response content, token usage
+ *   - Metadata: duration, temperature, max_tokens, prompt info
+ *   - Model parameters: temperature, maxTokens
+ *   - Usage details: prompt/completion/total tokens
+ *
+ * Uses LangFuse's startActiveObservation which creates an
+ * OpenTelemetry span context. Fire-and-forget: never blocks the
+ * actual LLM response.
+ *
+ * Unlike LangSmith, LangFuse traces support linking to managed prompts
+ * via the langfusePrompt parameter, enabling prompt-version-level analytics.
+ */
 export async function traceLLMCall(
   provider: string,
   model: string,

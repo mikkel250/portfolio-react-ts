@@ -1,5 +1,24 @@
-// Input validation and filtering to prevent BS being sent to the AI
-// Client-safe job filtering functions (without fs imports)
+// ---------------------------------------------------------------------------
+// Input Filter — Client-Side & Server-Side Query Validation
+// ---------------------------------------------------------------------------
+// Filters user input BEFORE it hits the LLM API to save costs and
+// prevent abuse. Filtered queries get instant canned responses instead
+// of expensive LLM calls, and don't count against rate limits.
+//
+// Filter categories (in order of priority):
+//   1. Job-specific (salary, work auth, role mismatch, work arrangement)
+//   2. Location queries (pre-written SF location answer)
+//   3. Length check (< 10 chars → too short)
+//   4. Spam detection (repeated chars, keyboard mashing patterns)
+//   5. Generic/greeting queries (offer suggestions instead)
+//
+// Design notes:
+//   - Long queries (> 150-200 chars) bypass most filters because they're
+//     likely legitimate complex queries or pasted job descriptions
+//   - Filter functions return FilterResult or JobFilterResult depending on
+//     whether they produce a canned chat response or just a routing decision
+//   - Moved here from knowledge-base.ts to avoid 'fs' import issues on client
+// ---------------------------------------------------------------------------
 
 export interface FilterResult {
   shouldCallAPI: boolean;
@@ -75,10 +94,6 @@ function checkWorkAuthorizationQuery(query: string): JobFilterResult {
   const hasAuthPattern = authPatterns.some(pattern => pattern.test(query));
   
   if (hasAuthPattern) {
-    if (query.length >= 200) {
-      return { shouldProceed: true };
-    }
-
     return {
       shouldProceed: false,
       response: "Mikkel is authorized to work in the United States and does not require visa sponsorship.",
@@ -108,7 +123,7 @@ function checkSalaryQuery(query: string): JobFilterResult {
   // Only trigger for questions, not for job descriptions that might mention these terms
   const isSalaryQuestion = salaryQuestionPatterns.some(pattern => pattern.test(query));
   
-  if (isSalaryQuestion && query.length < 200) { // Avoid matching job descriptions
+  if (isSalaryQuestion) {
     return {
       shouldProceed: false,
       response: "Mikkel would be happy to discuss compensation expectations once there's a conversation about the role and opportunity. His absolute minimum expectation is that the pay is equivalent to a living wage for someone living and paying rent in downtown San Francisco. Please feel free to reach out if you'd like to learn more about his background and experience!",
@@ -183,10 +198,6 @@ function checkLocationQuery(query: string): FilterResult {
   const hasLocationPattern = locationPatterns.some((pattern) => pattern.test(query));
   
   if (hasLocationPattern) {
-    if (query.length >= 200) {
-      return { shouldCallAPI: true };
-    }
-    
     return {
       shouldCallAPI: false,
       response: "Mikkel is located in San Francisco, CA. His recent roles at SFMOMA and Intrinsic (Alphabet/Google) were hybrid rolesbased in San Francisco Bay Area, and he also has extensive experience working effectively in fully remote environments for companies like Jefferson Health. He is also open to fully onsite roles, with preference for geographical proximity to downtown San Francisco.",
@@ -221,10 +232,6 @@ function checkWorkArrangementQuery(query: string): FilterResult {
   );
   
   if (hasWorkArrangementPattern) {
-    if (query.length >= 200) {
-      return { shouldCallAPI: true};
-    }
-
     return {
       shouldCallAPI: false,
       response: "Mikkel is flexible with work arrangements and has experience with multiple employment setups:\n\n**Full-time/Salary**: He is open to full-time salaried positions and has experience in both traditional employment and contract roles.\n\n**Contract**: He can work in all three types of contract arrangements:\n- **W2 Contract**: Standard W2 contractor arrangements\n- **1099**: Independent contractor (1099) arrangements\n- **C2C (Corp-to-Corp)**: Yes, he can work on a C2C basis.\n\nArrangements other than W2 would involve a 25% higher rate since he is paying all taxes, benefits, and unpaid time off on that income, this is the minimum increase to account for that difference.\n\nNote: While he can work in all three contract types, if C2C is a hard requirement, he would need to discuss the details of this arrangement directly with the client.\n\nHis background includes successful long and short-term contracts at major organizations like Intrinsic (Alphabet/Google) for 5 months and Jefferson Health, where an initial 4-month contract was extended to 1 year and 2 months due to outstanding performance.",
@@ -235,6 +242,19 @@ function checkWorkArrangementQuery(query: string): FilterResult {
   return { shouldCallAPI: true };
 }
 
+/**
+ * filterJobCriteria: Checks job-specific criteria that can be answered
+ * without calling the LLM.
+ *
+ * Three checks (each returns early if a match is found):
+ *   1. Work authorization → pre-written answer about US work eligibility
+ *   2. Salary questions → polite redirect to discuss later
+ *   3. Obviously non-matching roles (doctor, teacher, etc.) → polite decline
+ *
+ * Only triggers for job-related queries (isJobDescriptionQuery or
+ * isJobRelatedQuery). Software engineering indicators bypass the role
+ * mismatch check to avoid false positives on terms like "delivery".
+ */
 export function filterJobCriteria(query: string): JobFilterResult {
   // Check if this is a job-related query
   if (!isJobDescriptionQuery(query) && !isJobRelatedQuery(query)) {
@@ -262,6 +282,30 @@ export function filterJobCriteria(query: string): JobFilterResult {
   return { shouldProceed: true };
 }
 
+/**
+ * filterInput: Main entry point for input filtering.
+ *
+ * Called from ChatInterface.tsx (client-side, before API call) and
+ * from app/api/chat/route.ts (server-side, as defense-in-depth).
+ *
+ * Pipeline (in order):
+ *   1. filterJobCriteria() — role mismatch, work auth, salary
+ *   2. checkLocationQuery() — SF location canned response
+ *   3. checkWorkArrangementQuery() — W2/C2C/1099 info
+ *   4. Follow-up detection — if previous message had '?' and this is short
+ *   5. Length check — too short (< 10 chars)
+ *   6. Spam detection — repeated chars, keyboard patterns
+ *   7. Generic queries — greetings, vague questions
+ *
+ * Returns FilterResult with shouldCallAPI=false for filtered queries
+ * (skip API, show canned response). Filtered queries don't count
+ * against rate limits (the chat route checks filters before calling
+ * checkRateLimit).
+ *
+ * @param query - The user's input text
+ * @param conversationHistory - Array of previous message contents (for context),
+ *   excluding the current user message being filtered
+ */
 export function filterInput(query: string, conversationHistory: string[]): FilterResult {
   const trimmed = query.trim();
   

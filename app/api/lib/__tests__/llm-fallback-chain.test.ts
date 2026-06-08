@@ -14,11 +14,18 @@ describe('detectProvider', () => {
   });
 });
 
+const allProviderKeys = {
+  GOOGLE_API_KEY: 'google-key',
+  DEEPSEEK_API_KEY: 'test-key',
+  ANTHROPIC_API_KEY: 'anthropic-key',
+  OPENAI_API_KEY: 'openai-key',
+};
+
 describe('buildFallbackChain', () => {
   it('uses primary first then AI_MODEL_FALLBACKS in order', () => {
     const chain = buildFallbackChain('gemini-2.5-flash', {
+      ...allProviderKeys,
       AI_MODEL_FALLBACKS: '["deepseek-v4-pro","claude-haiku-4-5-20251001"]',
-      DEEPSEEK_API_KEY: 'test-key',
     });
 
     expect(chain).toHaveLength(3);
@@ -32,6 +39,9 @@ describe('buildFallbackChain', () => {
 
   it('omits DeepSeek when DEEPSEEK_API_KEY is unset', () => {
     const chain = buildFallbackChain('gemini-2.5-flash', {
+      GOOGLE_API_KEY: 'google-key',
+      ANTHROPIC_API_KEY: 'anthropic-key',
+      OPENAI_API_KEY: 'openai-key',
       AI_MODEL_FALLBACKS: '["deepseek-v4-pro","claude-haiku-4-5-20251001"]',
     });
 
@@ -41,6 +51,7 @@ describe('buildFallbackChain', () => {
 
   it('includes DeepSeek when DEEPSEEK_API_KEY is set', () => {
     const chain = buildFallbackChain('gemini-2.5-flash', {
+      ...allProviderKeys,
       DEEPSEEK_API_KEY: 'sk-test',
     });
 
@@ -49,6 +60,7 @@ describe('buildFallbackChain', () => {
 
   it('uses DeepSeek then Anthropic defaults when AI_MODEL_FALLBACKS is unset', () => {
     const chain = buildFallbackChain('gemini-2.5-flash', {
+      ...allProviderKeys,
       DEEPSEEK_API_KEY: 'sk-test',
     });
 
@@ -58,6 +70,12 @@ describe('buildFallbackChain', () => {
       'claude-haiku-4-5-20251001',
     ]);
     expect(chain.map((e) => e.model)).not.toContain('gpt-4o');
+  });
+
+  it('throws when no providers have API keys configured', () => {
+    expect(() => buildFallbackChain('gemini-2.5-flash', {})).toThrow(
+      'No LLM providers configured with valid API keys'
+    );
   });
 });
 
