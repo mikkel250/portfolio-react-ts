@@ -80,7 +80,7 @@ function isExperienceQuery(query: string): boolean {
  * Triggers loading projects.md (personal projects, GitHub repos, demos).
  */
 function isProjectsQuery(query: string): boolean {
-  const projectKeywords = /project|built|created|developed|portfolio|github|demo|app|application|website|site|outside of work|independant|open source/i;
+  const projectKeywords = /project|built|created|developed|portfolio|github|demo|app|application|website|site|outside of work|independent|open source/i;
   return projectKeywords.test(query);
 }
 
@@ -205,15 +205,16 @@ export function getRelevantContext(query: string): string {
     contexts.push(loadKBFile(KB_CONFIG.files.metaProject));
   }
 
-  // Safety net: if nothing matched, give experience + skills as default
-  // These are the most commonly useful files for recruiter questions
-  if (contexts.length === 0) {
-    contexts.push(loadKBFile(KB_CONFIG.files.experience));
-    contexts.push(loadKBFile(KB_CONFIG.files.skills));
+  // Safety net: if nothing matched or all loads failed, give experience + skills as default
+  let filteredContexts = contexts.filter(context => context.length > 0);
+
+  if (filteredContexts.length === 0) {
+    filteredContexts.push(loadKBFile(KB_CONFIG.files.experience));
+    filteredContexts.push(loadKBFile(KB_CONFIG.files.skills));
+    filteredContexts = filteredContexts.filter(context => context.length > 0);
   }
 
-  // Filter out empty strings (file read errors) and join with separators
-  return contexts.filter(context => context.length > 0).join('\n\n--\n\n');
+  return filteredContexts.join('\n\n--\n\n');
 }
 
 /**
