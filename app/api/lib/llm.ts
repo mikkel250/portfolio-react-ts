@@ -215,6 +215,9 @@ async function callDeepseek(
     })),
   ];
 
+  // Reasoning mode is intentionally hardcoded: this app only configures DeepSeek
+  // reasoning-capable models (e.g. deepseek-v4-pro). Non-reasoning models set via
+  // env may return 400 — switch model or remove these fields if that happens.
   // [SIDE-EFFECT] Calls DeepSeek chat completions API; failure triggers fallback in chat().
   const response = await getDeepSeek().chat.completions.create({
     model,
