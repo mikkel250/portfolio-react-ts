@@ -1,16 +1,18 @@
 // ---------------------------------------------------------------------------
-// Rate Limiter — In-Memory Per-Session Message Tracking
+// Rate Limiter — In-Memory Per-IP + Per-Session Message Tracking
 // ---------------------------------------------------------------------------
-// Tracks message count per session ID and enforces limits to control
-// LLM API costs and prevent abuse.
+// Tracks message count per client IP and per session ID, enforcing both
+// limits to control LLM API costs and prevent abuse.
 //
-// Architecture: In-memory Map (no external DB/Redis)
+// Architecture: Two in-memory Maps (no external DB/Redis)
+//   - ipStore: keyed by client IP (or MISSING_IP_KEY for unverifiable origins)
+//   - sessionStore: keyed by sessionId from the client
 //   - Deliberate MVP trade-off: cold starts reset limits on new deployment
 //   - Acceptable for validation phase with generous limits (15 msgs/hr)
 //   - Can upgrade to Vercel KV or Redis when persistent limits are needed
 //
-// Two tiers of protection:
-//   1. HOUR LIMIT: Max messages per session per rolling hour window
+// Two tiers of protection (applied to each store independently):
+//   1. HOUR LIMIT: Max messages per key per rolling hour window
 //   2. BURST DETECTION: Max messages in rapid succession (bot detection)
 //
 // Env vars:
@@ -168,9 +170,12 @@ function consumeRateLimitBucket(
 /**
  * checkRateLimit: Main entry point — called on every chat API request.
  *
- * Flow:
- *   1. New session? → Create session, allow (1 message used)
- *   2. Window expired? → Reset session, allow (1 message used)
+ * Enforces limits on both ipAddress (ipStore) and sessionId (sessionStore).
+ * A request must pass both buckets; remaining counts reflect the tighter limit.
+ *
+ * Flow (per bucket):
+ *   1. New key? → Create entry, allow (1 message used)
+ *   2. Window expired? → Reset entry, allow (1 message used)
  *   3. Burst detected? → Block (bot protection)
  *   4. Limit exceeded? → Block with Calendly redirect message
  *   5. Otherwise → Allow, increment count, return remaining
@@ -182,16 +187,17 @@ function consumeRateLimitBucket(
  */
 export function checkRateLimit(sessionId: string, ipAddress: string): RateLimitResult {
   const now = Date.now();
+  const ipKey = ipAddress?.trim() || MISSING_IP_KEY;
 
   const ipResult = consumeRateLimitBucket(
     ipStore,
-    ipAddress,
+    ipKey,
     now,
-    ipAddress === MISSING_IP_KEY
+    ipKey === MISSING_IP_KEY
       ? 'Too many requests without verifiable origin. Please try again later.'
       : 'Too many requests from this network. Please slow down and try again.',
     (resetTime) =>
-      ipAddress === MISSING_IP_KEY
+      ipKey === MISSING_IP_KEY
         ? `Request limit reached for unverified origins. Please try again in ${Math.ceil((resetTime - now) / 60000)} minutes.`
         : `Network request limit reached (${RATE_LIMIT_MAX} messages per hour). Please try again in ${Math.ceil((resetTime - now) / 60000)} minutes.`
   );

@@ -80,7 +80,8 @@ function isExperienceQuery(query: string): boolean {
  * Triggers loading projects.md (personal projects, GitHub repos, demos).
  */
 function isProjectsQuery(query: string): boolean {
-  const projectKeywords = /project|built|created|developed|portfolio|github|demo|app|application|website|site|outside of work|independent|open source/i;
+  const projectKeywords =
+    /project|projects|side project|side projects|personal project|personal projects|on the side|built|created|developed|portfolio|github|demo|app|application|website|site|outside of work|independent|open source/i;
   return projectKeywords.test(query);
 }
 
