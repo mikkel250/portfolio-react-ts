@@ -9,6 +9,8 @@
     "lint": "next lint",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "playwright test",
+
     "eval:langfuse": "npx tsx tests/langfuse-evaluation.ts",
     "migrate:prompts": "npx tsx scripts/migrate-prompts.ts"
   },
@@ -52,6 +54,7 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@types/node-fetch": "^2.6.13",
     "@types/uuid": "^10.0.0",
     "dotenv": "^17.2.3",
