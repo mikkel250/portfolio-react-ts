@@ -14,7 +14,11 @@ test.describe('smoke', () => {
 
     await page.getByRole('button', { name: 'Close chat' }).click();
 
-    await page.goto('/about');
+    // Prefer desktop header nav (footer also links to About).
+    await page
+      .locator('div.hidden.lg\\:flex')
+      .getByRole('link', { name: 'About' })
+      .click();
     await expect(
       page.getByRole('heading', { name: /Hey! I'm.*Mikkel Ridley/i }),
     ).toBeVisible({ timeout: 15_000 });

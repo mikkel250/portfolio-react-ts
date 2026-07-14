@@ -18,7 +18,9 @@ test.describe('debug API risk (unauthenticated)', () => {
   test('GET /api/test-langsmith is reachable without auth', async ({
     request,
   }) => {
-    const response = await request.get('/api/test-langsmith');
+    const response = await request.get('/api/test-langsmith', {
+      timeout: 15_000,
+    });
 
     expect(response.status()).not.toBe(401);
     expect(response.status()).not.toBe(403);

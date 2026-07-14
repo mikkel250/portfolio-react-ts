@@ -20,6 +20,7 @@ jobs:
 
   e2e:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -29,7 +30,7 @@ jobs:
       - run: npm ci
       - run: npx playwright install chromium --with-deps
       - run: npm run build
-      - run: npx playwright test
+      - run: npm run test:e2e
         env:
           CI: true
       - uses: actions/upload-artifact@v4
