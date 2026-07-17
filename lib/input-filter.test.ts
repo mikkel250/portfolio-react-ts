@@ -77,6 +77,33 @@ describe('filterInput short-circuit router', () => {
       expect(result.reason).not.toBe('work_arrangement_query');
     });
 
+    it('employer auth blurb does not short-circuit', () => {
+      const result = filterInput(
+        'Must be authorized to work in the US for this React role.',
+        [],
+      );
+      expect(result.shouldCallAPI).toBe(true);
+      expect(result.reason).not.toBe('work_authorization');
+    });
+
+    it('employer location blurb does not short-circuit', () => {
+      const result = filterInput(
+        'This role is based in San Francisco with hybrid flexibility.',
+        [],
+      );
+      expect(result.shouldCallAPI).toBe(true);
+      expect(result.reason).not.toBe('location_query');
+    });
+
+    it('employer C2C blurb does not short-circuit', () => {
+      const result = filterInput(
+        'C2C preferred. React TypeScript engagement for 6 months.',
+        [],
+      );
+      expect(result.shouldCallAPI).toBe(true);
+      expect(result.reason).not.toBe('work_arrangement_query');
+    });
+
     it('background finance question is not role_mismatch', () => {
       const result = filterInput('Does he have finance experience?', []);
       expect(result.shouldCallAPI).toBe(true);
@@ -87,6 +114,12 @@ describe('filterInput short-circuit router', () => {
       const result = filterInput('hi', []);
       expect(result.shouldCallAPI).toBe(false);
       expect(['too_short', 'generic_query']).toContain(result.reason);
+    });
+
+    it('short FAQ ask bypasses too-short when under 10 chars', () => {
+      const result = filterInput('C2C?', []);
+      expect(result.shouldCallAPI).toBe(false);
+      expect(result.reason).toBe('work_arrangement_query');
     });
 
     it('AE4b: greeting token inside a long JD does not force greeting canned', () => {
@@ -113,6 +146,18 @@ describe('filterInput short-circuit router', () => {
       expect(result.reason).toBe('repeated_chars');
     });
 
+    it('repeated-char garbage is canned even after a question follow-up context', () => {
+      const result = filterInput('aaaa', ['What skills does he have?']);
+      expect(result.shouldCallAPI).toBe(false);
+      expect(result.reason).toBe('repeated_chars');
+    });
+
+    it('meaningful short follow-up after a question goes to LLM', () => {
+      const result = filterInput('React', ['What skills does he have?']);
+      expect(result.shouldCallAPI).toBe(true);
+      expect(result.reason).toBe('valid_follow_up');
+    });
+
     it('AE5b: long JD with normal double letters is not mash', () => {
       const result = filterInput(JD_WITHOUT_COMPENSATION, []);
       expect(result.shouldCallAPI).toBe(true);
@@ -133,6 +178,12 @@ describe('filterInput short-circuit router', () => {
         'Looking for a Senior Full-Stack Engineer with React and TypeScript experience',
       );
       expect(result.shouldProceed).toBe(true);
+    });
+
+    it('technical instructor role declines even with technical SE indicators', () => {
+      const result = filterJobCriteria('Hiring a technical instructor role.');
+      expect(result.shouldProceed).toBe(false);
+      expect(result.reason).toBe('role_mismatch');
     });
   });
 });

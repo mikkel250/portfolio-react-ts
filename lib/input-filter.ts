@@ -6,15 +6,17 @@
 // of expensive LLM calls, and don't count against rate limits.
 //
 // Router (in order):
-//   1. Hard garbage — too short, repeated chars, keyboard mash
-//   2. Short-circuit eligibility — role-share / long pastes default to LLM
-//   3. Allowlisted FAQ canned replies (salary, auth, location, arrangement, …)
-//   4. Otherwise → LLM
+//   1. Spam mash — repeated chars / keyboard (before follow-up exceptions)
+//   2. Meaningful short follow-up after '?' → LLM
+//   3. Role-share / long pastes → LLM
+//   4. FAQ-shaped asks → allowlisted canned replies
+//   5. Too-short / generic fallbacks
+//   6. Otherwise → LLM
 //
 // Design notes:
 //   - Role-share / JD pastes never get FAQ canned replies (even if keywords
 //     like "salary range" or "full-time" appear in employer copy)
-//   - FAQ short-circuits only fire for clear, short, ask-shaped messages
+//   - FAQ short-circuits only fire for clear ask-shaped messages (not blurbs)
 //   - Moved here from knowledge-base.ts to avoid 'fs' import issues on client
 // ---------------------------------------------------------------------------
 
@@ -73,9 +75,34 @@ function isRoleShareOrLongPaste(query: string): boolean {
   return false;
 }
 
-/** FAQ canned replies only when the message is not a role-share / long paste. */
+/** True when the message looks like a question / ask, not employer copy. */
+function looksLikeFaqAsk(query: string): boolean {
+  const trimmed = query.trim();
+  if (/\?/.test(trimmed)) return true;
+  if (
+    /^(what|where|when|who|how|does|do|is|are|can|could|would|will|should)\b/i.test(
+      trimmed,
+    )
+  ) {
+    return true;
+  }
+  // Directed FAQ phrases that sometimes omit a leading interrogative
+  if (/\b(salary|compensation|pay)\s+expectation\b/i.test(trimmed)) return true;
+  if (
+    /\b(visa|work)\s+sponsorship\b/i.test(trimmed) &&
+    /\b(he|his|her|mikkel|need|require|does)\b/i.test(trimmed)
+  ) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * FAQ canned replies only for non-role-share messages that look like asks.
+ * Short employer blurbs (auth/location/C2C copy) must not reach FAQ matchers.
+ */
 function isShortCircuitEligible(query: string): boolean {
-  return !isRoleShareOrLongPaste(query);
+  return !isRoleShareOrLongPaste(query) && looksLikeFaqAsk(query);
 }
 
 function checkWorkAuthorizationQuery(query: string): JobFilterResult {
@@ -139,6 +166,33 @@ function checkSalaryQuery(query: string): JobFilterResult {
 }
 
 function checkRoleMatch(query: string): JobFilterResult {
+  // Non-SE role openings first — so "technical instructor role" declines even
+  // when it also matches software/technical indicators.
+  const nonMatchingRoles = [
+    /\b(medical doctor|physician|surgeon|nurse|healthcare provider)/i,
+    /\b(teacher|professor|educator|instructor)\s+(role|position|job|opening)\b/i,
+    /\b(hiring|looking for|need)\s+a\s+(?:\w+\s+){0,3}(teacher|professor|educator|instructor)\b/i,
+    /\b(lawyer|attorney|legal counsel)\s+(role|position|job|opening)\b/i,
+    /\b(accountant|cpa|bookkeeper)\s+(role|position|job|opening)\b/i,
+    /\b(pilot|flight attendant|delivery driver|truck driver|uber driver|taxi driver|bus driver)\b/i,
+    /\b(chef|cook)\s+(role|position|job)\b/i,
+    /\b(retail|cashier|sales associate)\s+(role|position|job)\b/i,
+    /\b(construction|plumber|electrician)\s+(role|position|job)\b/i,
+  ];
+
+  const isNonMatchingRole = nonMatchingRoles.some((pattern) =>
+    pattern.test(query),
+  );
+
+  if (isNonMatchingRole) {
+    return {
+      shouldProceed: false,
+      response:
+        "Thank you for reaching out. This position doesn't align with Mikkel's background as a software engineer, as he's focused on opportunities in software development. He would have to decline this one. Thanks for thinking of him!",
+      reason: 'role_mismatch',
+    };
+  }
+
   const softwareEngineeringIndicators = [
     /\b(engineer|developer|programmer|software|frontend|backend|full.?stack|fullstack)/i,
     /\b(sdk|api|react|typescript|javascript|node|python|java|go|rust)/i,
@@ -152,33 +206,6 @@ function checkRoleMatch(query: string): JobFilterResult {
 
   if (hasSoftwareEngineeringIndicators) {
     return { shouldProceed: true };
-  }
-
-  const nonMatchingRoles = [
-    /\b(medical doctor|physician|surgeon|nurse|healthcare provider)/i,
-    /\b(teacher|professor|educator|instructor)\s+(role|position|job|opening)\b/i,
-    /\b(hiring|looking for|need)\s+a\s+(teacher|professor|educator|instructor)\b/i,
-    /\b(lawyer|attorney|legal counsel)\s+(role|position|job|opening)\b/i,
-    /\b(accountant|cpa|bookkeeper)\s+(role|position|job|opening)\b/i,
-    /\b(pilot|flight attendant|delivery driver|truck driver|uber driver|taxi driver|bus driver)\b/i,
-    /\b(chef|cook)\s+(role|position|job)\b/i,
-    /\b(retail|cashier|sales associate)\s+(role|position|job)\b/i,
-    /\b(construction|plumber|electrician)\s+(role|position|job)\b/i,
-  ];
-
-  const isNonMatchingRole = nonMatchingRoles.some((pattern) =>
-    pattern.test(query),
-  );
-
-  // Decline only when the message is clearly about a non-SE *role opening*,
-  // not background questions ("finance experience", "was he a teacher").
-  if (isNonMatchingRole) {
-    return {
-      shouldProceed: false,
-      response:
-        "Thank you for reaching out. This position doesn't align with Mikkel's background as a software engineer, as he's focused on opportunities in software development. He would have to decline this one. Thanks for thinking of him!",
-      reason: 'role_mismatch',
-    };
   }
 
   return { shouldProceed: true };
@@ -269,16 +296,8 @@ export function filterJobCriteria(query: string): JobFilterResult {
   return { shouldProceed: true };
 }
 
-function checkHardGarbage(trimmed: string): FilterResult | null {
-  if (trimmed.length <= 10) {
-    return {
-      shouldCallAPI: false,
-      response:
-        "Sorry, I don't understand the question or message. Please try to formulate a complete and valid question or message (ideally a full sentence) and I'll be happy to provide you with a complete answer!",
-      reason: 'too_short',
-    };
-  }
-
+/** Repeated-char / keyboard-mash only — checked before follow-up exceptions. */
+function checkSpamMash(trimmed: string): FilterResult | null {
   if (trimmed.length <= 200 && /([a-zA-Z])\1{3,}/.test(trimmed)) {
     return {
       shouldCallAPI: false,
@@ -295,7 +314,6 @@ function checkHardGarbage(trimmed: string): FilterResult | null {
       /mnbvc/i,
       /poiuyt/i,
       /lkjhgf/i,
-      /^[a-z]{1,2}$/i,
     ];
 
     if (keyboardPatterns.some((pattern) => pattern.test(trimmed))) {
@@ -308,6 +326,19 @@ function checkHardGarbage(trimmed: string): FilterResult | null {
     }
   }
 
+  return null;
+}
+
+/** Generic too-short fallback — skipped when FAQ matchers already handled the input. */
+function checkTooShort(trimmed: string): FilterResult | null {
+  if (trimmed.length <= 10) {
+    return {
+      shouldCallAPI: false,
+      response:
+        "Sorry, I don't understand the question or message. Please try to formulate a complete and valid question or message (ideally a full sentence) and I'll be happy to provide you with a complete answer!",
+      reason: 'too_short',
+    };
+  }
   return null;
 }
 
@@ -345,17 +376,23 @@ What specific area would you like to explore?
  * from app/api/chat/route.ts (server-side, as defense-in-depth).
  *
  * Pipeline:
- *   1. Valid short follow-up after a '?' → LLM
- *   2. Hard garbage (too short / mash)
+ *   1. Spam mash (repeated chars / keyboard) — before follow-up exceptions
+ *   2. Meaningful short follow-up after a '?' → LLM
  *   3. Role-share / long paste → LLM (no FAQ canned)
- *   4. Allowlisted FAQ canned replies
- *   5. Default → LLM
+ *   4. FAQ-shaped asks → allowlisted canned replies (may be short)
+ *   5. Too-short / generic fallbacks for remaining short non-FAQ input
+ *   6. Default → LLM
  */
 export function filterInput(
   query: string,
   conversationHistory: string[],
 ): FilterResult {
   const trimmed = query.trim();
+
+  const mash = checkSpamMash(trimmed);
+  if (mash) {
+    return mash;
+  }
 
   if (conversationHistory && conversationHistory.length > 0) {
     const lastMessage = conversationHistory[conversationHistory.length - 1];
@@ -367,32 +404,34 @@ export function filterInput(
     }
   }
 
-  const garbage = checkHardGarbage(trimmed);
-  if (garbage) {
-    return garbage;
-  }
-
-  if (!isShortCircuitEligible(query)) {
+  if (isRoleShareOrLongPaste(query)) {
     return { shouldCallAPI: true, reason: 'role_share_or_long_paste' };
   }
 
-  const jobFilterResult = filterJobCriteria(query);
-  if (!jobFilterResult.shouldProceed) {
-    return {
-      shouldCallAPI: false,
-      response: jobFilterResult.response,
-      reason: jobFilterResult.reason,
-    };
+  if (isShortCircuitEligible(query)) {
+    const jobFilterResult = filterJobCriteria(query);
+    if (!jobFilterResult.shouldProceed) {
+      return {
+        shouldCallAPI: false,
+        response: jobFilterResult.response,
+        reason: jobFilterResult.reason,
+      };
+    }
+
+    const locationResult = checkLocationQuery(query);
+    if (!locationResult.shouldCallAPI) {
+      return locationResult;
+    }
+
+    const workArrangementResult = checkWorkArrangementQuery(query);
+    if (!workArrangementResult.shouldCallAPI) {
+      return workArrangementResult;
+    }
   }
 
-  const locationResult = checkLocationQuery(query);
-  if (!locationResult.shouldCallAPI) {
-    return locationResult;
-  }
-
-  const workArrangementResult = checkWorkArrangementQuery(query);
-  if (!workArrangementResult.shouldCallAPI) {
-    return workArrangementResult;
+  const tooShort = checkTooShort(trimmed);
+  if (tooShort) {
+    return tooShort;
   }
 
   const generic = checkGenericQuery(trimmed);
