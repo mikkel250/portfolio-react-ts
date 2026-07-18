@@ -86,6 +86,16 @@ describe('filterInput short-circuit router', () => {
       expect(result.reason).not.toBe('work_authorization');
     });
 
+    it('employer copy with trailing Any questions? is not an FAQ short-circuit', () => {
+      const result = filterInput(
+        'Must be authorized to work in the US. Any questions?',
+        [],
+      );
+      expect(result.shouldCallAPI).toBe(true);
+      expect(result.reason).not.toBe('work_authorization');
+      expect(FAQ_REASONS.has(result.reason ?? '')).toBe(false);
+    });
+
     it('employer location blurb does not short-circuit', () => {
       const result = filterInput(
         'This role is based in San Francisco with hybrid flexibility.',
@@ -143,9 +153,7 @@ describe('filterInput short-circuit router', () => {
     it('AE5a: short keyboard mash is canned', () => {
       const result = filterInput('asdfgqwerty', []);
       expect(result.shouldCallAPI).toBe(false);
-      expect(['keyboard_mash', 'repeated_chars', 'too_short']).toContain(
-        result.reason,
-      );
+      expect(result.reason).toBe('keyboard_mash');
     });
 
     it('AE5a: repeated chars above too-short threshold are canned', () => {
@@ -164,6 +172,21 @@ describe('filterInput short-circuit router', () => {
       const result = filterInput('React', ['What skills does he have?']);
       expect(result.shouldCallAPI).toBe(true);
       expect(result.reason).toBe('valid_follow_up');
+    });
+
+    it('whitespace-only reply after a question is not valid_follow_up', () => {
+      const result = filterInput('   ', ['What skills does he have?']);
+      expect(result.reason).not.toBe('valid_follow_up');
+      expect(result.shouldCallAPI).toBe(false);
+      expect(result.reason).toBe('too_short');
+    });
+
+    it('continuation after a prior question goes to LLM, not generic bio', () => {
+      const result = filterInput('tell me more', [
+        'He worked on React at Intrinsic. What else?',
+      ]);
+      expect(result.shouldCallAPI).toBe(true);
+      expect(result.reason).not.toBe('generic_query');
     });
 
     it('short FAQ after a prior ? still gets canned, not valid_follow_up', () => {

@@ -78,7 +78,7 @@ function isRoleShareOrLongPaste(query: string): boolean {
 /** True when the message looks like a question / ask, not employer copy. */
 function looksLikeFaqAsk(query: string): boolean {
   const trimmed = query.trim();
-  if (/\?/.test(trimmed)) return true;
+  // Leading interrogative — not any embedded "?" (employer "Any questions?")
   if (
     /^(what|where|when|who|how|does|do|is|are|can|could|would|will|should)\b/i.test(
       trimmed,
@@ -94,6 +94,8 @@ function looksLikeFaqAsk(query: string): boolean {
   ) {
     return true;
   }
+  // Bare short arrangement asks (e.g. "C2C?")
+  if (/^(w2|w-2|c2c|1099)\s*\??$/i.test(trimmed)) return true;
   return false;
 }
 
@@ -341,12 +343,13 @@ function checkTooShort(trimmed: string): FilterResult | null {
 }
 
 function checkGenericQuery(trimmed: string): FilterResult | null {
+  // Continuations ("tell me more", "continue") are not generic bios — let them
+  // reach follow-up / LLM after a prior turn.
   const genericPatterns = [
     /^(tell me about|about mikkel|about him)$/i,
     // Bare greetings and greetings with trailing punctuation
     /^(hi|hello|hey|yo|howdy|greetings)([\s,!.]+)?$/i,
     /^(what's up|whats up|sup)([\s,!.]*)?$/i,
-    /^(tell me more|say more|continue|go on)([\s,!.]*)?$/i,
     /^(what about you|about you|you\?)([\s,!.]*)?$/i,
     /^(more info|more information)([\s,!.]*)?$/i,
   ];
@@ -428,7 +431,11 @@ export function filterInput(
   // Short substantive replies after a '?' (e.g. "React") — after FAQ/greetings
   if (conversationHistory && conversationHistory.length > 0) {
     const lastMessage = conversationHistory[conversationHistory.length - 1];
-    if (lastMessage.includes('?') && trimmed.length <= 10) {
+    if (
+      lastMessage.includes('?') &&
+      trimmed.length > 0 &&
+      trimmed.length <= 10
+    ) {
       return {
         shouldCallAPI: true,
         reason: 'valid_follow_up',
