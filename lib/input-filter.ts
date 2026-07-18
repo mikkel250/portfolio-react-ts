@@ -6,12 +6,12 @@
 // of expensive LLM calls, and don't count against rate limits.
 //
 // Router (in order):
-//   1. Spam mash — repeated chars / keyboard (before follow-up exceptions)
-//   2. Meaningful short follow-up after '?' → LLM
-//   3. Role-share / long pastes → LLM
-//   4. FAQ-shaped asks → allowlisted canned replies
-//   5. Too-short / generic fallbacks
-//   6. Otherwise → LLM
+//   1. Spam mash — repeated chars / keyboard
+//   2. Role-share / long pastes → LLM
+//   3. FAQ-shaped asks → allowlisted canned replies
+//   4. Generic greetings
+//   5. Meaningful short follow-up after '?' → LLM
+//   6. Too-short fallback / otherwise → LLM
 //
 // Design notes:
 //   - Role-share / JD pastes never get FAQ canned replies (even if keywords
@@ -169,12 +169,14 @@ function checkRoleMatch(query: string): JobFilterResult {
   // Non-SE role openings first — so "technical instructor role" declines even
   // when it also matches software/technical indicators.
   const nonMatchingRoles = [
-    /\b(medical doctor|physician|surgeon|nurse|healthcare provider)/i,
+    /\b(medical doctor|physician|surgeon|nurse|healthcare provider)\s+(role|position|job|opening)\b/i,
+    /\b(hiring|looking for|need)\s+a\s+(?:\w+\s+){0,3}(medical doctor|physician|surgeon|nurse|healthcare provider)\b/i,
     /\b(teacher|professor|educator|instructor)\s+(role|position|job|opening)\b/i,
     /\b(hiring|looking for|need)\s+a\s+(?:\w+\s+){0,3}(teacher|professor|educator|instructor)\b/i,
     /\b(lawyer|attorney|legal counsel)\s+(role|position|job|opening)\b/i,
     /\b(accountant|cpa|bookkeeper)\s+(role|position|job|opening)\b/i,
-    /\b(pilot|flight attendant|delivery driver|truck driver|uber driver|taxi driver|bus driver)\b/i,
+    /\b(pilot|flight attendant|delivery driver|truck driver|uber driver|taxi driver|bus driver)\s+(role|position|job|opening)\b/i,
+    /\b(hiring|looking for|need)\s+a\s+(?:\w+\s+){0,3}(pilot|flight attendant|delivery driver|truck driver)\b/i,
     /\b(chef|cook)\s+(role|position|job)\b/i,
     /\b(retail|cashier|sales associate)\s+(role|position|job)\b/i,
     /\b(construction|plumber|electrician)\s+(role|position|job)\b/i,
@@ -345,11 +347,12 @@ function checkTooShort(trimmed: string): FilterResult | null {
 function checkGenericQuery(trimmed: string): FilterResult | null {
   const genericPatterns = [
     /^(tell me about|about mikkel|about him)$/i,
-    /^(hi|hello|hey|yo|howdy|greetings)[\s,!.]+$/i,
-    /^(what's up|whats up|sup)[\s,!.]*$/i,
-    /^(tell me more|say more|continue|go on)[\s,!.]*$/i,
-    /^(what about you|about you|you\?)[\s,!.]*$/i,
-    /^(more info|more information)[\s,!.]*$/i,
+    // Bare greetings and greetings with trailing punctuation
+    /^(hi|hello|hey|yo|howdy|greetings)([\s,!.]+)?$/i,
+    /^(what's up|whats up|sup)([\s,!.]*)?$/i,
+    /^(tell me more|say more|continue|go on)([\s,!.]*)?$/i,
+    /^(what about you|about you|you\?)([\s,!.]*)?$/i,
+    /^(more info|more information)([\s,!.]*)?$/i,
   ];
 
   if (genericPatterns.some((pattern) => pattern.test(trimmed))) {
@@ -377,11 +380,12 @@ What specific area would you like to explore?
  *
  * Pipeline:
  *   1. Spam mash (repeated chars / keyboard) — before follow-up exceptions
- *   2. Meaningful short follow-up after a '?' → LLM
- *   3. Role-share / long paste → LLM (no FAQ canned)
- *   4. FAQ-shaped asks → allowlisted canned replies (may be short)
- *   5. Too-short / generic fallbacks for remaining short non-FAQ input
- *   6. Default → LLM
+ *   2. Role-share / long paste → LLM (no FAQ canned)
+ *   3. FAQ-shaped asks → allowlisted canned replies (may be short)
+ *   4. Generic greetings (before follow-up)
+ *   5. Meaningful short follow-up after a '?' → LLM
+ *   6. Too-short fallback for remaining short noise
+ *   7. Default → LLM
  */
 export function filterInput(
   query: string,
@@ -392,16 +396,6 @@ export function filterInput(
   const mash = checkSpamMash(trimmed);
   if (mash) {
     return mash;
-  }
-
-  if (conversationHistory && conversationHistory.length > 0) {
-    const lastMessage = conversationHistory[conversationHistory.length - 1];
-    if (lastMessage.includes('?') && trimmed.length <= 10) {
-      return {
-        shouldCallAPI: true,
-        reason: 'valid_follow_up',
-      };
-    }
   }
 
   if (isRoleShareOrLongPaste(query)) {
@@ -429,14 +423,26 @@ export function filterInput(
     }
   }
 
-  const tooShort = checkTooShort(trimmed);
-  if (tooShort) {
-    return tooShort;
-  }
-
+  // Greetings before follow-up so bare "hi" after a prior '?' stays canned
   const generic = checkGenericQuery(trimmed);
   if (generic) {
     return generic;
+  }
+
+  // Short substantive replies after a '?' (e.g. "React") — after FAQ/greetings
+  if (conversationHistory && conversationHistory.length > 0) {
+    const lastMessage = conversationHistory[conversationHistory.length - 1];
+    if (lastMessage.includes('?') && trimmed.length <= 10) {
+      return {
+        shouldCallAPI: true,
+        reason: 'valid_follow_up',
+      };
+    }
+  }
+
+  const tooShort = checkTooShort(trimmed);
+  if (tooShort) {
+    return tooShort;
   }
 
   return { shouldCallAPI: true };

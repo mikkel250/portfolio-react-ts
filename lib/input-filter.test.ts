@@ -116,6 +116,14 @@ describe('filterInput short-circuit router', () => {
       expect(['too_short', 'generic_query']).toContain(result.reason);
     });
 
+    it('short greeting after a prior ? still gets canned, not valid_follow_up', () => {
+      const prior =
+        'What specific area would you like to explore?\n- Or paste a job description?';
+      const result = filterInput('hi', [prior]);
+      expect(result.shouldCallAPI).toBe(false);
+      expect(result.reason).toBe('generic_query');
+    });
+
     it('short FAQ ask bypasses too-short when under 10 chars', () => {
       const result = filterInput('C2C?', []);
       expect(result.shouldCallAPI).toBe(false);
@@ -158,6 +166,14 @@ describe('filterInput short-circuit router', () => {
       expect(result.reason).toBe('valid_follow_up');
     });
 
+    it('short FAQ after a prior ? still gets canned, not valid_follow_up', () => {
+      const prior =
+        'What specific area would you like to explore?\n- Ask about his **experience**';
+      const result = filterInput('C2C?', [prior]);
+      expect(result.shouldCallAPI).toBe(false);
+      expect(result.reason).toBe('work_arrangement_query');
+    });
+
     it('AE5b: long JD with normal double letters is not mash', () => {
       const result = filterInput(JD_WITHOUT_COMPENSATION, []);
       expect(result.shouldCallAPI).toBe(true);
@@ -182,6 +198,18 @@ describe('filterInput short-circuit router', () => {
 
     it('technical instructor role declines even with technical SE indicators', () => {
       const result = filterJobCriteria('Hiring a technical instructor role.');
+      expect(result.shouldProceed).toBe(false);
+      expect(result.reason).toBe('role_mismatch');
+    });
+
+    it('background nurse skill question is not role_mismatch', () => {
+      const result = filterInput('Does he have nurse experience?', []);
+      expect(result.shouldCallAPI).toBe(true);
+      expect(result.reason).not.toBe('role_mismatch');
+    });
+
+    it('physician role opening still declines', () => {
+      const result = filterJobCriteria('Hiring a physician role.');
       expect(result.shouldProceed).toBe(false);
       expect(result.reason).toBe('role_mismatch');
     });
