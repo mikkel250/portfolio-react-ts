@@ -13,7 +13,7 @@ Assist users in upgrading their Langfuse SDK to the latest version. The Python a
 
 ## Migration Docs
 
-Always fetch the latest migration guide before starting — these pages are the source of truth:
+Always fetch the relevant migration guide before starting — these pages are the source of truth:
 
 - **Python (v3 → v4):** https://langfuse.com/docs/observability/sdk/upgrade-path/python-v3-to-v4
 - **JS/TS (v4 → v5):** https://langfuse.com/docs/observability/sdk/upgrade-path/js-v4-to-v5
@@ -25,13 +25,15 @@ curl -s "https://langfuse.com/docs/observability/sdk/upgrade-path/python-v3-to-v
 curl -s "https://langfuse.com/docs/observability/sdk/upgrade-path/js-v4-to-v5.md"
 ```
 
+After fetching, **record the exact target SDK version(s)** from the guide / npm or PyPI (e.g. `@langfuse/tracing@x.y.z`, `langfuse==x.y.z`). Do not plan or implement against an unspecified “latest”; pin and validate those versions in the upgrade checklist and any install commands.
+
 ## Upgrade Checklist
 
 Work through each item in order. Skip items that don't apply to the user's codebase.
 
 ### Both SDKs
 
-- [ ] **Update the SDK package** to the latest version
+- [ ] **Update the SDK package** to the recorded target version(s) from Migration Docs (not an unspecified “latest”)
 - [ ] **Audit span filtering**: Non-LLM spans (HTTP, DB, queues) no longer export by default. If the user relied on these, configure a custom `should_export_span` / `shouldExportSpan` filter
 - [ ] **Replace `update_current_trace()` / `updateActiveTrace()`**: Split into three calls:
   - `propagate_attributes()` / `propagateAttributes()` for correlating attributes (`user_id`, `session_id`, `tags`, `metadata`, `trace_name`)

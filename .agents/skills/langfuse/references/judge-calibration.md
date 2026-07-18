@@ -47,11 +47,13 @@ production monitoring, high-stakes automation, or train/test-style validation.
 
 ## 2) Primary workflow
 
-1. Confirm the dataset name, ground-truth label location in `expectedOutput`,
-   judge prompt name/version, judge model, and label vocabulary.
+1. Confirm the dataset name, ground-truth label location in dataset items
+   (`expectedOutput` in JS/TS; `expected_output` in Python), judge prompt
+   name/version, judge model, and label vocabulary.
 2. Choose simple or advanced mode. If ambiguous, use simple mode.
 3. Run the judge prompt against each dataset item input as a Langfuse experiment.
-4. Compare the judge output to `item.expected_output` in evaluator functions.
+4. Compare the judge output to the ground-truth field in evaluator functions
+   (`item.expectedOutput` in JS/TS; `item.expected_output` in Python).
 5. Return the matching report format from section 7.
 
 ## 3) Langfuse experiment workflow
@@ -71,6 +73,7 @@ frequently. Fetch these pages (see SKILL.md section 2 for retrieval methods):
 High-level shape of a simple-mode calibration experiment:
 
 ```
+# Pseudo-code (field names shown for both SDKs)
 load dataset and judge prompt from Langfuse
 define POSITIVE / NEGATIVE label set
 
@@ -78,9 +81,10 @@ task(item):
     compile judge prompt with item.input
     call judge model
     return normalized label
-    # never read item.expected_output here — that would leak the answer
+    # never read ground truth here — that would leak the answer
+    # JS/TS: item.expectedOutput | Python: item.expected_output
 
-item_evaluator(output, expected_output):
+item_evaluator(output, expected):  # expected = expectedOutput (JS/TS) or expected_output (Python)
     if either label is outside the allowed set:
         return invalid (excluded from accuracy denominator)
     return exact_match score (0 or 1)

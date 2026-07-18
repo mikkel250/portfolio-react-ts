@@ -40,12 +40,13 @@ langfuse api <resource> <action> --curl
 
 ## Credentials
 
-Set environment variables:
+Canonical host variable is `LANGFUSE_BASE_URL`. Some CLIs/SDKs still read `LANGFUSE_HOST` — when both are needed, alias after setting the base URL.
 
 ```bash
 export LANGFUSE_PUBLIC_KEY=pk-lf-...
 export LANGFUSE_SECRET_KEY=sk-lf-...
-export LANGFUSE_BASE_URL=https://cloud.langfuse.com  
+export LANGFUSE_BASE_URL=https://cloud.langfuse.com  # EU; use us.cloud.langfuse.com for US, or a self-hosted URL
+export LANGFUSE_HOST="$LANGFUSE_BASE_URL"            # required alias when a tool only reads LANGFUSE_HOST
 ```
 
 ## Tips

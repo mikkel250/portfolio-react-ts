@@ -31,19 +31,37 @@ Format the body as markdown with the two field labels as headings.
 
 ## Submitting
 
-Create a GitHub Discussion on the `langfuse/skills` repository using the GraphQL API:
+Create a GitHub Discussion on the `langfuse/skills` repository using the GraphQL API.
+Look up repository/category IDs as before, then pass title/body through structured JSON
+(`gh api --input`) so user-controlled text is never interpolated into shell arguments:
 
 ```bash
-gh api graphql -f query='
-mutation($repoId: ID!, $categoryId: ID!, $title: String!, $body: String!) {
-  createDiscussion(input: {repositoryId: $repoId, categoryId: $categoryId, title: $title, body: $body}) {
-    discussion { url }
-  }
-}' \
-  -f repoId="$(gh api graphql -f query='{ repository(owner: "langfuse", name: "skills") { id } }' --jq '.data.repository.id')" \
-  -f categoryId="$(gh api graphql -f query='{ repository(owner: "langfuse", name: "skills") { discussionCategories(first: 10) { nodes { id name } } } }' --jq '.data.repository.discussionCategories.nodes[] | select(.name == "Ideas & Improvements") | .id')" \
-  -f title="<concise title>" \
-  -f body="<formatted feedback>"
+REPO_ID="$(gh api graphql -f query='{ repository(owner: "langfuse", name: "skills") { id } }' --jq '.data.repository.id')"
+CATEGORY_ID="$(gh api graphql -f query='{ repository(owner: "langfuse", name: "skills") { discussionCategories(first: 10) { nodes { id name } } } }' --jq '.data.repository.discussionCategories.nodes[] | select(.name == "Ideas & Improvements") | .id')"
+
+INPUT_FILE="$(mktemp)"
+export REPO_ID CATEGORY_ID
+export FEEDBACK_TITLE="<concise title>"
+export FEEDBACK_BODY="<formatted feedback>"
+python3 - <<'PY' > "$INPUT_FILE"
+import json, os
+print(json.dumps({
+  "query": """mutation($repoId: ID!, $categoryId: ID!, $title: String!, $body: String!) {
+    createDiscussion(input: {repositoryId: $repoId, categoryId: $categoryId, title: $title, body: $body}) {
+      discussion { url }
+    }
+  }""",
+  "variables": {
+    "repoId": os.environ["REPO_ID"],
+    "categoryId": os.environ["CATEGORY_ID"],
+    "title": os.environ["FEEDBACK_TITLE"],
+    "body": os.environ["FEEDBACK_BODY"],
+  },
+}))
+PY
+
+gh api graphql --input "$INPUT_FILE"
+rm -f "$INPUT_FILE"
 ```
 
 If the `gh` CLI is not authenticated or the request fails, give the user this link to create the discussion manually:

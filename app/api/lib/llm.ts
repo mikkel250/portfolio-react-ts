@@ -469,30 +469,37 @@ export async function chat(
       lastError = error;
       console.log(`${provider} failed:`, error.message);
       
-      // Trace the failure (fire and forget)
-      traceLLMCall(provider, model, messages as ChatMessage[], systemPrompt, {
+      // Trace the failure. LangSmith stays fire-and-forget; await Langfuse so the
+      // error span is queued before the route's end-of-request flush.
+      const errorResponse = {
         content: `Error: ${error.message}`,
         usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
         model,
-        finishReason: null,
-      }, startTime, options)
-        .catch(err => console.error('Tracing error (LangSmith):', err));
-      traceLLMCallLangFuse(
+        finishReason: null as string | null,
+      };
+      traceLLMCall(
         provider,
         model,
         messages as ChatMessage[],
         systemPrompt,
-        {
-          content: `Error: ${error.message}`,
-          usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
-          model,
-          finishReason: null,
-        },
+        errorResponse,
         startTime,
-        options,
-        (options as any).langfusePrompt
-      )
-        .catch(err => console.error('Tracing error (Langfuse):', err));
+        options
+      ).catch(err => console.error('Tracing error (LangSmith):', err));
+      try {
+        await traceLLMCallLangFuse(
+          provider,
+          model,
+          messages as ChatMessage[],
+          systemPrompt,
+          errorResponse,
+          startTime,
+          options,
+          (options as any).langfusePrompt
+        );
+      } catch (err) {
+        console.error('Tracing error (Langfuse):', err);
+      }
       
       // Check if this is a retryable error
       if (isRetryableError(error)) {
