@@ -213,5 +213,24 @@ describe('filterInput short-circuit router', () => {
       expect(result.shouldProceed).toBe(false);
       expect(result.reason).toBe('role_mismatch');
     });
+
+    it('SE role opening is not role_mismatch', () => {
+      const result = filterJobCriteria(
+        'Hiring a Senior Full-Stack Engineer with React and TypeScript',
+      );
+      expect(result.shouldProceed).toBe(true);
+    });
+
+    it('asking about his role at a company is not role_mismatch', () => {
+      const result = filterInput("What's his role at Intrinsic?", []);
+      expect(result.shouldCallAPI).toBe(true);
+      expect(result.reason).not.toBe('role_mismatch');
+    });
+
+    it('unknown non-SE opening declines without occupation blacklist', () => {
+      const result = filterJobCriteria('Hiring a dental hygienist role.');
+      expect(result.shouldProceed).toBe(false);
+      expect(result.reason).toBe('role_mismatch');
+    });
   });
 });

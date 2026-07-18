@@ -165,52 +165,48 @@ function checkSalaryQuery(query: string): JobFilterResult {
   return { shouldProceed: true };
 }
 
-function checkRoleMatch(query: string): JobFilterResult {
-  // Non-SE role openings first — so "technical instructor role" declines even
-  // when it also matches software/technical indicators.
-  const nonMatchingRoles = [
-    /\b(medical doctor|physician|surgeon|nurse|healthcare provider)\s+(role|position|job|opening)\b/i,
-    /\b(hiring|looking for|need)\s+a\s+(?:\w+\s+){0,3}(medical doctor|physician|surgeon|nurse|healthcare provider)\b/i,
-    /\b(teacher|professor|educator|instructor)\s+(role|position|job|opening)\b/i,
-    /\b(hiring|looking for|need)\s+a\s+(?:\w+\s+){0,3}(teacher|professor|educator|instructor)\b/i,
-    /\b(lawyer|attorney|legal counsel)\s+(role|position|job|opening)\b/i,
-    /\b(accountant|cpa|bookkeeper)\s+(role|position|job|opening)\b/i,
-    /\b(pilot|flight attendant|delivery driver|truck driver|uber driver|taxi driver|bus driver)\s+(role|position|job|opening)\b/i,
-    /\b(hiring|looking for|need)\s+a\s+(?:\w+\s+){0,3}(pilot|flight attendant|delivery driver|truck driver)\b/i,
-    /\b(chef|cook)\s+(role|position|job)\b/i,
-    /\b(retail|cashier|sales associate)\s+(role|position|job)\b/i,
-    /\b(construction|plumber|electrician)\s+(role|position|job)\b/i,
+function looksLikeRoleOpening(query: string): boolean {
+  if (isJobDescriptionQuery(query)) return true;
+  const openingPatterns = [
+    /\b(hiring|looking for|seeking)\s+(a|an|someone)\b/i,
+    /\b(hiring|looking for|seeking)\b.{0,80}\b(role|position|job|opening)\b/i,
+    /\b(job description|about the role|this is for a role)\b/i,
+    /\b(open role|open position|job opening)\b/i,
+    /\b(role|position|job)\s+(opening|available)\b/i,
   ];
+  return openingPatterns.some((pattern) => pattern.test(query));
+}
 
-  const isNonMatchingRole = nonMatchingRoles.some((pattern) =>
-    pattern.test(query),
-  );
-
-  if (isNonMatchingRole) {
-    return {
-      shouldProceed: false,
-      response:
-        "Thank you for reaching out. This position doesn't align with Mikkel's background as a software engineer, as he's focused on opportunities in software development. He would have to decline this one. Thanks for thinking of him!",
-      reason: 'role_mismatch',
-    };
-  }
-
+function hasSoftwareEngineeringSignals(query: string): boolean {
+  // Whitelist — omit bare "technical" (matches "technical instructor/writer")
   const softwareEngineeringIndicators = [
-    /\b(engineer|developer|programmer|software|frontend|backend|full.?stack|fullstack)/i,
-    /\b(sdk|api|react|typescript|javascript|node|python|java|go|rust)/i,
-    /\b(code|programming|coding|development|infrastructure|devops)/i,
-    /\b(technical|tech stack|architecture|system design)/i,
+    /\b(engineer|developer|programmer|software|frontend|backend|full.?stack|fullstack)\b/i,
+    /\b(sdk|api|react|typescript|javascript|node\.?js|python|java|golang|rust)\b/i,
+    /\b(coding|programming|devops|sre|mlops)\b/i,
+    /\b(tech stack|architecture|system design|infrastructure)\b/i,
   ];
+  return softwareEngineeringIndicators.some((pattern) => pattern.test(query));
+}
 
-  const hasSoftwareEngineeringIndicators = softwareEngineeringIndicators.some(
-    (pattern) => pattern.test(query),
-  );
-
-  if (hasSoftwareEngineeringIndicators) {
+/**
+ * Decline only clear non-SE *role openings*. Default allow (LLM) otherwise.
+ * Whitelist SE signals instead of enumerating every non-SE occupation.
+ */
+function checkRoleMatch(query: string): JobFilterResult {
+  if (!looksLikeRoleOpening(query)) {
     return { shouldProceed: true };
   }
 
-  return { shouldProceed: true };
+  if (hasSoftwareEngineeringSignals(query)) {
+    return { shouldProceed: true };
+  }
+
+  return {
+    shouldProceed: false,
+    response:
+      "Thank you for reaching out. This position doesn't align with Mikkel's background as a software engineer, as he's focused on opportunities in software development. He would have to decline this one. Thanks for thinking of him!",
+    reason: 'role_mismatch',
+  };
 }
 
 function checkLocationQuery(query: string): FilterResult {
