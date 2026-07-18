@@ -277,8 +277,10 @@ function checkWorkArrangementQuery(query: string): FilterResult {
 }
 
 /**
- * Job FAQ checks for eligible (short, non-role-share) messages only.
- * Callers must gate with isShortCircuitEligible.
+ * Job FAQ checks (auth/salary/role) for ask-shaped messages only.
+ * filterInput gates this behind isShortCircuitEligible — non-ask openings
+ * are not declined here via the chat router (LLM path by design).
+ * Direct callers still get role_mismatch for clear non-SE openings.
  */
 export function filterJobCriteria(query: string): JobFilterResult {
   const authResult = checkWorkAuthorizationQuery(query);
@@ -407,6 +409,11 @@ export function filterInput(
     return { shouldCallAPI: true, reason: 'role_share_or_long_paste' };
   }
 
+  // FAQ allowlist (salary/auth/location/arrangement/role_mismatch) only for
+  // ask-shaped messages. Non-ask openings like "Hiring a physician role."
+  // intentionally skip canned role_mismatch and go to the LLM — widening
+  // that gate reintroduces keyword-anywhere short-circuits. filterJobCriteria
+  // still declines those openings when called directly (helper / tests).
   if (isShortCircuitEligible(query)) {
     const jobFilterResult = filterJobCriteria(query);
     if (!jobFilterResult.shouldProceed) {

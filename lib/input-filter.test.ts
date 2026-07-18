@@ -252,6 +252,15 @@ describe('filterInput short-circuit router', () => {
       expect(result.reason).toBe('role_mismatch');
     });
 
+    // Intentional: non-ask openings are not FAQ-eligible, so filterInput does
+    // not canned-decline them — LLM handles fit. Do not "fix" by ungating
+    // role_mismatch without revisiting the short-circuit product contract.
+    it('non-ask physician opening via filterInput goes to LLM, not role_mismatch', () => {
+      const result = filterInput('Hiring a physician role.', []);
+      expect(result.shouldCallAPI).toBe(true);
+      expect(result.reason).not.toBe('role_mismatch');
+    });
+
     it('SE role opening is not role_mismatch', () => {
       const result = filterJobCriteria(
         'Hiring a Senior Full-Stack Engineer with React and TypeScript',
