@@ -1,5 +1,5 @@
 /**
- * Test script to verify job filtering logic
+ * Ad-hoc script (not in Vitest CI). Prefer `lib/input-filter.test.ts` via `npm test`.
  * Run with: npx tsx tests/test-job-filtering.ts
  */
 
