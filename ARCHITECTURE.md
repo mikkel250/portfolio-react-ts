@@ -184,7 +184,14 @@ All production API routes use `export const runtime = 'nodejs'`.
 - SDK: `@langfuse/client`, `@langfuse/otel`, `@langfuse/tracing`
 - Credentials: `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `LANGFUSE_BASE_URL`, `LANGFUSE_TRACING` in `.env.local`
 - Used in: `instrumentation.ts`, `app/api/lib/langfuse.ts`, `scripts/migrate-prompts.ts`
-- Enabled when `LANGFUSE_TRACING=true` and keys are present
+- Enabled when `LANGFUSE_TRACING=true` (exact string) and keys are present
+- Chat path awaits Langfuse generation spans and `forceFlush` before returning so serverless exits do not drop traces
+- Parent observation name: `chat_request` with `timings_ms` metadata (filter / knowledgeBase / prompt / llm / total)
+
+### DeepSeek reasoning dial
+- Env: `DEEPSEEK_REASONING_EFFORT` = `max` | `high` | `disabled` (default `high`)
+- Models: `deepseek-v4-pro`, `deepseek-v4-flash` via `AI_MODEL` / `AI_MODEL_FALLBACKS`
+- Latency ladder after attribution: Flash + `max` → `high` → `disabled`
 
 ### GitHub (portfolio data)
 - Purpose: Fetch contribution/repo data for portfolio pages
@@ -208,6 +215,7 @@ AI_MODEL
 AI_MODEL_FALLBACKS
 AI_MAX_TOKENS
 AI_TEMPERATURE
+DEEPSEEK_REASONING_EFFORT
 ```
 
 **Observability:**
