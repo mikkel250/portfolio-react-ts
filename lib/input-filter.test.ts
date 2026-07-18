@@ -56,6 +56,21 @@ describe('filterInput short-circuit router', () => {
       expect(result.reason).toBe('salary_query');
     });
 
+    it('employer share-salary-expectation copy is not salary canned', () => {
+      const result = filterInput(
+        'Please share salary expectation for this role',
+        [],
+      );
+      expect(result.shouldCallAPI).toBe(true);
+      expect(result.reason).not.toBe('salary_query');
+    });
+
+    it('short location FAQ ask is canned', () => {
+      const result = filterInput('Where is Mikkel based?', []);
+      expect(result.shouldCallAPI).toBe(false);
+      expect(result.reason).toBe('location_query');
+    });
+
     it('AE3b: short C2C ask is canned', () => {
       const result = filterInput('Can he do C2C?', []);
       expect(result.shouldCallAPI).toBe(false);

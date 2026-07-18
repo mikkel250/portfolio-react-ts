@@ -86,8 +86,14 @@ function looksLikeFaqAsk(query: string): boolean {
   ) {
     return true;
   }
-  // Directed FAQ phrases that sometimes omit a leading interrogative
-  if (/\b(salary|compensation|pay)\s+expectation\b/i.test(trimmed)) return true;
+  // Directed expectation phrases (not employer "share salary expectation")
+  if (
+    /\b(his|her|your|mikkel'?s?)\s+(salary|compensation|pay)\s+expectation\b/i.test(
+      trimmed,
+    )
+  ) {
+    return true;
+  }
   if (
     /\b(visa|work)\s+sponsorship\b/i.test(trimmed) &&
     /\b(he|his|her|mikkel|need|require|does)\b/i.test(trimmed)
@@ -141,12 +147,9 @@ function checkSalaryQuery(query: string): JobFilterResult {
   const salaryQuestionPatterns = [
     /\bwhat's?\s+(his|her|your|mikkel'?s?)\s+(salary|compensation|pay|rate)\b/i,
     /\bwhat\s+is\s+(his|her|your|mikkel'?s?)\s+(salary|compensation|pay|rate)\b/i,
-    /\bsalary expectation/i,
-    /\bcompensation expectation/i,
-    /\bpay expectation/i,
-    /\b(his|her|your|mikkel'?s?)\s+salary expectation/i,
+    /\b(his|her|your|mikkel'?s?)\s+(salary|compensation|pay)\s+expectation\b/i,
     /\bhow much\s+(does|would|is)\s+(he|she|mikkel|your)\b/i,
-    /\bwhat('s|\s+are|\s+is)\s+(his|her|your|mikkel'?s?)?\s*(salary|compensation)\s+(expectation|range|req)/i,
+    /\bwhat('s|\s+are|\s+is)\s+(his|her|your|mikkel'?s?)\s+(salary|compensation)\s+(expectation|range|req)/i,
     /\bwhat\s+(compensation|salary)\s+range\s+(are\s+you|is\s+he|is\s+mikkel)\b/i,
     /\b(compensation|salary)\s+range\s+(are\s+you|is\s+he)\s+looking\s+for\b/i,
   ];
@@ -298,7 +301,10 @@ export function filterJobCriteria(query: string): JobFilterResult {
 
 /** Repeated-char / keyboard-mash only — checked before follow-up exceptions. */
 function checkSpamMash(trimmed: string): FilterResult | null {
-  if (trimmed.length <= 200 && /([a-zA-Z])\1{3,}/.test(trimmed)) {
+  if (
+    trimmed.length <= ROLE_SHARE_LENGTH &&
+    /([a-zA-Z])\1{3,}/.test(trimmed)
+  ) {
     return {
       shouldCallAPI: false,
       response: 'This seems like an invalid input, please ask a complete question.',
@@ -306,7 +312,7 @@ function checkSpamMash(trimmed: string): FilterResult | null {
     };
   }
 
-  if (trimmed.length <= 200) {
+  if (trimmed.length <= ROLE_SHARE_LENGTH) {
     const keyboardPatterns = [
       /asdfg/i,
       /qwerty/i,
