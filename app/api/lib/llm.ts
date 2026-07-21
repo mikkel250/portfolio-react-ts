@@ -436,8 +436,9 @@ export async function chat(
       const response = await callProvider(provider, messages, systemPrompt, { ...options, model });
       
       // Trace successful call. Await Langfuse generation so it nests under an
-      // active parent span; do not flush here — the route flushes once at the end
-      // so providerDurationMs excludes observability I/O.
+      // active parent span when one exists. Do not flush here — HTTP handlers
+      // that call chat() must flush once before return (/api/chat, /api/analyze-jd)
+      // so providerDurationMs excludes observability I/O and parent spans export.
       const providerDurationMs = Date.now() - startTime;
       traceLLMCall(provider, model, messages as ChatMessage[], systemPrompt, response, startTime, options)
         .catch(err => console.error('Tracing error (LangSmith):', err));
