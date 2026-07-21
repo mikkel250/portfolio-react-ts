@@ -85,22 +85,30 @@ export async function getPrompt(name: PromptName) {
     }
   }
 
-  // Fallback: use the hardcoded template with simple variable replacement.
-  // Supports both Langfuse-style {{var}} and legacy {VAR} placeholders.
+  // Fallback: Langfuse-compatible {{var}} interpolation only.
+  // Do NOT replace bare {CONTEXT}/{CALENDLY_LINK}/… — those strings appear many
+  // times as instructional references in the local templates. Replacing them
+  // with the full KB duplicated the knowledge pack (~24× → multi-MB prompts).
   return {
     name,
-    compile: (vars: Record<string, string>) => {
-      let tpl = entry.local;
-      for (const [key, value] of Object.entries(vars)) {
-        tpl = tpl.split(`{{${key}}}`).join(value);
-        // Also replace legacy single-brace uppercase placeholders (e.g. {CONTEXT})
-        const legacyKey = key.toUpperCase();
-        tpl = tpl.split(`{${legacyKey}}`).join(value);
-      }
-      return tpl;
-    },
+    compile: (vars: Record<string, string>) => compileLocalTemplate(entry.local, vars),
     __langfusePrompt: null,
   };
+}
+
+/**
+ * Interpolate Langfuse-style `{{var}}` placeholders only.
+ * Instructional single-brace tokens like `{CONTEXT}` are left untouched.
+ */
+export function compileLocalTemplate(
+  template: string,
+  vars: Record<string, string>
+): string {
+  let result = template;
+  for (const [key, value] of Object.entries(vars)) {
+    result = result.split(`{{${key}}}`).join(value);
+  }
+  return result;
 }
 
 /**

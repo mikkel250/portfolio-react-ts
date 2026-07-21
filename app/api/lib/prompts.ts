@@ -57,7 +57,7 @@ export function isAIQuery(query: string): boolean {
  *   2. Delegates to compilePrompt() which:
  *      a. Tries LangFuse (runtime-updatable prompts via web UI)
  *      b. Falls back to hardcoded CHAT_SYSTEM_PROMPT if LangFuse unavailable
- *   3. Variables {CONTEXT} and {CALENDLY_LINK} are interpolated
+ *   3. Variables {{context}} and {{calendly_link}} are interpolated once each
  *
  * This is the function called from the main chat API route at
  * app/api/chat/route.ts.
