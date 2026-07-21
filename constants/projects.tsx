@@ -7,7 +7,7 @@ export const projects = [
       `AI-powered app that allows client executives to query BI data using plain english. Remix/React frontend, FastAPI backend, Vanna-to-ClickHouse retrieval, ChromaDB RAG for schema memory, real-time SQL error detection and correction with schema-aware validation for LLM-generated queries. Built a Pytest evaluation harness, a tiered LLM router, complexity-based routing and error-driven escalation.
     `,
     image: "/images/projects/placeholder.png",
-    stack: [stack.nextjs, stack.typescript, stack.react],
+    stack: [stack.react, stack.typescript],
     link: "https://app.budflow.com/",
   },
   {
@@ -15,7 +15,7 @@ export const projects = [
     description:
       "Modern portfolio site built with Next.js, TypeScript, and Tailwind CSS. Features responsive design, smooth animations, and integrated AI assistant. Added an AI chat assistant with multi-provider LLM architecture (Google Gemini, Anthropic Claude, OpenAI). Features intelligent fallback, cost optimization, and WCAG compliance. Built with Next.js, TypeScript, and serverless architecture.",
     image: "/images/projects/placeholder.png",
-    stack: [stack.nextjs, stack.typescript, stack.react],
+    stack: [stack.nextjs, stack.typescript, stack.react, stack.tailwindcss],
     link: "https://portfolio-react-ts-mocha.vercel.app/",
   },
   {
