@@ -61,6 +61,9 @@ export function initLangFuse(): LangfuseClient | null {
 /**
  * Flush pending Langfuse / OTel spans before a serverless function exits.
  * No-op when tracing is disabled. Never throws to callers.
+ *
+ * Must call LangfuseSpanProcessor.forceFlush — TracerProvider.forceFlush is
+ * often unavailable and leaves spans unexported.
  */
 export async function flushLangfuseTracing(): Promise<void> {
   if (!isLangfuseTracingEnabled()) {
@@ -68,12 +71,26 @@ export async function flushLangfuseTracing(): Promise<void> {
   }
 
   try {
-    const { getLangfuseTracerProvider } = await import('@langfuse/tracing');
-    const provider = getLangfuseTracerProvider() as {
-      forceFlush?: () => Promise<void>;
-    };
-    if (typeof provider?.forceFlush === 'function') {
-      await provider.forceFlush();
+    const processor = (
+      globalThis as {
+        __langfuseSpanProcessor?: { forceFlush?: () => Promise<void> } | null;
+      }
+    ).__langfuseSpanProcessor;
+
+    if (processor && typeof processor.forceFlush === 'function') {
+      await processor.forceFlush();
+    } else {
+      const { getLangfuseTracerProvider } = await import('@langfuse/tracing');
+      const provider = getLangfuseTracerProvider() as {
+        forceFlush?: () => Promise<void>;
+      };
+      if (typeof provider?.forceFlush === 'function') {
+        await provider.forceFlush();
+      } else {
+        console.warn(
+          'Langfuse OTel flush skipped: no span processor or provider forceFlush'
+        );
+      }
     }
   } catch (error) {
     console.error('Langfuse OTel forceFlush failed:', error);
