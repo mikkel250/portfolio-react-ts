@@ -2,19 +2,20 @@ import { stack } from "./stack";
 
 export const projects = [
   {
-    title: "AI Recruiting Assistant",
+    title: "NL-to-SQL Business Intelligence Platform ",
     description:
-      "Production AI chat assistant with multi-provider LLM architecture (Google Gemini, Anthropic Claude, OpenAI). Features intelligent fallback, cost optimization (~$0-2.50/month), and WCAG compliance. Built with Next.js, TypeScript, and serverless architecture.",
+      `AI-powered app that allows client executives to query BI data using plain english. Remix/React frontend, FastAPI backend, Vanna-to-ClickHouse retrieval, ChromaDB RAG for schema memory, real-time SQL error detection and correction with schema-aware validation for LLM-generated queries. Built a Pytest evaluation harness, a tiered LLM router, complexity-based routing and error-driven escalation.
+    `,
     image: "/images/projects/placeholder.png",
     stack: [stack.nextjs, stack.typescript, stack.react],
-    link: "https://portfolio-react-ts-mocha.vercel.app/",
+    link: "https://app.budflow.com/",
   },
   {
-    title: "Portfolio Website",
+    title: "AI Recruiting Assistant & Portfolio Website",
     description:
-      "Modern portfolio site built with Next.js, TypeScript, and Tailwind CSS. Features responsive design, smooth animations, and integrated AI assistant. Showcases full-stack development skills with production deployment.",
+      "Modern portfolio site built with Next.js, TypeScript, and Tailwind CSS. Features responsive design, smooth animations, and integrated AI assistant. Added an AI chat assistant with multi-provider LLM architecture (Google Gemini, Anthropic Claude, OpenAI). Features intelligent fallback, cost optimization, and WCAG compliance. Built with Next.js, TypeScript, and serverless architecture.",
     image: "/images/projects/placeholder.png",
-    stack: [stack.nextjs, stack.typescript, stack.tailwindcss],
+    stack: [stack.nextjs, stack.typescript, stack.react],
     link: "https://portfolio-react-ts-mocha.vercel.app/",
   },
   {
