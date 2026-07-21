@@ -8,17 +8,27 @@ allowed-tools:
   - Bash(npx langfuse-cli api * --help *)
   - Bash(npx langfuse-cli api * list *)
   - Bash(npx langfuse-cli api * get *)
-  - Bash(npx langfuse-cli api * create *)
-  - Bash(npx langfuse-cli api * update *)
-  - Bash(npx langfuse-cli api * delete *)
+  - Bash(npx langfuse-cli api prompts create *)
+  - Bash(npx langfuse-cli api prompts update *)
+  - Bash(npx langfuse-cli api datasets create *)
+  - Bash(npx langfuse-cli api dataset-items create *)
+  - Bash(npx langfuse-cli api scores create *)
+  - Bash(npx langfuse-cli api score-configs create *)
+  - Bash(npx langfuse-cli api annotation-queues create *)
+  - Bash(npx langfuse-cli api annotation-queue-items create *)
   - Bash(bunx langfuse-cli api __schema *)
   - Bash(bunx langfuse-cli api * --help *)
   - Bash(bunx langfuse-cli api * list *)
   - Bash(bunx langfuse-cli api * get *)
-  - Bash(bunx langfuse-cli api * create *)
-  - Bash(bunx langfuse-cli api * update *)
-  - Bash(bunx langfuse-cli api * delete *)
-  - Bash(gh api graphql *)
+  - Bash(bunx langfuse-cli api prompts create *)
+  - Bash(bunx langfuse-cli api prompts update *)
+  - Bash(bunx langfuse-cli api datasets create *)
+  - Bash(bunx langfuse-cli api dataset-items create *)
+  - Bash(bunx langfuse-cli api scores create *)
+  - Bash(bunx langfuse-cli api score-configs create *)
+  - Bash(bunx langfuse-cli api annotation-queues create *)
+  - Bash(bunx langfuse-cli api annotation-queue-items create *)
+  - Bash(gh api graphql -f query=*)
   - Bash(gh api graphql --input *)
 ---
 
@@ -31,7 +41,7 @@ This skill helps you use Langfuse effectively across all common workflows: instr
 Follow these principles for ALL Langfuse work:
 
 1. **Documentation First**: NEVER implement based on memory. Always fetch current docs before writing code (Langfuse updates frequently) See the section below on how to access documentation.
-2. **CLI for Data Access**: Use `langfuse-cli` when querying/modifying Langfuse data. See the section below on how to use the CLI.
+2. **CLI for Data Access**: Use `langfuse-cli` when querying/modifying Langfuse data. See the section below on how to use the CLI. Allowlisted mutations are create/update on prompts, datasets, dataset-items, scores, score-configs, and annotation queues/items only. Any `delete` or other destructive/unlisted mutation requires explicit user confirmation and must be run as a reviewed, user-approved command outside the allowlist.
 3. **Best Practices by Use Case**: Check the relevant reference file below for use-case-specific guidelines before implementing
 4. **Use latest Langfuse versions**: Unless the user specified otherwise or there's a good reason, always use the latest version of Langfuse SDKs/APIs. Even if you're only creating a plan for another agent to execute, be explicit about the exact version to use.
 5. **If you guide the user through UI** and are unsure about a label or location, inspect the user’s screenshots or ask to see the relevant screen. Do not assume UI labels have the exact same names as API, SDK, or CLI fields.
