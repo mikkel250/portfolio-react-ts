@@ -16,7 +16,7 @@
 //     ├── buildFallbackChain(primaryModel)
 //     ├── for each provider in chain:
 //     │   ├── callProvider() → callGoogle/callOpenAI/callAnthropic/callDeepseek
-//     │   ├── traceLLMCall() → LangSmith + LangFuse (fire-and-forget)
+//     │   ├── traceLLMCall() → LangSmith (fire-and-forget) + Langfuse (await + flush)
 //     │   ├── on success: logUsage(), return ChatResponse
 //     │   └── on failure: if isRetryableError → continue, else throw
 //     └── all providers failed → throw
@@ -26,6 +26,7 @@
 //   - Unified ChatResponse type across all providers
 //   - Provider-specific adapters handle API differences internally
 //   - Dual tracing (LangSmith + LangFuse) for observability redundancy
+//   - Langfuse spans are awaited/flushed so serverless exits do not drop them
 //   - Cost tracking per call for monitoring spend
 // ---------------------------------------------------------------------------
 
@@ -73,7 +74,12 @@ export interface ChatResponse {
   };
   model: string;
   finishReason: string | null;
+  /** Wall time for the provider call only (excludes tracing). */
+  providerDurationMs?: number;
 }
+
+/** DeepSeek V4 thinking dial — API supports high|max; disabled turns thinking off. */
+export type DeepseekReasoningEffort = 'max' | 'high' | 'disabled';
 
 export interface ChatOptions {
   temperature?: number;
@@ -81,6 +87,25 @@ export interface ChatOptions {
   model?: string;
   /** Optional Langfuse prompt info to link in traces */
   langfusePrompt?: { name: string; version?: number } | null;
+  /** Override DEEPSEEK_REASONING_EFFORT for this call */
+  deepseekReasoningEffort?: DeepseekReasoningEffort;
+}
+
+/**
+ * Resolve DeepSeek thinking effort from env/options.
+ * Invalid values fall back to `high` (V4 thinking floor).
+ */
+export function resolveDeepseekReasoningEffort(
+  raw: string | undefined = process.env.DEEPSEEK_REASONING_EFFORT
+): DeepseekReasoningEffort {
+  const value = (raw ?? 'high').trim().toLowerCase();
+  if (value === 'max' || value === 'high' || value === 'disabled') {
+    return value;
+  }
+  console.warn(
+    `Invalid DEEPSEEK_REASONING_EFFORT="${raw ?? ''}", defaulting to high`
+  );
+  return 'high';
 }
 
 // Lazy initialization of clients to avoid errors during build time
@@ -215,19 +240,25 @@ async function callDeepseek(
     })),
   ];
 
-  // Reasoning mode is intentionally hardcoded: this app only configures DeepSeek
-  // reasoning-capable models (e.g. deepseek-v4-pro). Non-reasoning models set via
-  // env may return 400 — switch model or remove these fields if that happens.
+  // DeepSeek V4 thinking dial: DEEPSEEK_REASONING_EFFORT = max | high | disabled.
+  // Ladder for latency: max → high → disabled. Non-V4 models may reject these fields.
   // [SIDE-EFFECT] Calls DeepSeek chat completions API; failure triggers fallback in chat().
+  const effort =
+    options.deepseekReasoningEffort ?? resolveDeepseekReasoningEffort();
+  const thinkingParams =
+    effort === 'disabled'
+      ? { extra_body: { thinking: { type: 'disabled' as const } } }
+      : {
+          reasoning_effort: effort,
+          extra_body: { thinking: { type: 'enabled' as const } },
+        };
+
   const response = await getDeepSeek().chat.completions.create({
     model,
     messages: fullMessages,
     temperature,
     max_tokens: maxTokens,
-    reasoning_effort: 'high',
-    extra_body: {
-      thinking: { type: 'enabled' },
-    },
+    ...thinkingParams,
   } as OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming);
 
   const choice = response.choices[0];
@@ -404,20 +435,27 @@ export async function chat(
       // Call provider
       const response = await callProvider(provider, messages, systemPrompt, { ...options, model });
       
-      // Trace the successful call (fire and forget — LangSmith + LangFuse)
+      // Trace successful call. Await Langfuse generation so it nests under an
+      // active parent span when one exists. Do not flush here — HTTP handlers
+      // that call chat() must flush once before return (/api/chat, /api/analyze-jd)
+      // so providerDurationMs excludes observability I/O and parent spans export.
+      const providerDurationMs = Date.now() - startTime;
       traceLLMCall(provider, model, messages as ChatMessage[], systemPrompt, response, startTime, options)
         .catch(err => console.error('Tracing error (LangSmith):', err));
-      traceLLMCallLangFuse(
-        provider,
-        model,
-        messages as ChatMessage[],
-        systemPrompt,
-        response,
-        startTime,
-        options,
-        (options as any).langfusePrompt
-      )
-        .catch(err => console.error('Tracing error (Langfuse):', err));
+      try {
+        await traceLLMCallLangFuse(
+          provider,
+          model,
+          messages as ChatMessage[],
+          systemPrompt,
+          response,
+          startTime,
+          options,
+          (options as any).langfusePrompt
+        );
+      } catch (err) {
+        console.error('Tracing error (Langfuse):', err);
+      }
       
       // Log usage for monitoring
       logUsage(provider, model, response.usage.totalTokens);
@@ -426,36 +464,43 @@ export async function chat(
         console.log(`Fallback successful: ${provider} (${model})`);
       }
       
-      return response;
+      return { ...response, providerDurationMs };
       
     } catch (error: any) {
       lastError = error;
       console.log(`${provider} failed:`, error.message);
       
-      // Trace the failure (fire and forget)
-      traceLLMCall(provider, model, messages as ChatMessage[], systemPrompt, {
+      // Trace the failure. LangSmith stays fire-and-forget; await Langfuse so the
+      // error span is queued before the route's end-of-request flush.
+      const errorResponse = {
         content: `Error: ${error.message}`,
         usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
         model,
-        finishReason: null,
-      }, startTime, options)
-        .catch(err => console.error('Tracing error (LangSmith):', err));
-      traceLLMCallLangFuse(
+        finishReason: null as string | null,
+      };
+      traceLLMCall(
         provider,
         model,
         messages as ChatMessage[],
         systemPrompt,
-        {
-          content: `Error: ${error.message}`,
-          usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
-          model,
-          finishReason: null,
-        },
+        errorResponse,
         startTime,
-        options,
-        (options as any).langfusePrompt
-      )
-        .catch(err => console.error('Tracing error (Langfuse):', err));
+        options
+      ).catch(err => console.error('Tracing error (LangSmith):', err));
+      try {
+        await traceLLMCallLangFuse(
+          provider,
+          model,
+          messages as ChatMessage[],
+          systemPrompt,
+          errorResponse,
+          startTime,
+          options,
+          (options as any).langfusePrompt
+        );
+      } catch (err) {
+        console.error('Tracing error (Langfuse):', err);
+      }
       
       // Check if this is a retryable error
       if (isRetryableError(error)) {
@@ -511,6 +556,7 @@ const COST_PER_1K_TOKENS = {
   'gpt-4o': 0.005, // $5 per 1M tokens
   'gpt-4o-mini': 0.00015, // $0.15 per 1M tokens
   'deepseek-v4-pro': 0.00014, // approximate; see DeepSeek pricing
+  'deepseek-v4-flash': 0.00005, // approximate; Flash is cheaper/faster than Pro
   'deepseek-chat': 0.00014,
 };
 

@@ -29,6 +29,10 @@ import { checkRateLimit, resolveClientIp } from '../lib/rate-limit';
 import { getAllContext, extractJobTitle } from '../lib/knowledge-base';
 import { compilePrompt } from '../lib/langfuse-prompts';
 import { chat } from '../lib/llm';
+import {
+  flushLangfuseTracing,
+  isLangfuseTracingEnabled,
+} from '../lib/langfuse';
 
 const MAX_JD_CHARS = 50_000;
 
@@ -122,21 +126,31 @@ export async function POST(request: NextRequest) {
     // STEP 7: Call the LLM (same multi-provider fallback as chat).
     // Default model for JD analysis is gemini-2.5-pro unless overridden.
     // Traces to LangFuse under the 'portfolio-jd-analysis' prompt name
-    // for prompt-version-level analytics.
-    const llmResponse = await chat(messages, systemPrompt, {
-      model: process.env.AI_MODEL || 'gemini-2.5-pro',
-      langfusePrompt: { name: 'portfolio-jd-analysis' },
-    });
+    // for prompt-version-level analytics. chat() awaits Langfuse generations;
+    // flush here so serverless exit does not drop buffered spans.
+    try {
+      const llmResponse = await chat(messages, systemPrompt, {
+        model: process.env.AI_MODEL || 'gemini-2.5-pro',
+        langfusePrompt: { name: 'portfolio-jd-analysis' },
+      });
 
-    // return successful response
-    return NextResponse.json({
-      analysis: llmResponse.content,
-      jobTitle: jobTitle || null,
-      usage: llmResponse.usage,
-      model: llmResponse.model,
-      remaining: rateLimit.remaining,
-      resetTime: rateLimit.resetTime
-    });
+      return NextResponse.json({
+        analysis: llmResponse.content,
+        jobTitle: jobTitle || null,
+        usage: llmResponse.usage,
+        model: llmResponse.model,
+        remaining: rateLimit.remaining,
+        resetTime: rateLimit.resetTime,
+      });
+    } finally {
+      if (isLangfuseTracingEnabled()) {
+        try {
+          await flushLangfuseTracing();
+        } catch (flushError) {
+          console.error('Langfuse flush failed:', flushError);
+        }
+      }
+    }
 
   } catch (error: any) {
     console.error('JD Analysis API error:', error);

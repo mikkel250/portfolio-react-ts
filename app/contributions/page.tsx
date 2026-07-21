@@ -15,7 +15,7 @@ export default async function Contributions() {
           <span className="text-cyan-500">Open Source</span>
         </h1>
         <p className="text-zinc-300 text-sm md:text-base max-w-2xl mt-8 md:leading-loose tracking-wide">
-          A place where you can witness my caffeinated coding adventures and see
+          A place where you can witness my coding adventures and see
           just how much coffee it takes to fuel my commits. from my first "Hello
           World" to my latest breakthrough, and everything in between.
         </p>

@@ -17,7 +17,8 @@
 //   - Runtime: 'nodejs' (required for fs module in KB, gRPC in OpenTelemetry)
 //   - All requests are rate-limited; filtered queries skip LLM cost only
 //   - Failed LLM calls automatically fall back through provider chain
-//   - Tracing (LangSmith + LangFuse) is fire-and-forget
+//   - Tracing: LangSmith stays fire-and-forget; Langfuse is awaited + flushed
+//     so serverless exits do not drop spans (see LANGFUSE_TRACING=true)
 // ---------------------------------------------------------------------------
 
 /* eslint-disable import/first */
@@ -28,6 +29,12 @@ import { getRelevantContext } from '../lib/knowledge-base';
 import { buildChatSystemPrompt } from '../lib/prompts';
 import { chat, ChatMessage } from '../lib/llm';
 import { filterInput } from '@/lib/input-filter';
+import { createStepClock } from '../lib/chat-timings';
+import {
+  flushLangfuseTracing,
+  isLangfuseTracingEnabled,
+} from '../lib/langfuse';
+import { startActiveObservation } from '@langfuse/tracing';
 /* eslint-disable import/first */
 
 const MAX_MESSAGES = 50;
@@ -117,63 +124,111 @@ export async function POST(request: NextRequest) {
     }
 
     // STEP 3: Server-side input filtering (defense-in-depth).
-    const conversationHistory = messages.slice(0, -1).map(m => m.content);
-    const filterResult = filterInput(query, conversationHistory);
+    const clock = createStepClock();
+    try {
+      const conversationHistory = messages.slice(0, -1).map(m => m.content);
+      const filterResult = filterInput(query, conversationHistory);
+      clock.lap('filter');
 
-    if (!filterResult.shouldCallAPI) {
-      console.log(`[Filter] Blocked query (${filterResult.reason}), length: ${query.length}, sessionId: ${sessionId}`);
+      if (!filterResult.shouldCallAPI) {
+        console.log(`[Filter] Blocked query (${filterResult.reason}), length: ${query.length}, sessionId: ${sessionId}`);
+        const timings_ms = clock.finish();
+        console.log('[chat] timings_ms', timings_ms);
 
+        return NextResponse.json({
+          content: filterResult.response || 'Invalid input',
+          usage: {
+            promptTokens: 0,
+            completionTokens: 0,
+            totalTokens: 0,
+          },
+          model: 'filtered',
+          remaining: rateLimit.remaining,
+          resetTime: rateLimit.resetTime,
+          ...(process.env.NODE_ENV === 'development' ? { timings_ms } : {}),
+        });
+      }
+
+      // STEP 4–6: KB → prompt → LLM, with optional parent Langfuse observation.
+      const runPipeline = async () => {
+        const context = getRelevantContext(query);
+        clock.lap('knowledgeBase');
+
+        const systemPrompt = await buildChatSystemPrompt(context, {
+          calendlyLink: process.env.NEXT_PUBLIC_CALENDLY_LINK,
+        });
+        clock.lap('prompt');
+
+        const llmResponse = await chat(messages, systemPrompt, {
+          ...(process.env.AI_MODEL ? { model: process.env.AI_MODEL } : {}),
+          langfusePrompt: { name: 'portfolio-chat-system' },
+        });
+        if (typeof llmResponse.providerDurationMs === 'number') {
+          clock.set('llm', llmResponse.providerDurationMs);
+        } else {
+          clock.lap('llm');
+        }
+
+        const timings_ms = clock.finish();
+        console.log('[chat] timings_ms', timings_ms);
+
+        return { llmResponse, timings_ms };
+      };
+
+      const { llmResponse, timings_ms } = isLangfuseTracingEnabled()
+        ? await startActiveObservation(
+            'chat_request',
+            async (span) => {
+              const result = await runPipeline();
+              span.update({
+                input: { sessionId, messagePreview: query.slice(0, 200) },
+                output: {
+                  model: result.llmResponse.model,
+                  usage: result.llmResponse.usage,
+                },
+                metadata: { timings_ms: result.timings_ms, sessionId },
+              });
+              return result;
+            }
+          )
+        : await runPipeline();
+
+      // STEP 7: Return successful response.
       return NextResponse.json({
-        content: filterResult.response || 'Invalid input',
-        usage: {
-          promptTokens: 0,
-          completionTokens: 0,
-          totalTokens: 0,
-        },
-        model: 'filtered',
+        content: llmResponse.content,
+        usage: llmResponse.usage,
+        model: llmResponse.model,
         remaining: rateLimit.remaining,
         resetTime: rateLimit.resetTime,
+        traceUrl: `https://smith.langchain.com/projects/${process.env.LANGSMITH_PROJECT_NAME}`,
+        ...(process.env.NODE_ENV === 'development' ? { timings_ms } : {}),
       });
+    } catch (pipelineError: unknown) {
+      const timings_ms = clock.finish();
+      console.log('[chat] timings_ms (error)', timings_ms);
+      throw Object.assign(
+        pipelineError instanceof Error
+          ? pipelineError
+          : new Error(String(pipelineError)),
+        { timings_ms }
+      );
+    } finally {
+      if (isLangfuseTracingEnabled()) {
+        try {
+          await flushLangfuseTracing();
+        } catch (flushError) {
+          console.error('Langfuse flush failed:', flushError);
+        }
+      }
     }
-
-    // STEP 4: Knowledge base retrieval (keyword-based RAG).
-    // Loads relevant markdown files based on query topic classification.
-    const context = getRelevantContext(query);
-
-    // extract job title if present -- leaving here if we want to implement
-    // later to better tailor LLM responses, but not used RN
-    // const jobTitle = extractJobTitle(query);
-
-    // STEP 5: Build the system prompt with injected KB context.
-    // Tries LangFuse (runtime-updatable) first, falls back to hardcoded prompt.
-    const systemPrompt = await buildChatSystemPrompt(context, {
-      calendlyLink: process.env.NEXT_PUBLIC_CALENDLY_LINK,
-    });
-
-    // STEP 6: Call the LLM with multi-provider fallback chain.
-    // The chat() function in lib/llm.ts handles provider selection,
-    // fallback logic, and dual tracing (LangSmith + LangFuse).
-    // Model from AI_MODEL env var, temperature/tokens from AI_TEMPERATURE/AI_MAX_TOKENS.
-    const llmResponse = await chat(messages, systemPrompt, {
-      ...(process.env.AI_MODEL ? { model: process.env.AI_MODEL } : {}),
-      langfusePrompt: { name: 'portfolio-chat-system' },
-    });
-
-    // STEP 7: Return successful response.
-    // Includes: LLM response, token usage, model used (helps verify which
-    // model handled the request — useful for debugging fallback behavior),
-    // rate limit info, and a link to LangSmith traces.
-    return NextResponse.json({
-      content: llmResponse.content,
-      usage: llmResponse.usage,
-      model: llmResponse.model,
-      remaining: rateLimit.remaining,
-      resetTime: rateLimit.resetTime,
-      traceUrl: `https://smith.langchain.com/projects/${process.env.LANGSMITH_PROJECT_NAME}`
-    });
 
   } catch (error: any) {
     console.error('Chat API Error:', error);
+    const timings_ms = error?.timings_ms as Record<string, number> | undefined;
+    const devTimings =
+      process.env.NODE_ENV === 'development' && timings_ms
+        ? { timings_ms }
+        : {};
 
     // Specific error types → meaningful HTTP status codes
     if (
@@ -181,21 +236,21 @@ export async function POST(request: NextRequest) {
       error.message?.includes('All LLM providers failed')
     ) {
       return NextResponse.json(
-        { error: 'AI service error. Please try again.' },
+        { error: 'AI service error. Please try again.', ...devTimings },
         { status: 503 }
       );
     }
 
     if (error.message?.includes('Rate limit')) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error.message, ...devTimings },
         { status: 429 }
       );
     }
 
     // Generic catch-all for unexpected errors
     return NextResponse.json(
-      { error: 'Internal server error, please try again later.' },
+      { error: 'Internal server error, please try again later.', ...devTimings },
       { status: 500 }
     );
   }

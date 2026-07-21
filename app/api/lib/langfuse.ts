@@ -26,6 +26,17 @@ import { ChatMessage, ChatOptions, ChatResponse } from './llm';
 /** Lazy singleton — reused across requests within a warm serverless function */
 let langfuseClient: LangfuseClient | null = null;
 
+/** True when LANGFUSE_TRACING is exactly "true" and both API keys are set. */
+export function isLangfuseTracingEnabled(
+  env: NodeJS.ProcessEnv | Record<string, string | undefined> = process.env
+): boolean {
+  return (
+    env.LANGFUSE_TRACING === 'true' &&
+    !!env.LANGFUSE_PUBLIC_KEY?.trim() &&
+    !!env.LANGFUSE_SECRET_KEY?.trim()
+  );
+}
+
 /**
  * initLangFuse: Creates or returns the LangFuse client.
  *
@@ -45,6 +56,37 @@ export function initLangFuse(): LangfuseClient | null {
     });
   }
   return langfuseClient;
+}
+
+/**
+ * Flush pending Langfuse / OTel spans before a serverless function exits.
+ * No-op when tracing is disabled. Never throws to callers.
+ */
+export async function flushLangfuseTracing(): Promise<void> {
+  if (!isLangfuseTracingEnabled()) {
+    return;
+  }
+
+  try {
+    const { getLangfuseTracerProvider } = await import('@langfuse/tracing');
+    const provider = getLangfuseTracerProvider() as {
+      forceFlush?: () => Promise<void>;
+    };
+    if (typeof provider?.forceFlush === 'function') {
+      await provider.forceFlush();
+    }
+  } catch (error) {
+    console.error('Langfuse OTel forceFlush failed:', error);
+  }
+
+  try {
+    const client = initLangFuse();
+    if (client && typeof client.flush === 'function') {
+      await client.flush();
+    }
+  } catch (error) {
+    console.error('Langfuse client flush failed:', error);
+  }
 }
 
 /**
@@ -75,17 +117,7 @@ export async function traceLLMCall(
   langfusePrompt?: { name: string; version?: number } | null
 ): Promise<void> {
   try {
-    if (
-      !process.env.LANGFUSE_TRACING ||
-      process.env.LANGFUSE_TRACING !== 'true'
-    ) {
-      return;
-    }
-
-    if (
-      !process.env.LANGFUSE_PUBLIC_KEY ||
-      !process.env.LANGFUSE_SECRET_KEY
-    ) {
+    if (!isLangfuseTracingEnabled()) {
       return;
     }
 
