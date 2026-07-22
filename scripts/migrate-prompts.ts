@@ -85,6 +85,8 @@ async function main(): Promise<void> {
 
   console.log(`\n📦 Migrating ${prompts.length} prompts to Langfuse (${baseUrl})...\n`);
 
+  let createFailures = 0;
+
   for (const p of prompts) {
     try {
       const result = await client.prompt.create({
@@ -101,6 +103,7 @@ async function main(): Promise<void> {
       if (err.status === 409 || err.message?.includes('already exists')) {
         console.log(`  ⚠️   ${p.name}  →  already exists (check Langfuse UI for latest version)`);
       } else {
+        createFailures += 1;
         console.error(`  ❌  ${p.name}  →  ${err.message ?? err}`);
       }
     }
@@ -125,19 +128,26 @@ async function main(): Promise<void> {
       try {
         const fetched = await client.prompt.get(name, { label });
         let injectionInfo = '';
+        let injectOk: boolean | null = null;
         if (compileSmokeVars) {
           try {
             const compiled = fetched.compile(compileSmokeVars);
-            const injected = compiled.includes('KB_SMOKE');
-            injectionInfo = ` injects={{context}}:${injected}`;
+            injectOk = compiled.includes('KB_SMOKE');
+            injectionInfo = ` injects={{context}}:${injectOk}`;
           } catch {
             injectionInfo =
               ' (compile smoke test skipped: variables mismatch)';
           }
         }
-        console.log(
-          `  ✅  ${name}  label=${label}  version=${fetched.version}${injectionInfo}`
-        );
+        if (injectOk === false) {
+          console.log(
+            `  ⚠️  ${name}  label=${label}  version=${fetched.version}${injectionInfo} (non-blocking: smoke token missing from compile)`
+          );
+        } else {
+          console.log(
+            `  ✅  ${name}  label=${label}  version=${fetched.version}${injectionInfo}`
+          );
+        }
       } catch (err: any) {
         console.log(
           `  ⚠️  Non-blocking verification failed for prompt="${name}" label="${label}": ${
@@ -153,6 +163,14 @@ async function main(): Promise<void> {
   }
 
   await client.shutdown();
+
+  if (createFailures > 0) {
+    console.error(
+      `\n❌ Migration finished with ${createFailures} prompt create failure(s).\n`
+    );
+    process.exitCode = 1;
+    return;
+  }
 
   console.log('\n✨ Migration complete.\n');
   console.log('Next steps:');
