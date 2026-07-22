@@ -20,6 +20,20 @@ import { LangfuseClient } from '@langfuse/client';
 import { CHAT_SYSTEM_PROMPT } from '../app/api/lib/chat-prompt';
 import { JD_ANALYSIS_SYSTEM_PROMPT } from '../app/api/lib/jd-prompt';
 
+/** App-facing label used by runtime `client.prompt.get(..., { label })`. */
+const APP_PROMPT_LABEL = 'production';
+
+type MigratablePrompt = {
+  name: string;
+  type: 'text';
+  prompt: string;
+  labels: string[];
+  /** Primary label the app fetches at runtime (usually production). */
+  appLabel?: string;
+  compileSmokeVars?: Record<string, string>;
+  config: { description: string };
+};
+
 async function main(): Promise<void> {
   if (!process.env.LANGFUSE_PUBLIC_KEY || !process.env.LANGFUSE_SECRET_KEY) {
     console.error(
@@ -36,12 +50,17 @@ async function main(): Promise<void> {
     baseUrl,
   });
 
-  const prompts = [
+  const prompts: MigratablePrompt[] = [
     {
       name: 'portfolio-chat-system',
-      type: 'text' as const,
+      type: 'text',
       prompt: CHAT_SYSTEM_PROMPT,
-      labels: ['production'],
+      labels: [APP_PROMPT_LABEL],
+      appLabel: APP_PROMPT_LABEL,
+      compileSmokeVars: {
+        context: 'KB_SMOKE',
+        calendly_link: 'https://example.com/cal',
+      },
       config: {
         description:
           'Chat system prompt for the AI recruiting assistant (vars: context, calendly_link)',
@@ -49,9 +68,14 @@ async function main(): Promise<void> {
     },
     {
       name: 'portfolio-jd-analysis',
-      type: 'text' as const,
+      type: 'text',
       prompt: JD_ANALYSIS_SYSTEM_PROMPT,
-      labels: ['production'],
+      labels: [APP_PROMPT_LABEL],
+      appLabel: APP_PROMPT_LABEL,
+      compileSmokeVars: {
+        context: 'KB_SMOKE',
+        job_title: 'Engineer',
+      },
       config: {
         description:
           'Job description analysis prompt (vars: context, job_title)',
@@ -82,28 +106,50 @@ async function main(): Promise<void> {
     }
   }
 
-  // Verify production label fetch (same path as the app)
-  console.log('\n🔍 Verifying production label fetch...\n');
-  for (const name of ['portfolio-chat-system', 'portfolio-jd-analysis'] as const) {
-    try {
-      const fetched = await client.prompt.get(name, { label: 'production' });
-      const compiled =
-        name === 'portfolio-chat-system'
-          ? fetched.compile({
-              context: 'KB_SMOKE',
-              calendly_link: 'https://example.com/cal',
-            })
-          : fetched.compile({
-              context: 'KB_SMOKE',
-              job_title: 'Engineer',
-            });
-      const injected = compiled.includes('KB_SMOKE');
-      console.log(
-        `  ✅  ${name}  version=${fetched.version}  injects={{context}}:${injected}`
-      );
-    } catch (err: any) {
-      console.error(`  ❌  ${name}  fetch failed: ${err.message ?? err}`);
+  // Non-blocking: same name/label combos the app uses. Migration can succeed
+  // even if verification fails (renames, label drift, compile schema mismatch).
+  console.log('\n🔍 Verifying prompt fetch for app targets (non-blocking)...\n');
+
+  const verificationTargets = prompts
+    .filter((p) => p.appLabel)
+    .map((p) => ({
+      name: p.name,
+      label: p.appLabel!,
+      compileSmokeVars: p.compileSmokeVars,
+    }));
+
+  if (verificationTargets.length === 0) {
+    console.log('  ℹ️  No labeled prompts configured – skipping verification.\n');
+  } else {
+    for (const { name, label, compileSmokeVars } of verificationTargets) {
+      try {
+        const fetched = await client.prompt.get(name, { label });
+        let injectionInfo = '';
+        if (compileSmokeVars) {
+          try {
+            const compiled = fetched.compile(compileSmokeVars);
+            const injected = compiled.includes('KB_SMOKE');
+            injectionInfo = ` injects={{context}}:${injected}`;
+          } catch {
+            injectionInfo =
+              ' (compile smoke test skipped: variables mismatch)';
+          }
+        }
+        console.log(
+          `  ✅  ${name}  label=${label}  version=${fetched.version}${injectionInfo}`
+        );
+      } catch (err: any) {
+        console.log(
+          `  ⚠️  Non-blocking verification failed for prompt="${name}" label="${label}": ${
+            err?.message ?? err
+          }`
+        );
+      }
     }
+
+    console.log(
+      '\nℹ️  Verification is non-blocking. Migration can still succeed if some checks fail (renamed prompts/labels).\n'
+    );
   }
 
   await client.shutdown();

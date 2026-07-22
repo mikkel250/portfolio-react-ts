@@ -2,16 +2,17 @@
  * Next.js instrumentation — registers OpenTelemetry with Langfuse span export.
  * Only starts when LANGFUSE_TRACING=true and Langfuse API keys are set.
  *
- * The span processor is stashed on globalThis so request handlers can
- * forceFlush before serverless exit (required to export OTel spans).
+ * Registers the processor via typed get/set helpers so API routes can
+ * forceFlush before serverless exit without importing this file.
  *
  * @see https://nextjs.org/docs/app/building-your-application/optimizing/instrumentation
  * @see https://langfuse.com/docs/observability/features/queuing-batching
  */
 
 import type { LangfuseSpanProcessor as LangfuseSpanProcessorType } from '@langfuse/otel';
+import { setLangfuseSpanProcessor } from './app/api/lib/langfuse-span-processor-ref';
 
-/** Set when OTel SDK starts; used by flushLangfuseTracing. */
+/** Local handle for this instrumentation module graph. */
 export let langfuseSpanProcessor: LangfuseSpanProcessorType | null = null;
 
 export async function register() {
@@ -41,8 +42,5 @@ export async function register() {
   });
 
   sdk.start();
-
-  (
-    globalThis as { __langfuseSpanProcessor?: LangfuseSpanProcessorType | null }
-  ).__langfuseSpanProcessor = langfuseSpanProcessor;
+  setLangfuseSpanProcessor(langfuseSpanProcessor);
 }
