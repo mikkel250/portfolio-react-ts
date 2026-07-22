@@ -1,7 +1,7 @@
 # Technical Projects
 
-**Last Updated:** October 28, 2025  
-**Version:** 2.0
+**Last Updated:** July 21, 2026  
+**Version:** 2.1
 
 ## Overview
 This is a list of projects that Mikkel built outside of work, aka side projects, aka personal projects, a common practice in software development. Mikkel builds side projects for two purposes, with his favorites covering both: learning new technologies and solving specific problems. These projects demonstrate hands-on experience with diverse tech stacks and his ability to ship complete, functional applications.
@@ -35,7 +35,37 @@ Next.js 14, React 18, TypeScript 5, Next.js API Routes (Node.js runtime), multip
 - **Modern UI with Aceternity:** Professional, polished interface using Framer Motion animations
 
 ### Business Impact
-Demonstrates full-stack + AI integration capabilities to potential employers while providing unique differentiator in competitive job market. Shows pragmatic technical decision-making through MVP strategy and cost optimization. Serves as live portfolio piece that recruiter can interact with.
+Demonstrates full-stack + AI integration capabilities to potential employers while providing unique differentiator in competitive job market. Shows pragmatic technical decision-making through MVP strategy and cost optimization. Serves as live portfolio piece that recruiter can interact with. Directly led to paid freelance work: a client saw this assistant, recognized a similar NL-query use case, and hired Mikkel to build a conversational BI platform (see NL-to-SQL Business Intelligence Analytics Platform below).
+
+---
+
+## NL-to-SQL Business Intelligence Analytics Platform
+**Type:** Paid Freelance Contract (Time-based MVP)  
+**Status:** Shipped MVP (sole engineer)  
+**Links:** [Live Demo](https://app.budflow.com/)
+
+### Description
+Time-based contract to deliver a working MVP similar in spirit to the AI Recruiting Assistant: executives at a client's customer companies needed to query business intelligence data in plain English and get validated, SQL-backed answers. The client was a profitable bootstrapped stealth startup (real revenue, real users, no VC). Mikkel shipped the full conversational BI platform end-to-end as the sole engineer — Python/FastAPI backend, Remix/React/TypeScript frontend, ClickHouse analytics, PostgreSQL, RAG (ChromaDB) for schema memory, Vanna for the NL-to-SQL layer, LLM tier routing for cost/latency, automatic SQL error recovery, schema-aware validation, multi-tenant architecture, and Docker on Vercel.
+
+### Technologies
+Python, FastAPI, React, TypeScript, Remix, ClickHouse, PostgreSQL, ChromaDB (RAG), Vanna (NL-to-SQL), Anthropic and other managed LLM APIs, open-source model evaluation (Ollama, SGLang, vLLM, etc.), Pytest, Docker, Vercel
+
+### Key Features
+- Natural-language querying of BI data with validated SQL-backed answers for non-technical executives
+- Real-time SQL error detection and correction plus schema-aware validation for LLM-generated queries
+- Execution feedback loops to iterate on output quality
+- RAG over schema/context (ChromaDB) so the model stays grounded in the real warehouse
+- LLM tier routing and complexity/error-driven escalation for cost and latency
+- Multi-tenant architecture
+- Pytest evaluation harness for LLM-generated ClickHouse SQL: pre-execution syntax validation, structured checks (execution success, schema/tenant constraints, returned data), and benchmark-style runs across dozens of parametrized NL→SQL cases with optional multi-model comparison
+
+### Technical Highlights
+- **Model evaluation at depth:** Evaluated 15–20 open-source and commercial models on SQL quality, instruction following, tool-use reliability, latency, and hosting tradeoffs (hosted and self-hosted stacks including Anthropic, Ollama, SGLang, vLLM). Recommended managed APIs over self-hosting after cost/ops analysis showed production-viable OSS would need substantial GPU and infra.
+- **Production reliability focus:** Schema-aware validation, automatic error recovery, and execution feedback — not just prompt-and-hope SQL generation.
+- **Sole-engineer delivery:** Designed, built, and shipped the full stack under a time-based MVP contract.
+
+### Business Impact
+Enabled client executives (and their customers' executives) to get trustworthy BI answers in plain English without writing SQL. Validated that the recruiting-assistant pattern (conversational AI over a structured knowledge/data domain) transfers to production analytics for a revenue-generating startup.
 
 ---
 
@@ -257,6 +287,7 @@ Demonstrates frontend fundamentals without frameworks. Shows understanding of DO
 
 **AI & ML:**
 - AI Recruiting Assistant (LLM integration, production application)
+- NL-to-SQL Business Intelligence Analytics Platform (paid freelance MVP: FastAPI, ClickHouse, RAG, eval harness)
 - Face Recognition (ML API integration)
 - Early MCP adopter: Using Model Context Protocol servers for AI workflow orchestration and task management in development environments
 
