@@ -401,7 +401,7 @@ Try asking: "What's Mikkel's experience with React?" or "Tell me about his most 
             placeholder="Ask about Mikkel's experience, or paste a job description..."
             disabled={isLoading} // Disable during API calls
             rows={2} // Initial height (auto-expands)
-            maxLength={5000} // Prevent extremely long messages
+            maxLength={32768} // Prevent extremely long messages
             aria-label="Message input"
           />
 

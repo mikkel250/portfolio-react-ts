@@ -33,6 +33,7 @@ import {
   flushLangfuseTracing,
   isLangfuseTracingEnabled,
 } from '../lib/langfuse';
+import { flushLangSmithTracing } from '../lib/langsmith';
 
 const MAX_JD_CHARS = 50_000;
 
@@ -149,6 +150,12 @@ export async function POST(request: NextRequest) {
         } catch (flushError) {
           console.error('Langfuse flush failed:', flushError);
         }
+      }
+      // LangSmith traces are fire-and-forget; best-effort flush.
+      try {
+        await flushLangSmithTracing();
+      } catch {
+        // Silently ignore — observability must not block the response.
       }
     }
 
