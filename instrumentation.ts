@@ -9,11 +9,11 @@
  * @see https://langfuse.com/docs/observability/features/queuing-batching
  */
 
-import type { LangfuseSpanProcessor as LangfuseSpanProcessorType } from '@langfuse/otel';
+import type { LangfuseSpanProcessor } from '@langfuse/otel';
 import { setLangfuseSpanProcessor } from './app/api/lib/langfuse-span-processor-ref';
 
 /** Local handle for this instrumentation module graph. */
-export let langfuseSpanProcessor: LangfuseSpanProcessorType | null = null;
+let langfuseSpanProcessor: LangfuseSpanProcessor | null = null;
 
 export async function register() {
   if (process.env.NEXT_RUNTIME === 'edge') {

@@ -4,31 +4,23 @@
  * Next.js loads `instrumentation.ts` and API routes in separate module graphs,
  * so a plain module-level export is not always shared. We keep one typed
  * global slot and expose get/set helpers so callers never cast globalThis.
+ *
+ * @see ARCHITECTURE.md — Cross-Bundle State via globalThis
  */
 
 import type { LangfuseSpanProcessor } from '@langfuse/otel';
 
-const GLOBAL_KEY = '__portfolioLangfuseSpanProcessor' as const;
-
-type LangfuseSpanProcessorGlobal = typeof globalThis & {
-  [GLOBAL_KEY]?: LangfuseSpanProcessor | null;
-};
-
-function getStore(): LangfuseSpanProcessorGlobal {
-  return globalThis as LangfuseSpanProcessorGlobal;
-}
+const KEY = '__portfolio_langfuse_span_processor__v1';
 
 export function setLangfuseSpanProcessor(
   processor: LangfuseSpanProcessor | null
 ): void {
-  getStore()[GLOBAL_KEY] = processor;
+  (globalThis as Record<string, unknown>)[KEY] = processor;
 }
 
 export function getLangfuseSpanProcessor(): LangfuseSpanProcessor | null {
-  return getStore()[GLOBAL_KEY] ?? null;
-}
-
-/** Test helper — clears the shared slot. */
-export function clearLangfuseSpanProcessor(): void {
-  delete getStore()[GLOBAL_KEY];
+  return (
+    ((globalThis as Record<string, unknown>)[KEY] as LangfuseSpanProcessor) ??
+    null
+  );
 }

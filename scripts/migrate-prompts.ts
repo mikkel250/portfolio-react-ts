@@ -29,7 +29,7 @@ type MigratablePrompt = {
   prompt: string;
   labels: string[];
   /** Primary label the app fetches at runtime (usually production). */
-  appLabel?: string;
+  appLabel?: typeof APP_PROMPT_LABEL;
   compileSmokeVars?: Record<string, string>;
   config: { description: string };
 };
@@ -85,7 +85,7 @@ async function main(): Promise<void> {
 
   console.log(`\n📦 Migrating ${prompts.length} prompts to Langfuse (${baseUrl})...\n`);
 
-  let createFailures = 0;
+  const stats = { created: 0, skipped: 0, failed: 0 };
 
   for (const p of prompts) {
     try {
@@ -96,18 +96,29 @@ async function main(): Promise<void> {
         labels: p.labels,
         config: p.config,
       });
+      stats.created += 1;
       console.log(
         `  ✅  ${p.name}  →  version ${result.version} (${result.labels?.join(', ') ?? 'no labels'}) [${p.prompt.length} chars]`
       );
-    } catch (err: any) {
-      if (err.status === 409 || err.message?.includes('already exists')) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      const status =
+        typeof err === 'object' && err !== null && 'status' in err
+          ? (err as { status: unknown }).status
+          : undefined;
+      if (status === 409 || message.includes('already exists')) {
+        stats.skipped += 1;
         console.log(`  ⚠️   ${p.name}  →  already exists (check Langfuse UI for latest version)`);
       } else {
-        createFailures += 1;
-        console.error(`  ❌  ${p.name}  →  ${err.message ?? err}`);
+        stats.failed += 1;
+        console.error(`  ❌  ${p.name}  →  ${message}`);
       }
     }
   }
+
+  console.log(
+    `\n📊 Summary: ${stats.created} created, ${stats.skipped} skipped (already exists), ${stats.failed} failed\n`
+  );
 
   // Non-blocking: same name/label combos the app uses. Migration can succeed
   // even if verification fails (renames, label drift, compile schema mismatch).
@@ -133,10 +144,26 @@ async function main(): Promise<void> {
           try {
             const compiled = fetched.compile(compileSmokeVars);
             injectOk = compiled.includes('KB_SMOKE');
-            injectionInfo = ` injects={{context}}:${injectOk}`;
-          } catch {
+            injectionInfo = ` injects={{context}}:${injectOk} (compileSmokeVars keys: ${Object.keys(compileSmokeVars).join(', ')})`;
+          } catch (error) {
+            const providedKeys = Object.keys(compileSmokeVars);
+            // Langfuse TextPromptClient has no public `variables` field; extract
+            // {{mustache}} names from the template when possible.
+            const promptText =
+              typeof fetched.prompt === 'string' ? fetched.prompt : '';
+            const expectedFromTemplate = [
+              ...new Set(
+                [...promptText.matchAll(/\{\{\s*([a-zA-Z_][\w]*)\s*\}\}/g)].map(
+                  (m) => m[1]
+                )
+              ),
+            ];
+            const expectedInfo =
+              expectedFromTemplate.length > 0
+                ? `; expected variables: ${expectedFromTemplate.join(', ')}`
+                : '';
             injectionInfo =
-              ' (compile smoke test skipped: variables mismatch)';
+              ` (compile smoke test skipped: prompt compile failed; provided keys: ${providedKeys.join(', ')}${expectedInfo}; error: ${error instanceof Error ? error.message : String(error)})`;
           }
         }
         if (injectOk === false) {
@@ -148,11 +175,10 @@ async function main(): Promise<void> {
             `  ✅  ${name}  label=${label}  version=${fetched.version}${injectionInfo}`
           );
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
         console.log(
-          `  ⚠️  Non-blocking verification failed for prompt="${name}" label="${label}": ${
-            err?.message ?? err
-          }`
+          `  ⚠️  Non-blocking verification failed for prompt="${name}" label="${label}": ${message}`
         );
       }
     }
@@ -164,10 +190,11 @@ async function main(): Promise<void> {
 
   await client.shutdown();
 
-  if (createFailures > 0) {
+  if (stats.failed > 0) {
     console.error(
-      `\n❌ Migration finished with ${createFailures} prompt create failure(s).\n`
+      `\n❌ Migration finished with ${stats.failed} prompt create failure(s).\n`
     );
+    // Use exitCode (not exit) so the event loop drains after client.shutdown().
     process.exitCode = 1;
     return;
   }

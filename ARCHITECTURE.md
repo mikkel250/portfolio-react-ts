@@ -339,6 +339,23 @@ EVAL_DELAY_MS
 **Tradeoffs accepted:** Additional SDK dependencies and OpenTelemetry overhead
 **Revisit if:** One observability tool proves sufficient
 
+### Cross-Bundle State via globalThis (Langfuse Span Processor)
+**Date:** July 2026
+**Context:** Next.js loads `instrumentation.ts` and API routes in separate module
+bundles, so a module-level `export const` is not always shared between them.
+The `LangfuseSpanProcessor` initialized in `instrumentation.ts` must be
+accessible from `app/api/lib/langfuse.ts` so `forceFlush()` can export spans
+before serverless exits.
+**Decision:** Store the processor on `globalThis.__portfolio_langfuse_span_processor__v1`
+via typed get/set helpers in `app/api/lib/langfuse-span-processor-ref.ts`.
+**Rationale:** A typed slot with explicit helpers avoids ad-hoc `globalThis`
+casts scattered through the codebase. Alternatives (AsyncLocalStorage, module
+re-exports) solve request isolation or bundler resolution, not cross-bundle
+state sharing.
+**Tradeoffs accepted:** A global singleton persists across warm serverless
+requests; clients that import the helpers avoid unsafe casts.
+**Revisit if:** Next.js changes instrumentation-to-route module graph behavior.
+
 ---
 
 ## Known Constraints
@@ -368,5 +385,5 @@ EVAL_DELAY_MS
 
 ## Last Updated
 
-- Date: 2026-06-01
-- What changed: DeepSeek provider, `llm-fallback-chain.ts`, Vitest tests, default fallback DeepSeek → Anthropic (no code-default OpenAI)
+- Date: 2026-07-21
+- What changed: Cross-bundle globalThis pattern for Langfuse span processor flushing; `exportMode: 'immediate'` for serverless span export

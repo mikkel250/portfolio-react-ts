@@ -40,6 +40,23 @@ export function initLangSmith(): Client | null {
 }
 
 /**
+ * Flush pending LangSmith traces before a serverless function exits.
+ * No-op when client is not initialized. Never throws to callers.
+ */
+export async function flushLangSmithTracing(): Promise<void> {
+  try {
+    if (client && typeof client.flush === 'function') {
+      await client.flush();
+    }
+  } catch (error) {
+    console.error(
+      'LangSmith flush failed:',
+      error instanceof Error ? error.message : error
+    );
+  }
+}
+
+/**
  * traceLLMCall: Submits a trace to LangSmith for each LLM call.
  *
  * Captures the complete context of every LLM interaction:

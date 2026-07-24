@@ -4,13 +4,9 @@ import { getLangfuseTracerProvider } from '@langfuse/tracing';
 import {
   flushLangfuseTracing,
   isLangfuseTracingEnabled,
-  resolveOtelFlushTarget,
   traceLLMCall,
 } from '../langfuse';
-import {
-  clearLangfuseSpanProcessor,
-  setLangfuseSpanProcessor,
-} from '../langfuse-span-processor-ref';
+import { setLangfuseSpanProcessor } from '../langfuse-span-processor-ref';
 
 vi.mock('@langfuse/tracing', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@langfuse/tracing')>();
@@ -47,30 +43,6 @@ describe('isLangfuseTracingEnabled', () => {
   });
 });
 
-describe('resolveOtelFlushTarget', () => {
-  it('prefers getDelegate forceFlush when both proxy and delegate are flushable', () => {
-    const delegateFlush = vi.fn(async () => undefined);
-    const proxyFlush = vi.fn(async () => undefined);
-    const delegate = { forceFlush: delegateFlush };
-    const proxy = { forceFlush: proxyFlush, getDelegate: () => delegate };
-
-    expect(resolveOtelFlushTarget(proxy)).toBe(delegate);
-  });
-
-  it('uses the provider itself when it implements forceFlush', () => {
-    const forceFlush = vi.fn(async () => undefined);
-    const provider = { forceFlush };
-
-    expect(resolveOtelFlushTarget(provider)).toBe(provider);
-  });
-
-  it('returns null when neither provider nor delegate can flush', () => {
-    expect(resolveOtelFlushTarget({ getDelegate: () => ({}) })).toBeNull();
-    expect(resolveOtelFlushTarget({})).toBeNull();
-    expect(resolveOtelFlushTarget(null)).toBeNull();
-  });
-});
-
 describe('traceLLMCall', () => {
   afterEach(() => {
     vi.unstubAllEnvs();
@@ -104,7 +76,7 @@ describe('flushLangfuseTracing', () => {
   afterEach(() => {
     vi.unstubAllEnvs();
     vi.restoreAllMocks();
-    clearLangfuseSpanProcessor();
+    setLangfuseSpanProcessor(null);
     vi.mocked(getLangfuseTracerProvider).mockReset();
   });
 
@@ -132,30 +104,47 @@ describe('flushLangfuseTracing', () => {
     vi.stubEnv('LANGFUSE_TRACING', 'true');
     vi.stubEnv('LANGFUSE_PUBLIC_KEY', 'pk');
     vi.stubEnv('LANGFUSE_SECRET_KEY', 'sk');
-    clearLangfuseSpanProcessor();
+    setLangfuseSpanProcessor(null);
 
     const delegateFlush = vi.fn(async () => undefined);
     const proxyFlush = vi.fn(async () => undefined);
     vi.mocked(getLangfuseTracerProvider).mockReturnValue({
       forceFlush: proxyFlush,
       getDelegate: () => ({ forceFlush: delegateFlush }),
-    } as never);
+    } as unknown as ReturnType<typeof getLangfuseTracerProvider>);
 
     await flushLangfuseTracing();
     expect(delegateFlush).toHaveBeenCalledOnce();
     expect(proxyFlush).not.toHaveBeenCalled();
   });
 
+  it('recursively unwraps a 2-deep proxy chain', async () => {
+    vi.stubEnv('LANGFUSE_TRACING', 'true');
+    vi.stubEnv('LANGFUSE_PUBLIC_KEY', 'pk');
+    vi.stubEnv('LANGFUSE_SECRET_KEY', 'sk');
+    setLangfuseSpanProcessor(null);
+
+    const realFlush = vi.fn(async () => undefined);
+    vi.mocked(getLangfuseTracerProvider).mockReturnValue({
+      getDelegate: () => ({
+        getDelegate: () => ({ forceFlush: realFlush }),
+      }),
+    } as unknown as ReturnType<typeof getLangfuseTracerProvider>);
+
+    await flushLangfuseTracing();
+    expect(realFlush).toHaveBeenCalledOnce();
+  });
+
   it('flushes the provider directly when it has forceFlush and no delegate', async () => {
     vi.stubEnv('LANGFUSE_TRACING', 'true');
     vi.stubEnv('LANGFUSE_PUBLIC_KEY', 'pk');
     vi.stubEnv('LANGFUSE_SECRET_KEY', 'sk');
-    clearLangfuseSpanProcessor();
+    setLangfuseSpanProcessor(null);
 
     const providerFlush = vi.fn(async () => undefined);
     vi.mocked(getLangfuseTracerProvider).mockReturnValue({
       forceFlush: providerFlush,
-    } as never);
+    } as unknown as ReturnType<typeof getLangfuseTracerProvider>);
 
     await flushLangfuseTracing();
     expect(providerFlush).toHaveBeenCalledOnce();
@@ -165,10 +154,12 @@ describe('flushLangfuseTracing', () => {
     vi.stubEnv('LANGFUSE_TRACING', 'true');
     vi.stubEnv('LANGFUSE_PUBLIC_KEY', 'pk');
     vi.stubEnv('LANGFUSE_SECRET_KEY', 'sk');
-    clearLangfuseSpanProcessor();
+    setLangfuseSpanProcessor(null);
 
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
-    vi.mocked(getLangfuseTracerProvider).mockReturnValue({} as never);
+    vi.mocked(getLangfuseTracerProvider).mockReturnValue(
+      {} as unknown as ReturnType<typeof getLangfuseTracerProvider>
+    );
 
     await expect(flushLangfuseTracing()).resolves.toBeUndefined();
     expect(warn).toHaveBeenCalledWith(
