@@ -14,7 +14,7 @@
 - **Framework:** Next.js 15.5.7 App Router — entry points are `app/layout.tsx`, `app/page.tsx`, and `app/api/**/route.ts`. No `middleware.ts`.
 - **Auth:** None — all routes and API endpoints are public
 - **Database:** None — no ORM, no raw SQL, no persistent storage
-- **State:** React built-in hooks in client components; conversation history and session IDs in browser `localStorage`; server-side rate limiting in an in-memory `Map`
+- **State:** React built-in hooks in client components; conversation history and session IDs in browser `localStorage`; server-side rate limiting in an in-memory `Map`; `globalThis` cross-bundle `LangfuseSpanProcessor` singleton (see Architectural Decisions)
 - **Testing:** Vitest (`npm test`) for unit tests under `app/api/lib/__tests__/`; ad-hoc evaluation scripts in `tests/` (`npm run eval:langfuse`)
 - **Deployment:** Vercel free tier; API routes use `export const runtime = 'nodejs'` (not Edge)
 

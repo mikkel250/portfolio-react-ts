@@ -125,10 +125,13 @@ async function main(): Promise<void> {
   console.log('\n🔍 Verifying prompt fetch for app targets (non-blocking)...\n');
 
   const verificationTargets = prompts
-    .filter((p) => p.appLabel)
+    .filter(
+      (p): p is MigratablePrompt & { appLabel: typeof APP_PROMPT_LABEL } =>
+        p.appLabel != null
+    )
     .map((p) => ({
       name: p.name,
-      label: p.appLabel!,
+      label: p.appLabel,
       compileSmokeVars: p.compileSmokeVars,
     }));
 

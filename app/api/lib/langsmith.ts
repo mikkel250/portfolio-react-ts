@@ -22,6 +22,12 @@ import { ChatMessage, ChatResponse } from './llm';
 /** Lazy singleton — client is reused across requests within a warm function */
 let client: Client | null = null;
 
+/** In-flight createRun promises — awaited by flush before client.flush(). */
+const pendingTraces = new Set<Promise<unknown>>();
+
+/** Cap flush wait so serverless responses are never held indefinitely. */
+const FLUSH_TIMEOUT_MS = 2_000;
+
 /**
  * initLangSmith: Creates or returns the LangSmith client.
  *
@@ -39,19 +45,47 @@ export function initLangSmith(): Client | null {
   return client;
 }
 
+function trackPendingTrace(work: Promise<unknown>): Promise<unknown> {
+  pendingTraces.add(work);
+  void work.finally(() => {
+    pendingTraces.delete(work);
+  });
+  return work;
+}
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | undefined> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => resolve(undefined), ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (err) => {
+        clearTimeout(timer);
+        reject(err);
+      }
+    );
+  });
+}
+
 /**
  * Flush pending LangSmith traces before a serverless function exits.
+ * Awaits in-flight createRun work first, then client.flush() with a deadline.
  * No-op when client is not initialized. Never throws to callers.
  */
 export async function flushLangSmithTracing(): Promise<void> {
   try {
+    if (pendingTraces.size > 0) {
+      await Promise.allSettled([...pendingTraces]);
+    }
     if (client && typeof client.flush === 'function') {
-      await client.flush();
+      await withTimeout(Promise.resolve(client.flush()), FLUSH_TIMEOUT_MS);
     }
   } catch (error) {
     console.error(
       'LangSmith flush failed:',
-      error instanceof Error ? error.message : error
+      error instanceof Error ? error.message : 'non-Error thrown'
     );
   }
 }
@@ -80,52 +114,60 @@ export async function traceLLMCall(
   startTime: number,
   options: any = {}
 ): Promise<void> {
-  try {
-    // Gate: Only trace when LANGSMITH_TRACING is explicitly 'true'
-    if (!process.env.LANGSMITH_TRACING || process.env.LANGSMITH_TRACING !== 'true') {
-      return;
+  const work = (async () => {
+    try {
+      // Gate: Only trace when LANGSMITH_TRACING is explicitly 'true'
+      if (!process.env.LANGSMITH_TRACING || process.env.LANGSMITH_TRACING !== 'true') {
+        return;
+      }
+
+      const langsmithClient = initLangSmith();
+      if (!langsmithClient) {
+        return;
+      }
+
+      const endTime = Date.now();
+      const duration = endTime - startTime;
+
+      // Build the trace payload
+      const traceData = {
+        name: `llm_call_${provider}_${model}`,
+        project_name: process.env.LANGSMITH_PROJECT_NAME,
+        run_type: 'chain',
+        inputs: {
+          provider,
+          model,
+          messages,
+          system_prompt: systemPrompt,
+          options,
+        },
+        outputs: {
+          content: response.content,
+          usage: response.usage,
+        },
+        metadata: {
+          provider,
+          model,
+          duration_ms: duration,
+          temperature: options.temperature,
+          max_tokens: options.maxTokens,
+        },
+        tags: ['llm', provider, model],
+      };
+
+      // Submit trace to LangSmith (blocking await, but called in fire-and-forget context)
+      await langsmithClient.createRun(traceData);
+    } catch (error) {
+      // CRITICAL: Never throw from tracing — let the request go through
+      console.error(
+        'LangSmith trace failed:',
+        error instanceof Error ? error.message : 'non-Error thrown'
+      );
     }
+  })();
 
-    const client = initLangSmith();
-    if (!client) {
-      return;
-    }
-
-    const endTime = Date.now();
-    const duration = endTime - startTime;
-
-    // Build the trace payload
-    const traceData = {
-      name: `llm_call_${provider}_${model}`,
-      project_name: process.env.LANGSMITH_PROJECT_NAME,
-      run_type: 'chain',
-      inputs: {
-        provider,
-        model,
-        messages,
-        system_prompt: systemPrompt,
-        options,
-      },
-      outputs: {
-        content: response.content,
-        usage: response.usage,
-      },
-      metadata: {
-        provider,
-        model,
-        duration_ms: duration,
-        temperature: options.temperature,
-        max_tokens: options.maxTokens,
-      },
-      tags: ['llm', provider, model],
-    };
-
-    // Submit trace to LangSmith (blocking await, but called in fire-and-forget context)
-    await client.createRun(traceData);
-  } catch (error) {
-    // CRITICAL: Never throw from tracing — let the request go through
-    console.error('LangSmith trace failed:', error);
-  }
+  trackPendingTrace(work);
+  await work;
 }
 
 // wrapper for the LLM chat function

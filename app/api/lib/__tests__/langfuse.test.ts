@@ -118,6 +118,22 @@ describe('flushLangfuseTracing', () => {
     expect(proxyFlush).not.toHaveBeenCalled();
   });
 
+  it('falls back to provider forceFlush when getDelegate returns a non-flushable value', async () => {
+    vi.stubEnv('LANGFUSE_TRACING', 'true');
+    vi.stubEnv('LANGFUSE_PUBLIC_KEY', 'pk');
+    vi.stubEnv('LANGFUSE_SECRET_KEY', 'sk');
+    setLangfuseSpanProcessor(null);
+
+    const proxyFlush = vi.fn(async () => undefined);
+    vi.mocked(getLangfuseTracerProvider).mockReturnValue({
+      forceFlush: proxyFlush,
+      getDelegate: () => ({}),
+    } as unknown as ReturnType<typeof getLangfuseTracerProvider>);
+
+    await flushLangfuseTracing();
+    expect(proxyFlush).toHaveBeenCalledOnce();
+  });
+
   it('recursively unwraps a 2-deep proxy chain', async () => {
     vi.stubEnv('LANGFUSE_TRACING', 'true');
     vi.stubEnv('LANGFUSE_PUBLIC_KEY', 'pk');

@@ -69,23 +69,25 @@ type FlushableOtelProvider = {
  * use the provider itself when it implements forceFlush.
  *
  * Recursively unwraps ProxyTracerProvider chains so nested proxies
- * (proxy → proxy → real) eventually reach a flushable delegate.
+ * (proxy → proxy → real) eventually reach a flushable delegate. When a
+ * provider exposes both getDelegate and forceFlush, try the delegate first
+ * and fall back to the provider itself if the delegate is missing or not
+ * flushable.
  */
 function resolveOtelFlushTarget(
   provider: FlushableOtelProvider | null | undefined
 ): FlushableOtelProvider | null {
   if (!provider) return null;
-  // If the provider is flushable and has no further proxy, use it directly.
-  if (
-    typeof provider.forceFlush === 'function' &&
-    typeof provider.getDelegate !== 'function'
-  ) {
+
+  if (typeof provider.getDelegate === 'function') {
+    const fromDelegate = resolveOtelFlushTarget(provider.getDelegate());
+    if (fromDelegate) return fromDelegate;
+  }
+
+  if (typeof provider.forceFlush === 'function') {
     return provider;
   }
-  // Recurse through proxy wrappers.
-  if (typeof provider.getDelegate === 'function') {
-    return resolveOtelFlushTarget(provider.getDelegate());
-  }
+
   return null;
 }
 
@@ -123,7 +125,7 @@ export async function flushLangfuseTracing(): Promise<void> {
   } catch (error) {
     console.error(
       'Langfuse OTel forceFlush failed:',
-      error instanceof Error ? error.message : error
+      error instanceof Error ? error.message : 'non-Error thrown'
     );
   }
 
@@ -135,7 +137,7 @@ export async function flushLangfuseTracing(): Promise<void> {
   } catch (error) {
     console.error(
       'Langfuse client flush failed:',
-      error instanceof Error ? error.message : error
+      error instanceof Error ? error.message : 'non-Error thrown'
     );
   }
 }
