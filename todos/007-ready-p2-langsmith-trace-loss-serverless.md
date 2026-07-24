@@ -12,7 +12,7 @@ dependencies: []
 
 Langfuse flushes OTel spans before serverless exits. LangSmith was fire-and-forget with no equivalent flush — traces could be dropped when the function exited mid-HTTP.
 
-**Resolved:** `flushLangSmithTracing()` awaits in-flight `createRun` work (tracked from `traceLLMCall` / `traceableChat`), then calls `client.flush()` with a 2s deadline so observability cannot block responses indefinitely. Chat and analyze-jd `finally` blocks both call it.
+**Resolved:** `flushLangSmithTracing()` awaits in-flight `createRun` work (tracked from `traceLLMCall` / `traceableChat`) under a 2s `withTimeout`, then calls `client.flush()` under the same 2s deadline so neither phase can block serverless responses indefinitely. Chat and analyze-jd `finally` blocks both call it.
 
 ## Findings
 
@@ -34,6 +34,7 @@ None — completed.
 - [x] Added to `finally` blocks in chat and analyze-jd routes
 - [x] Does not throw to callers (follows same pattern as Langfuse flush)
 - [x] In-flight `createRun` promises tracked and awaited before `client.flush()`
+- [x] Pending-trace await bounded by the same `FLUSH_TIMEOUT_MS` (`withTimeout` + `Promise.allSettled`)
 - [x] `client.flush()` bounded by an explicit timeout so it cannot delay responses indefinitely
 
 ## Work Log
@@ -43,6 +44,7 @@ None — completed.
 | 2026-07-21 | Finding identified | Observability hardening gap noticed during Langfuse review |
 | 2026-07-21 | Fixed | Added `flushLangSmithTracing()` to langsmith.ts; called from both chat and analyze-jd route `finally` blocks |
 | 2026-07-23 | Hardened / closed | Pending-trace tracking + 2s flush timeout; acceptance criteria synced |
+| 2026-07-23 | Timeout pending await | Wrapped `Promise.allSettled(pendingTraces)` in `withTimeout(FLUSH_TIMEOUT_MS)` so createRun wait cannot hang |
 
 ## Resources
 

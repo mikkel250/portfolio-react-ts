@@ -71,13 +71,16 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | undefined>
 
 /**
  * Flush pending LangSmith traces before a serverless function exits.
- * Awaits in-flight createRun work first, then client.flush() with a deadline.
- * No-op when client is not initialized. Never throws to callers.
+ * Awaits in-flight createRun work (bounded by FLUSH_TIMEOUT_MS), then
+ * client.flush() under the same deadline. Never throws to callers.
  */
 export async function flushLangSmithTracing(): Promise<void> {
   try {
     if (pendingTraces.size > 0) {
-      await Promise.allSettled([...pendingTraces]);
+      await withTimeout(
+        Promise.allSettled([...pendingTraces]),
+        FLUSH_TIMEOUT_MS
+      );
     }
     if (client && typeof client.flush === 'function') {
       await withTimeout(Promise.resolve(client.flush()), FLUSH_TIMEOUT_MS);
