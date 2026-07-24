@@ -35,7 +35,7 @@ Next.js 14, React 18, TypeScript 5, Next.js API Routes (Node.js runtime), multip
 - **Modern UI with Aceternity:** Professional, polished interface using Framer Motion animations
 
 ### Business Impact
-Demonstrates full-stack + AI integration capabilities to potential employers while providing unique differentiator in competitive job market. Shows pragmatic technical decision-making through MVP strategy and cost optimization. Serves as live portfolio piece that recruiter can interact with. Directly led to paid freelance work: a client saw this assistant, recognized a similar NL-query use case, and hired Mikkel to build a conversational BI platform (see NL-to-SQL Business Intelligence Analytics Platform below).
+Demonstrates full-stack + AI integration capabilities to potential employers while providing unique differentiator in competitive job market. Shows pragmatic technical decision-making through MVP strategy and cost optimization. Serves as live portfolio piece that recruiter can interact with. Directly led to paid freelance work: a client saw this assistant, recognized a similar natural-language query (NL-query) use case, and hired Mikkel to build a conversational BI platform (see NL-to-SQL Business Intelligence Analytics Platform below).
 
 ---
 
