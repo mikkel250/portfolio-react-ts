@@ -1,7 +1,7 @@
 # Professional Experience
 
-**Last Updated:** October 28, 2025  
-**Version:** 2.0
+**Last Updated:** July 21, 2026  
+**Version:** 2.1
 
 ## Overview
 
@@ -33,15 +33,19 @@ Software Engineer with ~6 years of hands-on experience shipping production-ready
 ## Software Engineer - Freelance 
 **Duration:** May 2025 - present
 **Location:** San Francisco, CA
+
+### Context
+After shipping the AI Recruiting Assistant (portfolio chat), a profitable bootstrapped stealth startup hired Mikkel on a time-based contract to deliver a working NL-to-SQL BI MVP with a similar conversational pattern — executives querying analytics in plain English with validated SQL-backed answers. He also continues multi-agent tooling and the recruiting assistant itself. See `projects.md` for the full BI platform write-up.
+
 ### Key Accomplishments 
 -	Designed a multi-agent orchestration system for routing coding tasks across frontier models based on task shape, risk, and cost/output tradeoffs — informed by sustained use of AI coding agents in both production and freelance work.
--	Independently built and delivered a full-stack analytics app using Python/FastAPI, ClickHouse, React, TypeScript, with RAG over schema/context, and uses Anthropic models that lets non-technical users converse naturally and receive validated, SQL-backed answers.
+-	Independently built and delivered a full-stack NL-to-SQL analytics MVP (Python/FastAPI, Remix/React/TypeScript, ClickHouse, PostgreSQL, ChromaDB RAG, Vanna, Docker on Vercel) that lets non-technical executives converse naturally and receive validated, SQL-backed answers — including real-time SQL error detection/correction and schema-aware validation with execution feedback loops.
 -	Evaluated 15–20 open-source and commercial models on SQL quality, instruction following, tool-use reliability, latency, and hosting tradeoffs; recommended managed APIs over self-hosting after cost/ops analysis showed production-viable OSS would need substantial GPU and infra.
 -	Built a Pytest evaluation harness for LLM-generated ClickHouse SQL: pre-execution syntax validation, structured checks (execution success, schema/tenant constraints, returned data), and benchmark-style runs across dozens of parametrized NL→SQL cases with optional multi-model comparison.
 -	Built a separate AI resume assistant with multi-provider fallback (Gemini, Claude, OpenAI) and LangSmith observability for production monitoring and output comparison. Deployed to production on Vercel.
 
 ### Technologies and Skills
-Python (FastAPI), TypeScript, JavaScript, React, Remix, Anthropic, OpenAI, Gemini, and open source LLMs, prompt design, context engineering, RAG, LangSmith, model/tool evaluation, Pytest, automated validation, regression testing, failure analysis, ClickHouse, ChromaDB, REST APIs
+Python (FastAPI), TypeScript, JavaScript, React, Remix, Vanna, Anthropic, OpenAI, Gemini, and open source LLMs, prompt design, context engineering, RAG, LangSmith, model/tool evaluation, Pytest, automated validation, regression testing, failure analysis, ClickHouse, PostgreSQL, ChromaDB, Docker, Vercel, REST APIs
 
 ### Business Impact
 Delivered all projects on time and within budget.

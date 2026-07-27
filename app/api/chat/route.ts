@@ -34,6 +34,7 @@ import {
   flushLangfuseTracing,
   isLangfuseTracingEnabled,
 } from '../lib/langfuse';
+import { flushLangSmithTracing } from '../lib/langsmith';
 import { startActiveObservation } from '@langfuse/tracing';
 /* eslint-disable import/first */
 
@@ -219,6 +220,12 @@ export async function POST(request: NextRequest) {
         } catch (flushError) {
           console.error('Langfuse flush failed:', flushError);
         }
+      }
+      // LangSmith traces are fire-and-forget; best-effort flush.
+      try {
+        await flushLangSmithTracing();
+      } catch {
+        // Silently ignore — observability must not block the response.
       }
     }
 

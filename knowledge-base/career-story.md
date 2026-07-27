@@ -1,7 +1,7 @@
 # Career Transition & Background Story
 
-**Last Updated:** October 28, 2025  
-**Version:** 2.0
+**Last Updated:** July 21, 2026  
+**Version:** 2.1
 
 ## The Journey to Software Engineering
 
@@ -164,7 +164,8 @@ Networking fundamentals, server administration, database management, help desk s
 ### Real-World Examples
 
 **As a Freelancer:**
-- Technical: Designed a multi-agent orchestration system, this AI resumé assistant, and independently built and delivered a full-stack analytics app powered by AI
+- Origin story: Someone saw the AI Resume/Recruiting Assistant, recognized a similar NL-query use case, and hired him on a time-based contract to ship an NL-to-SQL BI MVP for a profitable bootstrapped stealth startup (sole engineer; FastAPI, Remix/React, ClickHouse, RAG, eval harness — see projects.md).
+- Technical: Designed a multi-agent orchestration system, this AI resumé assistant, and independently built and delivered that full-stack conversational BI / NL-to-SQL analytics platform
 - Evaluated 15–20 open-source and commercial LLM models and communicated tradeoffs to stakeholders. Recommended managed APIs over self-hosting after cost/ops analysis showed production-viable OSS would need substantial GPU and infra.
 - Process: Built a Pytest evaluation harness for LLM-generated ClickHouse SQL: pre-execution syntax validation, structured checks (execution success, schema/tenant constraints, returned data), and benchmark-style runs across dozens of parametrized NL→SQL cases with optional multi-model comparison.
 - Business: Understood stakeholder needs.
@@ -413,7 +414,7 @@ Don't wait for permission to fix obvious problems. If he sees inefficiency or te
 
 What makes him different is his pre-engineering background in management and IT. That experience taught him how to communicate with stakeholders, understand business priorities, and improve team processes. At Jefferson Health, he didn't just code - he established their entire SDLC from scratch. At SFMOMA, he worked with legal teams and executives. At Google's Intrinsic, he presented technical tradeoffs to PMs.
 
-He's particularly interested in AI/ML integration - he's currently building an AI recruiting assistant that demonstrates his LLM integration skills. He's looking for full-stack roles where he can work on challenging technical problems while contributing to product strategy and working cross-functionally. The combination of technical skills plus business context means he delivers features that create real value, not just clean code."
+He's particularly interested in AI/ML integration — he shipped this AI recruiting assistant and a paid NL-to-SQL BI MVP that grew out of it. He's looking for full-stack roles where he can work on challenging technical problems while contributing to product strategy and working cross-functionally. The combination of technical skills plus business context means he delivers features that create real value, not just clean code."
 
 ### One-Sentence Version
 

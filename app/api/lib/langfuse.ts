@@ -22,6 +22,7 @@ import {
   type LangfuseGeneration,
 } from '@langfuse/tracing';
 import { ChatMessage, ChatOptions, ChatResponse } from './llm';
+import { getLangfuseSpanProcessor } from './langfuse-span-processor-ref';
 
 /** Lazy singleton — reused across requests within a warm serverless function */
 let langfuseClient: LangfuseClient | null = null;
@@ -58,9 +59,45 @@ export function initLangFuse(): LangfuseClient | null {
   return langfuseClient;
 }
 
+type FlushableOtelProvider = {
+  forceFlush?: () => Promise<void>;
+  getDelegate?: () => FlushableOtelProvider;
+};
+
+/**
+ * Prefer an SDK provider behind ProxyTracerProvider.getDelegate(); otherwise
+ * use the provider itself when it implements forceFlush.
+ *
+ * Recursively unwraps ProxyTracerProvider chains so nested proxies
+ * (proxy → proxy → real) eventually reach a flushable delegate. When a
+ * provider exposes both getDelegate and forceFlush, try the delegate first
+ * and fall back to the provider itself if the delegate is missing or not
+ * flushable.
+ */
+function resolveOtelFlushTarget(
+  provider: FlushableOtelProvider | null | undefined
+): FlushableOtelProvider | null {
+  if (!provider) return null;
+
+  if (typeof provider.getDelegate === 'function') {
+    const fromDelegate = resolveOtelFlushTarget(provider.getDelegate());
+    if (fromDelegate) return fromDelegate;
+  }
+
+  if (typeof provider.forceFlush === 'function') {
+    return provider;
+  }
+
+  return null;
+}
+
 /**
  * Flush pending Langfuse / OTel spans before a serverless function exits.
  * No-op when tracing is disabled. Never throws to callers.
+ *
+ * Prefer LangfuseSpanProcessor.forceFlush. If missing, unwrap the OTel
+ * ProxyTracerProvider via getDelegate() so the underlying SDK provider
+ * (which implements forceFlush) can be flushed.
  */
 export async function flushLangfuseTracing(): Promise<void> {
   if (!isLangfuseTracingEnabled()) {
@@ -68,15 +105,28 @@ export async function flushLangfuseTracing(): Promise<void> {
   }
 
   try {
-    const { getLangfuseTracerProvider } = await import('@langfuse/tracing');
-    const provider = getLangfuseTracerProvider() as {
-      forceFlush?: () => Promise<void>;
-    };
-    if (typeof provider?.forceFlush === 'function') {
-      await provider.forceFlush();
+    const processor = getLangfuseSpanProcessor();
+
+    if (processor && typeof processor.forceFlush === 'function') {
+      await processor.forceFlush();
+    } else {
+      const { getLangfuseTracerProvider } = await import('@langfuse/tracing');
+      const flushTarget = resolveOtelFlushTarget(
+        getLangfuseTracerProvider() as FlushableOtelProvider
+      );
+      if (flushTarget?.forceFlush) {
+        await flushTarget.forceFlush();
+      } else {
+        console.warn(
+          'Langfuse OTel flush skipped: no span processor or provider forceFlush'
+        );
+      }
     }
   } catch (error) {
-    console.error('Langfuse OTel forceFlush failed:', error);
+    console.error(
+      'Langfuse OTel forceFlush failed:',
+      error instanceof Error ? error.message : 'non-Error thrown'
+    );
   }
 
   try {
@@ -85,7 +135,10 @@ export async function flushLangfuseTracing(): Promise<void> {
       await client.flush();
     }
   } catch (error) {
-    console.error('Langfuse client flush failed:', error);
+    console.error(
+      'Langfuse client flush failed:',
+      error instanceof Error ? error.message : 'non-Error thrown'
+    );
   }
 }
 
