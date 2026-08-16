@@ -209,7 +209,6 @@ export async function POST(request: NextRequest) {
         model: llmResponse.model,
         remaining: rateLimit.remaining,
         resetTime: rateLimit.resetTime,
-        traceUrl: `https://smith.langchain.com/projects/${process.env.LANGSMITH_PROJECT_NAME}`,
         ...(process.env.NODE_ENV === 'development' ? { timings_ms } : {}),
       });
     } catch (pipelineError: unknown) {
