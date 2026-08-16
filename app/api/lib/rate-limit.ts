@@ -31,17 +31,20 @@ export const MISSING_IP_KEY = '__missing-ip__';
 
 /**
  * resolveClientIp: Extract client IP from proxy headers.
+ * Prefers platform-set headers (x-real-ip) over x-forwarded-for, which may
+ * contain client-supplied values at the start of the chain on some deployments.
  * Returns MISSING_IP_KEY when headers are absent so callers cannot share an 'unknown' slot.
  */
 export function resolveClientIp(headers: Headers): string {
-  const forwarded = headers.get('x-forwarded-for');
-  if (forwarded) {
-    const clientIp = forwarded.split(',')[0]?.trim();
-    if (clientIp) return clientIp;
-  }
-
   const realIp = headers.get('x-real-ip')?.trim();
   if (realIp) return realIp;
+
+  const forwarded = headers.get('x-forwarded-for');
+  if (forwarded) {
+    const parts = forwarded.split(',');
+    const lastIp = parts[parts.length - 1]?.trim();
+    if (lastIp) return lastIp;
+  }
 
   return MISSING_IP_KEY;
 }
