@@ -362,25 +362,21 @@ async function callGoogle(
     return { role: 'user', content: (msg as any).content || String(msg) };
   });
 
-  // Build conversation history for context awareness
-  // Include system prompt at the start for better grounding
-  let fullPrompt = `${systemPrompt}\n\n---\n\nConversation History:\n`;
-  
-  // Add conversation history (exclude the last message which is the current query)
-  for (let i = 0; i < formattedMessages.length - 1; i++) {
-    const msg = formattedMessages[i];
-    const role = msg.role === 'user' ? 'User' : 'Assistant';
-    fullPrompt += `${role}: ${msg.content}\n\n`;
-  }
-  
-  // Add current user message
-  fullPrompt += `User: ${formattedMessages[formattedMessages.length - 1]?.content || ''}`;
+  // Structured multi-turn contents — avoids prompt-injection via embedded
+  // "User:" / "Assistant:" labels in message text (string concat spoofing).
+  const contents = formattedMessages
+    .filter((msg) => msg.role !== 'system')
+    .map((msg) => ({
+      role: msg.role === 'user' ? 'user' : 'model',
+      parts: [{ text: msg.content }],
+    }));
 
   // Call the @google/genai API
   const response = await getGoogle().models.generateContent({
     model: model,
-    contents: fullPrompt,
+    contents,
     config: {
+      systemInstruction: systemPrompt,
       temperature,
       maxOutputTokens: maxTokens,
     },
