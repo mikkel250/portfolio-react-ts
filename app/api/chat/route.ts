@@ -40,6 +40,7 @@ import { startActiveObservation } from '@langfuse/tracing';
 
 const MAX_MESSAGES = 50;
 const MAX_MESSAGE_CHARS = 32_768;
+const ALLOWED_MESSAGE_ROLES = new Set(['user', 'assistant']);
 
 /** Shape of the JSON body expected from the client */
 interface ChatRequest {
@@ -87,6 +88,13 @@ export async function POST(request: NextRequest) {
     }
 
     for (const message of messages) {
+      if (!ALLOWED_MESSAGE_ROLES.has(message.role)) {
+        return NextResponse.json(
+          { error: `Invalid message role: ${message.role}` },
+          { status: 400 }
+        );
+      }
+
       if (
         typeof message?.content !== 'string' ||
         message.content.length > MAX_MESSAGE_CHARS
