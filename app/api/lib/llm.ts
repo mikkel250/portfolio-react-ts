@@ -340,16 +340,14 @@ async function callAnthropic(
   };
 }
 
-async function callGoogle(
-  messages: Omit<ChatMessage, 'role'>[] | ChatMessage[],
-  systemPrompt: string,
-  options: ChatOptions
-): Promise<ChatResponse> {
-  // Use lower temperature for Gemini Pro to reduce hallucinations
-  const { maxTokens: defaultMaxTokens, temperature: defaultTemperature } = getLLMConfig();
-  const { temperature = defaultTemperature, maxTokens = defaultMaxTokens, model = 'gemini-2.5-pro' } = options;
-
-  // format messages
+/**
+ * Normalize chat history into Gemini structured `contents` turns.
+ * Uses API roles (user/model) so embedded "User:" / "Assistant:" text in
+ * message bodies cannot spoof prior assistant turns.
+ */
+export function buildGeminiStructuredContents(
+  messages: Omit<ChatMessage, 'role'>[] | ChatMessage[]
+): Array<{ role: 'user' | 'model'; parts: [{ text: string }] }> {
   const formattedMessages: ChatMessage[] = messages.map((msg) => {
     if (typeof msg === 'string') {
       return { role: 'user', content: msg };
@@ -362,14 +360,24 @@ async function callGoogle(
     return { role: 'user', content: (msg as any).content || String(msg) };
   });
 
-  // Structured multi-turn contents — avoids prompt-injection via embedded
-  // "User:" / "Assistant:" labels in message text (string concat spoofing).
-  const contents = formattedMessages
+  return formattedMessages
     .filter((msg) => msg.role !== 'system')
     .map((msg) => ({
       role: msg.role === 'user' ? 'user' : 'model',
       parts: [{ text: msg.content }],
     }));
+}
+
+async function callGoogle(
+  messages: Omit<ChatMessage, 'role'>[] | ChatMessage[],
+  systemPrompt: string,
+  options: ChatOptions
+): Promise<ChatResponse> {
+  // Use lower temperature for Gemini Pro to reduce hallucinations
+  const { maxTokens: defaultMaxTokens, temperature: defaultTemperature } = getLLMConfig();
+  const { temperature = defaultTemperature, maxTokens = defaultMaxTokens, model = 'gemini-2.5-pro' } = options;
+
+  const contents = buildGeminiStructuredContents(messages);
 
   // Call the @google/genai API
   const response = await getGoogle().models.generateContent({
