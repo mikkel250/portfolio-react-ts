@@ -33,6 +33,7 @@
 import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
 import { GoogleGenAI } from '@google/genai';
+import { normalizeConversationTurns } from './conversation-turns';
 import { traceLLMCall, traceableChat } from './langsmith';
 import { traceLLMCall as traceLLMCallLangFuse } from './langfuse';
 import {
@@ -364,6 +365,7 @@ async function callGoogle(
 
   // Structured multi-turn contents — avoids prompt-injection via embedded
   // "User:" / "Assistant:" labels in message text (string concat spoofing).
+  // chat() normalizes turns so this list starts with user and alternates.
   const contents = formattedMessages
     .filter((msg) => msg.role !== 'system')
     .map((msg) => ({
@@ -412,6 +414,11 @@ export async function chat(
   systemPrompt: string,
   options: ChatOptions = {}
 ): Promise<ChatResponse> {
+  const conversation = normalizeConversationTurns(messages as ChatMessage[]);
+  if (conversation.length === 0 || conversation[conversation.length - 1].role !== 'user') {
+    throw new Error('Invalid conversation: a user message is required');
+  }
+
   const primaryModel = options.model || process.env.AI_MODEL || 'gemini-2.5-flash';
   
   // Build fallback chain from environment variables
@@ -429,20 +436,20 @@ export async function chat(
       console.log(`Attempting ${provider} (${model}) - ${reason}`);
       
       // Call provider
-      const response = await callProvider(provider, messages, systemPrompt, { ...options, model });
+      const response = await callProvider(provider, conversation, systemPrompt, { ...options, model });
       
       // Trace successful call. Await Langfuse generation so it nests under an
       // active parent span when one exists. Do not flush here — HTTP handlers
       // that call chat() must flush once before return (/api/chat, /api/analyze-jd)
       // so providerDurationMs excludes observability I/O and parent spans export.
       const providerDurationMs = Date.now() - startTime;
-      traceLLMCall(provider, model, messages as ChatMessage[], systemPrompt, response, startTime, options)
+      traceLLMCall(provider, model, conversation, systemPrompt, response, startTime, options)
         .catch(err => console.error('Tracing error (LangSmith):', err));
       try {
         await traceLLMCallLangFuse(
           provider,
           model,
-          messages as ChatMessage[],
+          conversation,
           systemPrompt,
           response,
           startTime,
@@ -477,7 +484,7 @@ export async function chat(
       traceLLMCall(
         provider,
         model,
-        messages as ChatMessage[],
+        conversation,
         systemPrompt,
         errorResponse,
         startTime,
@@ -487,7 +494,7 @@ export async function chat(
         await traceLLMCallLangFuse(
           provider,
           model,
-          messages as ChatMessage[],
+          conversation,
           systemPrompt,
           errorResponse,
           startTime,

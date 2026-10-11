@@ -25,7 +25,10 @@ let client: Client | null = null;
 /** In-flight createRun promises — awaited by flush before client.flush(). */
 const pendingTraces = new Set<Promise<unknown>>();
 
-/** Cap flush wait so serverless responses are never held indefinitely. */
+/**
+ * Shared deadline for the pending-trace wait and client.flush().
+ * Each phase receives only the time still left; the total wait is capped here.
+ */
 const FLUSH_TIMEOUT_MS = 2_000;
 
 /**
@@ -69,21 +72,30 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | undefined>
   });
 }
 
+function remainingMs(deadline: number): number {
+  return Math.max(0, deadline - Date.now());
+}
+
 /**
  * Flush pending LangSmith traces before a serverless function exits.
- * Awaits in-flight createRun work (bounded by FLUSH_TIMEOUT_MS), then
- * client.flush() under the same deadline. Never throws to callers.
+ * One deadline covers the in-flight createRun wait and client.flush().
+ * client.flush() gets only the time remaining, and is skipped when the
+ * deadline has already passed. Never throws to callers.
  */
 export async function flushLangSmithTracing(): Promise<void> {
+  const deadline = Date.now() + FLUSH_TIMEOUT_MS;
   try {
     if (pendingTraces.size > 0) {
-      await withTimeout(
-        Promise.allSettled([...pendingTraces]),
-        FLUSH_TIMEOUT_MS
-      );
+      const pendingBudget = remainingMs(deadline);
+      if (pendingBudget > 0) {
+        await withTimeout(Promise.allSettled([...pendingTraces]), pendingBudget);
+      }
     }
     if (client && typeof client.flush === 'function') {
-      await withTimeout(Promise.resolve(client.flush()), FLUSH_TIMEOUT_MS);
+      const flushBudget = remainingMs(deadline);
+      if (flushBudget > 0) {
+        await withTimeout(Promise.resolve(client.flush()), flushBudget);
+      }
     }
   } catch (error) {
     console.error(
