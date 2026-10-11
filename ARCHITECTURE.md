@@ -117,7 +117,7 @@ instrumentation.ts         — Langfuse OpenTelemetry bootstrap (Node.js runtime
 
 No database. All state is ephemeral or client-side:
 
-- **Rate limiting:** In-memory `Map` keyed by client IP in `app/api/lib/rate-limit.ts`; resets on serverless cold start. Default: 15 messages per hour (`RATE_LIMIT_MAX`, `RATE_LIMIT_WINDOW` env vars).
+- **Rate limiting:** In-memory `Map` keyed by client IP in `app/api/lib/rate-limit.ts`; resets on serverless cold start. Default: 15 messages per hour (`RATE_LIMIT_MAX`, `RATE_LIMIT_WINDOW` env vars). On Vercel the trusted client address is `x-vercel-forwarded-for`, then `x-real-ip`, then the first `x-forwarded-for` address. Vercel overwrites those headers with the connecting client and does not forward a spoofed chain ([request headers](https://vercel.com/docs/headers/request-headers)). A forwarded list is ordered client, proxy1, proxy2, so the key is the first address.
 - **Conversation history:** Client-side only (`localStorage` in browser)
 - **Knowledge base:** Static markdown files in `knowledge-base/`; retrieved via keyword matching in `app/api/lib/knowledge-base.ts`
 - **Session tracking:** Client-generated session ID stored in `localStorage`

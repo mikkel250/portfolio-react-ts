@@ -166,6 +166,43 @@ describe('flushLangfuseTracing', () => {
     expect(providerFlush).toHaveBeenCalledOnce();
   });
 
+  it('flushes a self-referential provider once and resolves', async () => {
+    vi.stubEnv('LANGFUSE_TRACING', 'true');
+    vi.stubEnv('LANGFUSE_PUBLIC_KEY', 'pk');
+    vi.stubEnv('LANGFUSE_SECRET_KEY', 'sk');
+    setLangfuseSpanProcessor(null);
+
+    const realFlush = vi.fn(async () => undefined);
+    const provider: { forceFlush: () => Promise<void>; getDelegate: () => unknown } = {
+      forceFlush: realFlush,
+      getDelegate: () => provider,
+    };
+    vi.mocked(getLangfuseTracerProvider).mockReturnValue(
+      provider as unknown as ReturnType<typeof getLangfuseTracerProvider>
+    );
+
+    await expect(flushLangfuseTracing()).resolves.toBeUndefined();
+    expect(realFlush).toHaveBeenCalledOnce();
+  });
+
+  it('resolves when getDelegate throws and still flushes the provider', async () => {
+    vi.stubEnv('LANGFUSE_TRACING', 'true');
+    vi.stubEnv('LANGFUSE_PUBLIC_KEY', 'pk');
+    vi.stubEnv('LANGFUSE_SECRET_KEY', 'sk');
+    setLangfuseSpanProcessor(null);
+
+    const providerFlush = vi.fn(async () => undefined);
+    vi.mocked(getLangfuseTracerProvider).mockReturnValue({
+      forceFlush: providerFlush,
+      getDelegate: () => {
+        throw new Error('cyclic delegate');
+      },
+    } as unknown as ReturnType<typeof getLangfuseTracerProvider>);
+
+    await expect(flushLangfuseTracing()).resolves.toBeUndefined();
+    expect(providerFlush).toHaveBeenCalledOnce();
+  });
+
   it('warns and resolves when no flush target exists', async () => {
     vi.stubEnv('LANGFUSE_TRACING', 'true');
     vi.stubEnv('LANGFUSE_PUBLIC_KEY', 'pk');

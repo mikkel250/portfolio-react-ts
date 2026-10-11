@@ -27,6 +27,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { checkRateLimit, resolveClientIp } from '../lib/rate-limit';
 import { getRelevantContext } from '../lib/knowledge-base';
 import { buildChatSystemPrompt } from '../lib/prompts';
+import { normalizeConversationTurns } from '../lib/conversation-turns';
 import { chat, ChatMessage } from '../lib/llm';
 import { filterInput } from '@/lib/input-filter';
 import { createStepClock } from '../lib/chat-timings';
@@ -115,6 +116,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Gemini and Claude reject a leading assistant turn (the UI welcome
+    // message) and consecutive same-role turns. Merge those into an
+    // alternating user/assistant transcript before the provider call.
+    const conversation = normalizeConversationTurns(messages);
+    if (conversation.length === 0 || conversation[conversation.length - 1].role !== 'user') {
+      return NextResponse.json(
+        { error: 'Last message must be from a user' },
+        { status: 400 }
+      );
+    }
+
     const query = latestMessage.content;
     const ipAddress = resolveClientIp(request.headers);
 
@@ -168,7 +180,7 @@ export async function POST(request: NextRequest) {
         });
         clock.lap('prompt');
 
-        const llmResponse = await chat(messages, systemPrompt, {
+        const llmResponse = await chat(conversation, systemPrompt, {
           ...(process.env.AI_MODEL ? { model: process.env.AI_MODEL } : {}),
           langfusePrompt: { name: 'portfolio-chat-system' },
         });

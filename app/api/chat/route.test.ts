@@ -92,6 +92,47 @@ describe('POST /api/chat validation', () => {
     expect(chat).not.toHaveBeenCalled();
   });
 
+  it('drops a leading assistant welcome and merges consecutive user turns', async () => {
+    const response = await postChat({
+      sessionId: 'session-welcome',
+      messages: [
+        { role: 'assistant', content: 'Welcome' },
+        { role: 'user', content: 'First question' },
+        { role: 'user', content: 'Second question' },
+      ],
+    });
+
+    expect(response.status).toBe(200);
+    expect(chat).toHaveBeenCalledWith(
+      [{ role: 'user', content: 'First question\n\nSecond question' }],
+      'test system prompt',
+      expect.objectContaining({ langfusePrompt: { name: 'portfolio-chat-system' } })
+    );
+  });
+
+  it('merges consecutive assistant turns between user turns', async () => {
+    const response = await postChat({
+      sessionId: 'session-merge',
+      messages: [
+        { role: 'user', content: 'Q1' },
+        { role: 'assistant', content: 'A1' },
+        { role: 'assistant', content: 'A2' },
+        { role: 'user', content: 'Q2' },
+      ],
+    });
+
+    expect(response.status).toBe(200);
+    expect(chat).toHaveBeenCalledWith(
+      [
+        { role: 'user', content: 'Q1' },
+        { role: 'assistant', content: 'A1\n\nA2' },
+        { role: 'user', content: 'Q2' },
+      ],
+      'test system prompt',
+      expect.any(Object)
+    );
+  });
+
   it('requires the latest message to be from the user', async () => {
     const response = await postChat({
       sessionId: 'session-3',

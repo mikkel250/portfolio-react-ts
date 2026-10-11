@@ -71,16 +71,25 @@ type FlushableOtelProvider = {
  * Recursively unwraps ProxyTracerProvider chains so nested proxies
  * (proxy → proxy → real) eventually reach a flushable delegate. When a
  * provider exposes both getDelegate and forceFlush, try the delegate first
- * and fall back to the provider itself if the delegate is missing or not
- * flushable.
+ * and fall back to the provider itself if the delegate is missing, throws,
+ * or is not flushable. A seen-set stops self-referential or cyclic delegates
+ * from recursing until the stack overflows.
  */
 function resolveOtelFlushTarget(
-  provider: FlushableOtelProvider | null | undefined
+  provider: FlushableOtelProvider | null | undefined,
+  seen: Set<FlushableOtelProvider> = new Set()
 ): FlushableOtelProvider | null {
-  if (!provider) return null;
+  if (!provider || seen.has(provider)) return null;
+  seen.add(provider);
 
   if (typeof provider.getDelegate === 'function') {
-    const fromDelegate = resolveOtelFlushTarget(provider.getDelegate());
+    let delegate: FlushableOtelProvider | null | undefined;
+    try {
+      delegate = provider.getDelegate();
+    } catch {
+      delegate = undefined;
+    }
+    const fromDelegate = resolveOtelFlushTarget(delegate, seen);
     if (fromDelegate) return fromDelegate;
   }
 

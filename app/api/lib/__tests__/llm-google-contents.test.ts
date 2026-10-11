@@ -4,6 +4,7 @@ const generateContent = vi.fn();
 
 describe('callGoogle via chat()', () => {
   afterEach(() => {
+    generateContent.mockReset();
     vi.unstubAllEnvs();
     vi.resetModules();
     vi.restoreAllMocks();
@@ -69,6 +70,52 @@ describe('callGoogle via chat()', () => {
           },
         ],
       },
+    ]);
+  });
+
+  it('drops a leading assistant turn and merges consecutive user turns', async () => {
+    vi.stubEnv('GOOGLE_API_KEY', 'google-test-key');
+    vi.stubEnv('AI_MODEL', 'gemini-2.5-flash');
+    vi.stubEnv('OPENAI_API_KEY', '');
+    vi.stubEnv('ANTHROPIC_API_KEY', '');
+    vi.stubEnv('DEEPSEEK_API_KEY', '');
+    vi.stubEnv('AI_MODEL_FALLBACKS', '');
+
+    generateContent.mockResolvedValue({
+      text: 'Safe reply',
+      usage: { promptTokens: 1, completionTokens: 1, totalTokens: 2 },
+    });
+
+    vi.doMock('@google/genai', () => ({
+      GoogleGenAI: vi.fn().mockImplementation(() => ({
+        models: { generateContent },
+      })),
+    }));
+
+    vi.doMock('../langsmith', () => ({
+      traceLLMCall: vi.fn().mockResolvedValue(undefined),
+      traceableChat: vi.fn(),
+    }));
+
+    vi.doMock('../langfuse', () => ({
+      traceLLMCall: vi.fn().mockResolvedValue(undefined),
+    }));
+
+    const { chat } = await import('../llm');
+
+    await chat(
+      [
+        { role: 'assistant', content: 'Welcome' },
+        { role: 'user', content: 'First' },
+        { role: 'user', content: 'Second' },
+      ],
+      'Stay on portfolio topics only.',
+      { model: 'gemini-2.5-flash' }
+    );
+
+    const request = generateContent.mock.calls[0][0];
+    expect(request.contents).toEqual([
+      { role: 'user', parts: [{ text: 'First\n\nSecond' }] },
     ]);
   });
 });

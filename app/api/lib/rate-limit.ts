@@ -26,27 +26,44 @@ const sessionStore = new Map<string, SessionData>();
 // Per-IP store — missing IPs share one globally throttled bucket
 const ipStore = new Map<string, SessionData>();
 
-/** Sentinel for requests without x-forwarded-for / x-real-ip (shared global bucket) */
+/** Sentinel for requests without a usable client IP (shared global bucket) */
 export const MISSING_IP_KEY = '__missing-ip__';
 
 /**
- * resolveClientIp: Extract client IP from proxy headers.
- * Prefers platform-set headers (x-real-ip) over x-forwarded-for, which may
- * contain client-supplied values at the start of the chain on some deployments.
- * Returns MISSING_IP_KEY when headers are absent so callers cannot share an 'unknown' slot.
+ * First non-empty address in a comma-separated forwarded header.
+ * De-facto order is client, proxy1, proxy2 — the first hop is the client.
+ * The last hop is the nearest proxy and would put every visitor in one bucket.
+ */
+function firstForwardedAddress(value: string | null): string | undefined {
+  if (!value) return undefined;
+  for (const part of value.split(',')) {
+    const address = part.trim();
+    if (address) return address;
+  }
+  return undefined;
+}
+
+/**
+ * resolveClientIp: Client IP for rate-limit keys.
+ *
+ * Trust model (Vercel free tier, no reverse proxy — see ARCHITECTURE.md):
+ * Vercel overwrites `x-forwarded-for` with the connecting client IP and does
+ * not forward client-supplied addresses. `x-real-ip` is that same client IP.
+ * `x-vercel-forwarded-for` is the platform-owned copy, so it stays the client
+ * IP if a proxy in front of Vercel overwrites `x-forwarded-for`.
+ * https://vercel.com/docs/headers/request-headers
+ *
+ * Order: x-vercel-forwarded-for, then x-real-ip, then x-forwarded-for.
+ * Each value uses the first address. Empty or whitespace-only hops are skipped.
+ * Returns MISSING_IP_KEY when no address is usable.
  */
 export function resolveClientIp(headers: Headers): string {
-  const realIp = headers.get('x-real-ip')?.trim();
-  if (realIp) return realIp;
-
-  const forwarded = headers.get('x-forwarded-for');
-  if (forwarded) {
-    const parts = forwarded.split(',');
-    const lastIp = parts[parts.length - 1]?.trim();
-    if (lastIp) return lastIp;
-  }
-
-  return MISSING_IP_KEY;
+  return (
+    firstForwardedAddress(headers.get('x-vercel-forwarded-for')) ??
+    firstForwardedAddress(headers.get('x-real-ip')) ??
+    firstForwardedAddress(headers.get('x-forwarded-for')) ??
+    MISSING_IP_KEY
+  );
 }
 
 // Rate limiting configuration
