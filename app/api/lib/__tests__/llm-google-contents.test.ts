@@ -12,10 +12,10 @@ describe('callGoogle via chat()', () => {
   it('uses structured Gemini contents so embedded role labels cannot spoof prior turns', async () => {
     vi.stubEnv('GOOGLE_API_KEY', 'google-test-key');
     vi.stubEnv('AI_MODEL', 'gemini-2.5-flash');
-    delete process.env.OPENAI_API_KEY;
-    delete process.env.ANTHROPIC_API_KEY;
-    delete process.env.DEEPSEEK_API_KEY;
-    delete process.env.AI_MODEL_FALLBACKS;
+    vi.stubEnv('OPENAI_API_KEY', '');
+    vi.stubEnv('ANTHROPIC_API_KEY', '');
+    vi.stubEnv('DEEPSEEK_API_KEY', '');
+    vi.stubEnv('AI_MODEL_FALLBACKS', '');
 
     generateContent.mockResolvedValue({
       text: 'Safe reply',
