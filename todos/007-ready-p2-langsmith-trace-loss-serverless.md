@@ -12,7 +12,7 @@ dependencies: []
 
 Langfuse flushes OTel spans before serverless exits. LangSmith was fire-and-forget with no equivalent flush — traces could be dropped when the function exited mid-HTTP.
 
-**Resolved:** `flushLangSmithTracing()` awaits in-flight `createRun` work (tracked from `traceLLMCall` / `traceableChat`) under a 2s `withTimeout`, then calls `client.flush()` under the same 2s deadline so neither phase can block serverless responses indefinitely. Chat and analyze-jd `finally` blocks both call it.
+**Resolved:** `flushLangSmithTracing()` awaits in-flight `createRun` work (tracked from `traceLLMCall` / `traceableChat`), then calls `client.flush()`. Both phases share one `FLUSH_TIMEOUT_MS` (2s) deadline. `client.flush()` receives only the time remaining and is skipped when that deadline has already passed. Chat and analyze-jd `finally` blocks both call it.
 
 ## Findings
 
@@ -34,8 +34,7 @@ None — completed.
 - [x] Added to `finally` blocks in chat and analyze-jd routes
 - [x] Does not throw to callers (follows same pattern as Langfuse flush)
 - [x] In-flight `createRun` promises tracked and awaited before `client.flush()`
-- [x] Pending-trace await bounded by the same `FLUSH_TIMEOUT_MS` (`withTimeout` + `Promise.allSettled`)
-- [x] `client.flush()` bounded by an explicit timeout so it cannot delay responses indefinitely
+- [x] Pending-trace await and `client.flush()` share one `FLUSH_TIMEOUT_MS` deadline (`withTimeout` + `Promise.allSettled`); flush is skipped when no time remains
 
 ## Work Log
 
@@ -44,7 +43,8 @@ None — completed.
 | 2026-07-21 | Finding identified | Observability hardening gap noticed during Langfuse review |
 | 2026-07-21 | Fixed | Added `flushLangSmithTracing()` to langsmith.ts; called from both chat and analyze-jd route `finally` blocks |
 | 2026-07-23 | Hardened / closed | Pending-trace tracking + 2s flush timeout; acceptance criteria synced |
-| 2026-07-23 | Timeout pending await | Wrapped `Promise.allSettled(pendingTraces)` in `withTimeout(FLUSH_TIMEOUT_MS)` so createRun wait cannot hang |
+| 2026-07-23 | Timeout pending await | Wrapped `Promise.allSettled(pendingTraces)` in `withTimeout` so createRun wait cannot hang |
+| 2026-10-11 | Shared deadline | One clock for the pending-trace wait and `client.flush()`; the second phase gets only the time left |
 
 ## Resources
 
