@@ -5,8 +5,9 @@
 // Every chat API call is traced with full inputs (messages, system prompt),
 // outputs (response, tokens, model), and metadata (duration, temperature).
 //
-// Tracing is fire-and-forget — it NEVER blocks or slows down the actual
-// LLM response. If tracing fails, the user still gets their answer.
+// createRun does not block the model call. The chat and analyze-jd routes
+// then await flushLangSmithTracing() before return (about 2s, never throws).
+// If tracing fails, the user still gets their answer.
 //
 // Toggle: LANGSMITH_TRACING=true in .env.local
 //

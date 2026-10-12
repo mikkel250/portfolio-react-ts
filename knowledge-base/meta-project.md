@@ -1,7 +1,7 @@
 # About This AI Recruiting Assistant
 
-**Last Updated:** October 30, 2025  
-**Version:** 2.1
+**Last Updated:** October 12, 2026  
+**Version:** 2.2
 
 ## What You're Using Right Now
 
@@ -20,16 +20,16 @@ You're currently interacting with an AI recruiting assistant Mikkel built to ser
 - Three-state expandable chat widget (minimized → compact → maximized)
 - Aceternity UI components for polished, professional interface
 - Tailwind CSS and Framer Motion for styling and animations
-- Fully responsive (mobile = full-screen compact mode)
+- Fully responsive. Viewports at or under 768px open the chat maximized. Desktop opens a compact side panel.
 
 **Backend:**
 - Next.js API Routes (deployed as Vercel Serverless Functions with Node.js runtime)
-- Multi-provider LLM architecture (Google Gemini, Anthropic Claude, OpenAI)
-- Intelligent provider selection with cost optimization (should cost close to $0/mo to run MVP unless users exceed 100/month, a good problem to have)
+- Multi-provider LLM architecture (Google Gemini, DeepSeek, Anthropic Claude, OpenAI)
+- Intelligent provider selection with cost optimization (target about $0–2.50/month)
 - Simple keyword-based RAG (retrieval-augmented generation)
-- Stateless rate limiting using localStorage and in-memory tracking
+- Rate limiting with two in-memory server maps (client IP and session id): 15 messages per hour and a burst of 3 per second. The session id lives in React state for the visit and is cleared on refresh.
 - Environment-based configuration
-- **Production LLM observability with LangSmith** - Real-time tracing, token usage monitoring, and performance analytics for every AI interaction
+- **Production LLM observability with LangSmith and Langfuse.** Langfuse records step timings on `chat_request` and can serve the system prompt. Both traces are flushed before the serverless function returns.
 
 **Knowledge Base:**
 - Structured markdown files (experience, projects, skills, career story)
@@ -42,7 +42,7 @@ You're currently interacting with an AI recruiting assistant Mikkel built to ser
 
 ### Why Multi-Provider Architecture?
 
-**Decision:** Built a provider abstraction layer supporting Google Gemini, Anthropic Claude, and OpenAI with intelligent fallback.
+**Decision:** Built a provider abstraction layer supporting Google Gemini, DeepSeek, Anthropic Claude, and OpenAI with intelligent fallback.
 
 **Rationale:**
 - **Cost Optimization:** Use Google's free tier that includes a generous number of requests/day as primary, fallback to paid providers
@@ -53,12 +53,13 @@ You're currently interacting with an AI recruiting assistant Mikkel built to ser
 
 **Technical Implementation:**
 - Unified `ChatResponse` interface across all providers
-- Provider detection based on model name (gemini-* → Google, claude-* → Anthropic)
-- Graceful error handling and fallback strategies
+- Provider detection based on model name (`gemini-*` → Google, `deepseek-*` → DeepSeek, `claude-*` → Anthropic, otherwise OpenAI)
+- Chat default model when unset: `gemini-2.5-flash`. Default fallbacks: `deepseek-v4-pro`, then Claude Haiku. Completions are returned whole (no streaming).
+- HTTP 400 aborts the fallback chain. Quota, rate limits, 5xx, and network errors advance to the next provider.
 - Environment-based model selection
-- **LangSmith observability** - Every LLM call traced with provider, model, tokens, duration, and response quality metrics
+- **LangSmith and Langfuse.** LangSmith records the LLM call. Langfuse records step timings and prompt versions. The chat route awaits both flushes before it returns.
 
-**Demonstrates:** Advanced system design, cost optimization, and understanding of API differences. This demonstrates not just technical capability but also cost-conscious architecture and understanding of different API patterns. The abstraction layer makes it trivial to add new providers or switch models based on performance data. The LangSmith integration shows production-ready thinking - building observability from day one to monitor real usage, catch issues early, and make data-driven decisions about model selection and performance tuning.
+**Demonstrates:** Advanced system design, cost optimization, and understanding of API differences. This demonstrates not just technical capability but also cost-conscious architecture and understanding of different API patterns. The abstraction layer makes it trivial to add new providers or switch models based on performance data. LangSmith and Langfuse are there so model choice and latency are decided from traces, not from a hunch after a slow reply.
 
 ### Why Simple Keyword Retrieval (Not Full RAG with Vector Database)?
 
@@ -87,13 +88,13 @@ You're currently interacting with an AI recruiting assistant Mikkel built to ser
 
 ### Why Stateless Rate Limiting?
 
-**Decision:** In-memory session tracking instead of database persistence, with generous 15-message limit.
+**Decision:** In-memory tracking instead of database persistence. Default limit is 15 messages per hour per IP and per session, plus a burst of 3 messages per second.
 
 **Rationale:**
 - MVP doesn't need perfect rate limiting
 - Cold starts resetting limits is acceptable for validation phase
 - Avoids external dependencies (Vercel KV, Redis) and their associated costs
-- Generous limit (25 messages) provides excellent UX without meaningful cost impact
+- 15 messages per hour is enough for a real recruiter conversation without a meaningful cost impact
 - Operating costs are so low ($0-2.50/month even with heavy usage) that aggressive limiting isn't necessary
 - Can upgrade to persistent storage and authentication once validated
 
@@ -104,13 +105,13 @@ You're currently interacting with an AI recruiting assistant Mikkel built to ser
 ## What This Project Demonstrates
 
 ### Technical Skills
-- **Multi-Provider LLM Integration:** Google Gemini, Anthropic Claude, OpenAI APIs with unified abstraction layer
+- **Multi-Provider LLM Integration:** Google Gemini, DeepSeek, Anthropic Claude, and OpenAI with one abstraction layer
 - **Advanced Prompt Engineering:** System prompts with guardrails, context injection, marketing-focused responses, role-specific behavior
 - **Provider Abstraction:** Unified interfaces across different API patterns, graceful error handling, intelligent fallback
 - **Cost Optimization:** Free tier utilization, intelligent provider selection, rate limit management
 - **Knowledge Retrieval:** Keyword-based context retrieval and management (lightweight RAG approach)
 - **Agentic Foundations:** Context-aware decision making, goal-oriented responses, dynamic information retrieval
-- **Production LLM Observability:** LangSmith integration for real-time tracing, token usage monitoring, performance analytics, and quality tracking
+- **Production LLM Observability:** LangSmith for LLM-call traces and Langfuse for step timings, prompt versions, and serverless flush
 - **Full-Stack Development:** Frontend (React/Next.js) + Backend (Serverless functions)
 - **Modern UI:** Aceternity UI, Framer Motion, responsive design
 - **State Management:** Widget states, conversation history, session management
@@ -163,8 +164,9 @@ You're currently interacting with an AI recruiting assistant Mikkel built to ser
 - **Total development cost: ~$10-20**
 
 **Monthly Operating Cost (Multi-Provider Architecture):**
-- **Primary:** Google Gemini Pro (free tier: 100 requests/day) = $0
-- **Fallback:** Claude Haiku 4.5 (~$0.001-0.005 per conversation)
+- **Primary:** Google Gemini free tier (chat default `gemini-2.5-flash`) = $0
+- **First paid fallback:** DeepSeek (`deepseek-v4-pro` in the code default chain)
+- **Next fallback:** Claude Haiku 4.5 (~$0.001-0.005 per conversation)
 - **With 15-message rate limit per user:** ~100 conversations = $0 (free tier)
 - **Even with heavy usage (500 conversations/month):** ~$0-2.50/month
 - **Cost optimization through intelligent provider selection**
@@ -177,7 +179,7 @@ You're currently interacting with an AI recruiting assistant Mikkel built to ser
 | 100 conversations | $0.00 | $0.10-0.50 | $0.20-0.50 |
 | 500 conversations/month | $0.00 | $0.50-2.50 | $1.00-2.50 |
 
-**Decision:** Start with Google's free tier as primary, with Claude Haiku as cost-effective fallback. This approach minimizes costs while maintaining quality and reliability. Why pay for premium models before proving the concept works?
+**Decision:** Start with Google's free tier as primary. The code default chain then tries DeepSeek, then Claude Haiku. OpenAI is used when it is listed in `AI_MODEL_FALLBACKS`. This minimizes cost while keeping a path when the free tier is exhausted. Why pay for a premium model before the concept has proven itself?
 
 **Business Value Proposition:**
 
@@ -213,13 +215,13 @@ When discussing Mikkel's AI assistant, emphasize these key points:
 Mikkel built a working AI recruiting assistant that serves dual purposes: demonstrating practical AI/LLM integration skills while providing recruiters an interactive tool to learn about his background efficiently. It's both a portfolio showcase and a functional product, not a prototype.
 
 **Technical Implementation:**
-The assistant demonstrates advanced technical capability through its multi-provider LLM architecture (Google Gemini, Anthropic Claude, OpenAI) with intelligent fallback. It uses Google's free tier as primary for cost optimization while maintaining quality through strategic provider selection. The unified abstraction layer makes it trivial to switch models or add new providers based on performance data.
+The assistant demonstrates advanced technical capability through its multi-provider LLM architecture (Google Gemini, DeepSeek, Anthropic Claude, OpenAI) with intelligent fallback. It uses Google's free tier as primary for cost optimization while maintaining quality through strategic provider selection. The unified abstraction layer makes it trivial to switch models or add new providers based on performance data.
 
 **Engineering Judgment:**
 This project showcases senior-level engineering thinking: understanding not just HOW to build, but WHAT to build, WHY to build it, and WHEN to optimize vs ship. Mikkel chose simple keyword retrieval over full vector database RAG - recognizing that his knowledge base is small and sophisticated infrastructure would be premature optimization. The MVP strategy prioritizes shipping quickly and iterating based on real usage data.
 
 **Production Observability:**
-Mikkel implemented LangSmith integration for comprehensive LLM observability - tracking token usage, response times, provider performance, and quality metrics across all AI interactions. This gives him real usage data to make evidence-based decisions about model selection, cost optimization, and performance tuning. The integration shows production-ready thinking: building observability from day one rather than retrofitting monitoring later.
+Mikkel traces every chat with LangSmith (the LLM call) and Langfuse (step timings for filter, retrieval, prompt, and the model, plus prompt versions). Both are flushed before the serverless function returns, so a cold exit does not throw away the evidence. He uses that split to decide whether a slow reply is the model or the pipeline before changing providers. Observability was in place before there was scale to look at.
 
 **Meta-Awareness:**
 The assistant is designed with intentional meta-awareness - it can explain its own technical implementation and design decisions. This recursion adds another dimension to the demonstration, allowing users to experience both the functionality AND the technical sophistication simultaneously.
@@ -232,8 +234,8 @@ Operating costs stay near zero ($0-2.50/month) by leveraging Google's free tier 
 ## Future Enhancements (Post-MVP)
 
 **If validated and gets traction:**
-- **Already implemented:** LangSmith observability for production monitoring and analytics
--  **Already implemented:** Add intelligent provider fallback based on rate limits and cost optimization
+- **Already implemented:** LangSmith and Langfuse observability, including step timings and flush-before-return
+- **Already implemented:** Provider fallback (Gemini, then DeepSeek, then Claude Haiku by default) on quota and provider errors. A 400 does not fail over.
 - Implement persistent storage (Vercel KV for rate limiting and conversation history across sessions)
 - Add OpenAI embeddings for semantic search (more sophisticated RAG with vector similarity)
 - Email magic link authentication for extended conversations beyond free limit
@@ -279,8 +281,8 @@ Each upgrade would be data-driven based on actual usage patterns. For example:
 - Production-ready: three-state widget, rate limiting, professional UI
 - Cost-optimized: ~$0-2.50/month operating cost using free tier + intelligent fallback
 - Advanced architecture: Multi-provider LLM system with unified abstraction layer
-- **Production observability:** LangSmith integration for real-time monitoring, token tracking, and performance analytics
-- Modern stack: Next.js, React, TypeScript, Google Gemini, Anthropic Claude, OpenAI, LangSmith, serverless architecture
+- **Production observability:** LangSmith and Langfuse, with traces flushed before the serverless function returns
+- Modern stack: Next.js, React, TypeScript, Google Gemini, DeepSeek, Anthropic Claude, OpenAI, LangSmith, Langfuse, serverless architecture
 - **Can deliver this exact capability for a company's website or application**
 
 **Real-world applications:**
@@ -312,4 +314,4 @@ The approach Mikkel used here - cheapest viable model, simple retrieval, generou
 
 **This thinking saves companies money and reduces risk.** Too many projects fail because teams over-engineer before validating user interest. Mikkel's approach: ship cheap, learn from real usage, iterate based on data.
 
-**Summary:** This AI assistant proves Mikkel can build production AI features for any company. It demonstrates not just technical capability but also cost-conscious decision-making and MVP strategy. Every technical decision - from model choice to architecture - is one appropriate for a real business environment with budgets and deadlines. The LangSmith integration shows production-ready thinking - building observability from day one to monitor real usage and make data-driven optimizations. Companies looking to add AI features can see that Mikkel has already delivered this capability, complete with enterprise-grade monitoring and analytics.
+**Summary:** This AI assistant proves Mikkel can build production AI features for any company. It demonstrates not just technical capability but also cost-conscious decision-making and MVP strategy. Every technical decision - from model choice to architecture - is one appropriate for a real business environment with budgets and deadlines. LangSmith and Langfuse were in place from early on so model choice and latency could be decided from traces. Companies looking to add AI features can see that Mikkel has already delivered this capability, complete with monitoring and a cost cap.

@@ -151,7 +151,7 @@ export async function POST(request: NextRequest) {
           console.error('Langfuse flush failed:', flushError);
         }
       }
-      // LangSmith traces are fire-and-forget; best-effort flush.
+      // Best-effort LangSmith flush. Capped inside flushLangSmithTracing; never fails the response.
       try {
         await flushLangSmithTracing();
       } catch {

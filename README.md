@@ -1,66 +1,38 @@
 # Portfolio Website with AI Recruiting Assistant
 
-This is a [Next.js](https://nextjs.org/) portfolio website featuring a production-grade AI recruiting assistant built to demonstrate advanced LLM integration skills and provide recruiters with an interactive way to learn about Mikkel's background.
+Next.js portfolio with a production recruiting assistant. Recruiters can ask about Mikkel's background or paste a job description. Answers come from a small markdown knowledge base.
 
-## Key Features
+Stack and invariants live in [`ARCHITECTURE.md`](./ARCHITECTURE.md). The assistant's own account of the system is [`knowledge-base/meta-project.md`](./knowledge-base/meta-project.md).
 
-### 🤖 AI Recruiting Assistant
-- **Multi-Provider LLM Architecture**: Unified abstraction layer supporting Google Gemini, Anthropic Claude, and OpenAI
-- **Intelligent Fallback**: Automatic provider switching for reliability and cost optimization
-- **Production Observability**: LangSmith integration for real-time tracing, token monitoring, and performance analytics
-- **Keyword-Based RAG**: Lightweight knowledge retrieval system optimized for small content bases
-- **Cost-Optimized**: ~$0-2.50/month operating costs using free tiers and intelligent provider selection
+## What it does
 
-### 🛠 Technical Stack
-- **Frontend**: Next.js 15, React 18, TypeScript, Tailwind CSS, Framer Motion
-- **Backend**: Next.js API Routes, Serverless Functions
-- **AI/LLM**: Google Gemini 2.5, Anthropic Claude, OpenAI GPT-4o
-- **Observability**: LangSmith for production monitoring
-- **Deployment**: Vercel
+- Three-state chat widget on every page (minimized, compact side panel, maximized modal). Viewports at or under 768px open maximized.
+- `POST /api/chat` validates the body, rate-limits, runs a shared short-circuit router, retrieves markdown by keyword, and calls an LLM.
+- Providers: Google Gemini, DeepSeek, Anthropic Claude, and OpenAI behind one `chat()` function. Unset default chain: `gemini-2.5-flash`, then `deepseek-v4-pro`, then Claude Haiku.
+- Observability: LangSmith and Langfuse. Both flushes are awaited before the serverless handler returns.
+- Operating target about $0–2.50/month. No database, no accounts, Vercel free tier.
 
-### 📊 LangSmith Integration
-The project includes enterprise-grade LLM observability with LangSmith:
-- Real-time tracing of all AI interactions
-- Token usage and cost tracking across providers
-- Performance monitoring and latency analysis
-- Response quality metrics
-- Data-driven optimization insights
+`POST /api/analyze-jd` scores a job description with a weighted rubric. The widget does not call it. Pasted roles go through `/api/chat`.
 
-See [knowledge-base/meta-project.md](./knowledge-base/meta-project.md) for detailed technical documentation.
+## Stack
 
-## Getting Started
+- Next.js 15 App Router, React 18, TypeScript (strict), Tailwind CSS, Sass, Framer Motion
+- API routes on the Node.js runtime
+- Vitest and Playwright in GitHub Actions on pull requests to `main`
+- Deployed on Vercel
 
-First, run the development server:
+## Scripts
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
+npm install
+npm run dev          # http://localhost:3000
+npm test             # Vitest
+npm run test:e2e     # Playwright (builds first in CI)
+npm run eval:langfuse
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Pages live under `app/` (`app/page.tsx`, `app/api/chat/route.ts`). Copy env names from `ARCHITECTURE.md` into `.env.local`. Never commit values.
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+## Deploy
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
-
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
-
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+The app is deployed on Vercel (`vercel.json`, `framework: nextjs`). API routes set `runtime = 'nodejs'` because retrieval reads files and tracing uses OpenTelemetry.
