@@ -177,10 +177,11 @@ async function callOpenAI(
     return { role: 'user', content: (msg as any).content || String(msg) };
   });
 
-  // Build full message array with system prompt first
+  // Drop client system roles so they cannot sit beside the server prompt.
+  const conversationMessages = formattedMessages.filter((msg) => msg.role !== 'system');
   const fullMessages: ChatMessage[] = [
     { role: 'system', content: systemPrompt },
-    ...formattedMessages,
+    ...conversationMessages,
   ];
 
   // Call OpenAI API
@@ -232,10 +233,12 @@ async function callDeepseek(
     return { role: 'user', content: (msg as any).content || String(msg) };
   });
 
-  // DeepSeek rejects reasoning_content on prior assistant turns; send role + content only.
+  // Drop client system roles. DeepSeek also rejects reasoning_content on prior
+  // assistant turns, so send role + content only.
+  const conversationMessages = formattedMessages.filter((msg) => msg.role !== 'system');
   const fullMessages = [
     { role: 'system' as const, content: systemPrompt },
-    ...formattedMessages.map((msg) => ({
+    ...conversationMessages.map((msg) => ({
       role: msg.role,
       content: msg.content,
     })),
