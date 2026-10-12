@@ -17,8 +17,10 @@
 //   - Runtime: 'nodejs' (required for fs module in KB, gRPC in OpenTelemetry)
 //   - All requests are rate-limited; filtered queries skip LLM cost only
 //   - Failed LLM calls automatically fall back through provider chain
-//   - Tracing: LangSmith stays fire-and-forget; Langfuse is awaited + flushed
-//     so serverless exits do not drop spans (see LANGFUSE_TRACING=true)
+//   - Tracing: chat awaits Langfuse and LangSmith flushes in `finally`
+//     so a serverless exit does not drop spans. LangSmith's flush is
+//     best-effort (about 2s) and must not fail the response.
+//     Langfuse runs only when LANGFUSE_TRACING=true.
 // ---------------------------------------------------------------------------
 
 /* eslint-disable import/first */
@@ -240,7 +242,7 @@ export async function POST(request: NextRequest) {
           console.error('Langfuse flush failed:', flushError);
         }
       }
-      // LangSmith traces are fire-and-forget; best-effort flush.
+      // Best-effort LangSmith flush. Capped inside flushLangSmithTracing; never fails the response.
       try {
         await flushLangSmithTracing();
       } catch {

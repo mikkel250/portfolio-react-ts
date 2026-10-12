@@ -212,8 +212,10 @@ reviews:
         - Success JSON is `{ content, usage, model, remaining, resetTime }`.
           `usage` and `model` are intentional. Do not add the provider API
           key, raw SDK error, or system prompt.
-        - `sessionId` is a client localStorage key for the rate-limit map.
-          It is not an identity. Do not authorize anything with it.
+        - `sessionId` is generated in the browser (`session-{timestamp}-{random}`)
+          and held in React state for the visit. It is sent on each POST and
+          keys the session rate-limit map. It is not an identity and it is
+          not stored in localStorage. Do not authorize anything with it.
         - Filtered input still consumes the rate-limit slot (the check runs
           first). Do not move the limiter to after `filterInput` unless the
           change says so.
@@ -241,9 +243,10 @@ reviews:
         - `detectProvider`: `gemini-*` → Google (`@google/genai`),
           `deepseek-*` → DeepSeek (`openai` SDK with the DeepSeek base URL),
           `claude-*` → Anthropic, else OpenAI.
-        - When `AI_MODEL_FALLBACKS` is unset, the extra hops are
-          `deepseek-v4-pro` then `claude-haiku-4-5-20251001`. OpenAI is not
-          in that default chain. Do not add it there.
+        - When `AI_MODEL_FALLBACKS` is unset, the extra hops are DeepSeek,
+          then Anthropic. OpenAI is not in that default chain. Do not add it
+          there. Model ids live in `llm-fallback-chain.ts`. Do not copy them
+          into docs.
         - Drop entries whose API key is missing. If none remain,
           `buildFallbackChain` throws — fail closed. Do not substitute a
           fake provider or echo the key.
@@ -415,7 +418,7 @@ reviews:
         database client, auth package, or vector store to dependencies
         unless the change explicitly approves that cost.
 
-    - path: "{docs/**/*.md,AGENTS.md,CLAUDE.md,ARCHITECTURE.md,CONCEPTS.md,README.md,requirements.md,documentation.md,knowledge-base/meta-project.md}"
+    - path: "{docs/**/*.md,AGENTS.md,CLAUDE.md,ARCHITECTURE.md,CONCEPTS.md,README.md,documentation.md,knowledge-base/meta-project.md}"
       instructions: |-
         Flag documentation that contradicts runtime code (public routes,
         no auth, no database, keyword RAG, in-memory rate limit,

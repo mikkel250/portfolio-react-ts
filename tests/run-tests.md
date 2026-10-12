@@ -4,7 +4,6 @@
 
 ### 1. Test Context Routing
 ```bash
-cd devpro-build
 npx tsx tests/test-context-routing.ts
 ```
 
@@ -160,7 +159,7 @@ Verify:
 
 ## Future Improvements (Not MVP)
 
-- [ ] Add conversation history to API (multi-turn context)
+- [x] Send conversation history to the API (the widget posts the full `messages` array)
 - [ ] Implement streaming responses
 - [ ] Add "Copy response" button
 - [ ] Syntax highlighting for code blocks

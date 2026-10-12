@@ -14,8 +14,8 @@
 - **Framework:** Next.js 15.5.7 App Router — entry points are `app/layout.tsx`, `app/page.tsx`, and `app/api/**/route.ts`. No `middleware.ts`.
 - **Auth:** None — all routes and API endpoints are public
 - **Database:** None — no ORM, no raw SQL, no persistent storage
-- **State:** React built-in hooks in client components; conversation history and session IDs in browser `localStorage`; server-side rate limiting in an in-memory `Map`; `globalThis` cross-bundle `LangfuseSpanProcessor` singleton (see Architectural Decisions)
-- **Testing:** Vitest (`npm test`) for unit tests under `app/api/lib/__tests__/`; ad-hoc evaluation scripts in `tests/` (`npm run eval:langfuse`)
+- **State:** React built-in hooks in client components; conversation history and the session id live in `ChatInterface` state for the visit (a refresh starts a new session); server-side rate limiting in in-memory `Map`s; `globalThis` cross-bundle `LangfuseSpanProcessor` singleton (see Architectural Decisions)
+- **Testing:** Vitest (`npm test`) for unit tests in `lib/` and `app/api/`; Playwright (`npm run test:e2e`); ad-hoc evaluation scripts in `tests/` (`npm run eval:langfuse`). GitHub Actions runs unit and e2e on push and pull requests to `main`
 - **Deployment:** Vercel free tier; API routes use `export const runtime = 'nodejs'` (not Edge)
 
 > **Inferred:** Server Components by default; add `'use client'` only for interactivity (state, effects, event handlers, browser APIs). Confirm if this matches intent.
@@ -55,9 +55,9 @@ See also: `README.md`, `knowledge-base/meta-project.md`
 | File storage | Local markdown | `knowledge-base/` — no blob/S3 storage |
 | Email | N/A | |
 | Deployment | Vercel (free tier) | `vercel.json`: `framework: nextjs` |
-| CI/CD | [TBD] | |
+| CI/CD | GitHub Actions | `.github/workflows/test.yml`: Vitest and Playwright on push and pull requests to `main` (Node 24) |
 | Package manager | npm | |
-| State management | React hooks + `localStorage` | No Redux/Zustand; widget state in `ChatWidget` / `ChatInterface` |
+| State management | React hooks | No Redux/Zustand; widget state in `AppContext`; transcript and session id in `ChatInterface` (in-memory for the visit) |
 
 ---
 
@@ -117,10 +117,10 @@ instrumentation.ts         — Langfuse OpenTelemetry bootstrap (Node.js runtime
 
 No database. All state is ephemeral or client-side:
 
-- **Rate limiting:** In-memory `Map` keyed by client IP in `app/api/lib/rate-limit.ts`; resets on serverless cold start. Default: 15 messages per hour (`RATE_LIMIT_MAX`, `RATE_LIMIT_WINDOW` env vars). On Vercel the trusted client address is `x-vercel-forwarded-for`, then `x-real-ip`, then the first `x-forwarded-for` address. Vercel overwrites those headers with the connecting client and does not forward a spoofed chain ([request headers](https://vercel.com/docs/headers/request-headers)). A forwarded list is ordered client, proxy1, proxy2, so the key is the first address.
-- **Conversation history:** Client-side only (`localStorage` in browser)
+- **Rate limiting:** Two in-memory `Map`s in `app/api/lib/rate-limit.ts` (client IP and session id). Both must allow the request. Defaults: 15 messages per hour (`RATE_LIMIT_MAX`, `RATE_LIMIT_WINDOW`) and a burst of 3 per second. Resets on serverless cold start. On Vercel the trusted client address is `x-vercel-forwarded-for`, then `x-real-ip`, then the first `x-forwarded-for` address. Vercel overwrites those headers with the connecting client and does not forward a spoofed chain ([request headers](https://vercel.com/docs/headers/request-headers)). A forwarded list is ordered client, proxy1, proxy2, so the key is the first address. A missing IP shares one bucket.
+- **Conversation history:** React state in `ChatInterface` for the visit. A refresh clears the transcript.
 - **Knowledge base:** Static markdown files in `knowledge-base/`; retrieved via keyword matching in `app/api/lib/knowledge-base.ts`
-- **Session tracking:** Client-generated session ID stored in `localStorage`
+- **Session tracking:** Client-generated session id (`session-{timestamp}-{random}`) held in React state and sent on each `POST /api/chat`
 
 ---
 
@@ -136,10 +136,10 @@ No database. All state is ephemeral or client-side:
 
 Key routes:
 
-- `POST /api/chat` — Main chat endpoint; accepts `{ messages: ChatMessage[] }`; returns LLM response with RAG context injection
-- `POST /api/analyze-jd` — Analyze a job description against candidate profile
+- `POST /api/chat` — Main chat endpoint; accepts `{ messages: ChatMessage[], sessionId }`; returns the LLM response with RAG context. The widget sends job-description pastes here.
+- `POST /api/analyze-jd` — Weighted job-description scoring against the full knowledge base. No UI caller.
 - `GET /api/hello` — Health check
-- `GET /api/test`, `/api/test-fallback`, `/api/test-langsmith` — Development/testing endpoints
+- `GET /api/test` — Stub. Public debug routes `/api/test-fallback` and `/api/test-langsmith` were removed.
 
 All production API routes use `export const runtime = 'nodejs'`.
 
@@ -151,27 +151,27 @@ All production API routes use `export const runtime = 'nodejs'`.
 - Purpose: Primary LLM provider — free tier for cost optimization
 - SDK: `@google/genai`
 - Credentials: `GOOGLE_API_KEY` in `.env.local`
-- Default model: `gemini-2.5-flash` or `gemini-2.5-pro` (via `AI_MODEL` env var)
+- Model: whichever `gemini-*` id `AI_MODEL` selects. The unset default lives in `app/api/lib/llm.ts`. Do not copy that id into docs.
 - Rate limits: Free-tier quota is typically **project/account-level** (not per model); exhausting Gemini limits affects all Gemini models until reset
 
 ### DeepSeek (inexpensive fallback LLM)
 - Purpose: First paid fallback after Google when rate-limited or quota-exceeded; inexpensive vs Anthropic/OpenAI
 - SDK: `openai` package with `baseURL: https://api.deepseek.com` (OpenAI-compatible chat completions)
 - Credentials: `DEEPSEEK_API_KEY` in `.env.local` / Vercel (user-configured)
-- Default model in code fallback chain: `deepseek-v4-pro` (first fallback after primary when `AI_MODEL_FALLBACKS` unset; then Anthropic Haiku — OpenAI not in code defaults)
+- Place in the unset default chain: first paid fallback after the primary, then Anthropic. OpenAI is not in that default. The ids live in `app/api/lib/llm-fallback-chain.ts`.
 - Omitted from runtime chain when `DEEPSEEK_API_KEY` is unset
 
 ### Anthropic Claude (fallback LLM)
 - Purpose: Secondary/fallback provider
 - SDK: `@anthropic-ai/sdk`
 - Credentials: `ANTHROPIC_API_KEY` in `.env.local`
-- Model: Claude Haiku 4.5 (cost-optimized fallback)
+- Place in the unset default chain: after DeepSeek. Used only when `ANTHROPIC_API_KEY` is set. The id lives in `app/api/lib/llm-fallback-chain.ts`.
 
 ### OpenAI (fallback LLM)
 - Purpose: Tertiary/fallback provider
 - SDK: `openai`
 - Credentials: `OPENAI_API_KEY` in `.env.local`
-- Model: GPT-4o-mini
+- Used when a model id is listed in `AI_MODEL_FALLBACKS`. Not part of the code default chain.
 
 ### LangSmith
 - Purpose: LLM observability — tracing, token usage, performance analytics
@@ -190,8 +190,8 @@ All production API routes use `export const runtime = 'nodejs'`.
 
 ### DeepSeek reasoning dial
 - Env: `DEEPSEEK_REASONING_EFFORT` = `max` | `high` | `disabled` (default `high`)
-- Models: `deepseek-v4-pro`, `deepseek-v4-flash` via `AI_MODEL` / `AI_MODEL_FALLBACKS`
-- Latency ladder after attribution: Flash + `max` → `high` → `disabled`
+- Applies to the DeepSeek model selected by `AI_MODEL` / `AI_MODEL_FALLBACKS`
+- Latency ladder after attribution: `max` → `high` → `disabled`
 
 ### GitHub (portfolio data)
 - Purpose: Fetch contribution/repo data for portfolio pages
@@ -269,16 +269,17 @@ EVAL_DELAY_MS
 **Error handling:**
 - API routes return `NextResponse.json({ error: string }, { status: number })`
 - LLM provider abstraction has graceful fallback between providers on failure
-- Input filtering via `lib/input-filter.ts` before LLM calls
+- Shared short-circuit router in `lib/input-filter.ts` runs in the widget and again in `POST /api/chat` before any LLM call
 
 **Logging:**
-- LangSmith traces all LLM calls via `traceLLMCall` / `traceableChat`
-- Langfuse traces via OpenTelemetry when enabled
+- LangSmith traces LLM calls via `traceLLMCall` / `traceableChat`. Chat and analyze-jd await `flushLangSmithTracing()` in a `finally` (2s deadline; a flush failure does not fail the response)
+- Langfuse traces via OpenTelemetry when `LANGFUSE_TRACING=true`. The same routes await `flushLangfuseTracing()` in that `finally`
 - Some debug `console.log` in chat route (development)
 
 **Testing:**
-- Unit tests: `npm test` (Vitest, Node environment)
-- Ad-hoc evaluation: `npm run eval:langfuse` runs `tests/langfuse-evaluation.ts`
+- Unit tests: `npm test` (Vitest). Includes `lib/input-filter.test.ts` and `app/api/lib/__tests__/`
+- End-to-end: `npm run test:e2e` (Playwright). CI runs this on pull requests to `main` after `npm run build`
+- Ad-hoc evaluation: `npm run eval:langfuse` runs `tests/langfuse-evaluation.ts` (not in CI)
 - Guardrails evaluation: `tests/langsmith-guardrails-evaluation.ts`
 - Prompt migration: `npm run migrate:prompts`
 
@@ -310,7 +311,7 @@ EVAL_DELAY_MS
 ### Multi-Provider LLM Architecture
 **Date:** October 2025
 **Context:** Need AI chat with minimal operating cost and high reliability
-**Decision:** Unified `ChatResponse` interface across Google Gemini, DeepSeek, Anthropic Claude, and OpenAI; provider selected by model name (`gemini-*` → Google, `deepseek-*` → DeepSeek, `claude-*` → Anthropic, else OpenAI). `chat()` walks `buildFallbackChain()` on retryable errors. Default chain when `AI_MODEL_FALLBACKS` unset: primary → `deepseek-v4-pro` → Claude Haiku.
+**Decision:** Unified `ChatResponse` interface across Google Gemini, DeepSeek, Anthropic Claude, and OpenAI; provider selected by model name (`gemini-*` → Google, `deepseek-*` → DeepSeek, `claude-*` → Anthropic, else OpenAI). `chat()` walks `buildFallbackChain()` on retryable errors. When `AI_MODEL_FALLBACKS` is unset the extra hops are DeepSeek, then Anthropic. OpenAI is included only when listed there. Model ids stay in `app/api/lib/llm.ts` and `app/api/lib/llm-fallback-chain.ts`.
 **Rationale:** Cost optimization (Google free tier primary), quality, reliability (graceful fallback), future-proofing
 **Tradeoffs accepted:** More complex provider abstraction layer
 **Revisit if:** Free tier limits become constraining, or a new provider offers better quality/cost
@@ -326,7 +327,7 @@ EVAL_DELAY_MS
 ### Stateless Rate Limiting
 **Date:** October 2025
 **Context:** MVP needs basic abuse prevention without infrastructure cost
-**Decision:** In-memory `Map` with configurable limit (default 15 messages/hour); client-side session ID in `localStorage`
+**Decision:** Two in-memory `Map`s (IP and session), default 15 messages/hour plus a burst of 3 per second. The browser generates the session id and holds it in React state for the visit.
 **Rationale:** Avoids Vercel KV/Redis; cold-start reset is acceptable for MVP; generous limit preserves UX
 **Tradeoffs accepted:** Limits reset on cold start; no cross-instance consistency
 **Revisit if:** Abuse becomes a problem, or persistent rate limiting is needed
@@ -375,15 +376,15 @@ requests; clients that import the helpers avoid unsafe casts.
 
 > Flag these so agents escalate rather than guess.
 
-- **LLM provider abstraction** (`app/api/lib/llm.ts`): Three providers with different API patterns, fallback chain, streaming, and dual observability tracing. Changes require understanding all provider SDKs.
+- **LLM provider abstraction** (`app/api/lib/llm.ts`): Four providers (Google, DeepSeek, Anthropic, OpenAI) with different API patterns, a non-streaming fallback chain, and dual observability tracing. Changes require understanding all provider SDKs.
 - **System prompt construction** (`app/api/lib/prompts.ts`, `chat-prompt*.ts`): Carefully tuned prompts with marketing/recruitment framing and guardrails. Changes can significantly alter response quality and tone.
 - **Rate limiting** (`app/api/lib/rate-limit.ts`): In-memory state with session tracking; env-configurable limits.
 - **Dual observability** (LangSmith + Langfuse): OpenTelemetry setup in `instrumentation.ts`; modifications could break trace collection.
-- **Input filtering** (`lib/input-filter.ts`): Pre-LLM sanitization; changes affect security posture.
+- **Input filtering** (`lib/input-filter.ts`): Shared short-circuit router (client and server). FAQ canned replies, role-share veto, and mash detection. Changes affect which messages reach the LLM.
 
 ---
 
 ## Last Updated
 
-- Date: 2026-07-21
-- What changed: Cross-bundle globalThis pattern for Langfuse span processor flushing; `exportMode: 'immediate'` for serverless span export
+- Date: 2026-10-12
+- What changed: Corrected drift — session and transcript are React state, CI is GitHub Actions, chat completions are non-streaming, removed debug routes are no longer listed, rate limit documents IP plus session and the burst cap, tracing flushes are awaited when enabled. Model ids are documented only in `llm.ts` and `llm-fallback-chain.ts`. The widget loads maximized; compact is the desktop reopen path.
