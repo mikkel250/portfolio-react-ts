@@ -20,7 +20,7 @@ You're currently interacting with an AI recruiting assistant Mikkel built to ser
 - Three-state expandable chat widget (minimized → compact → maximized)
 - Aceternity UI components for polished, professional interface
 - Tailwind CSS and Framer Motion for styling and animations
-- Fully responsive. Viewports at or under 768px open the chat maximized. Desktop opens a compact side panel.
+- Fully responsive. The widget loads maximized. At 768px or below, opening it from the button stays maximized. On a wider screen, opening it from the button uses the compact side panel.
 
 **Backend:**
 - Next.js API Routes (deployed as Vercel Serverless Functions with Node.js runtime)
@@ -29,7 +29,7 @@ You're currently interacting with an AI recruiting assistant Mikkel built to ser
 - Simple keyword-based RAG (retrieval-augmented generation)
 - Rate limiting with two in-memory server maps (client IP and session id): 15 messages per hour and a burst of 3 per second. The session id lives in React state for the visit and is cleared on refresh.
 - Environment-based configuration
-- **Production LLM observability with LangSmith and Langfuse.** Langfuse records step timings on `chat_request` and can serve the system prompt. Both traces are flushed before the serverless function returns.
+- **Production LLM observability with LangSmith and Langfuse.** LangSmith records each LLM call when `LANGSMITH_TRACING=true`. Langfuse records step timings on `chat_request` and can serve the system prompt when `LANGFUSE_TRACING=true` and both keys are set. Short-circuit replies never call the model. Chat and analyze-jd await those flushes before the serverless function returns.
 
 **Knowledge Base:**
 - Structured markdown files (experience, projects, skills, career story)
@@ -46,7 +46,7 @@ You're currently interacting with an AI recruiting assistant Mikkel built to ser
 
 **Rationale:**
 - **Cost Optimization:** Use Google's free tier that includes a generous number of requests/day as primary, fallback to paid providers
-- **Quality Improvement:** Gemini Pro provides significantly better responses than GPT-4o-mini
+- **Quality and cost:** Google's free tier is the primary. Paid providers are fallbacks. Current model ids live in code (`app/api/lib/llm.ts`, `app/api/lib/llm-fallback-chain.ts`), not in this writeup.
 - **Reliability:** Multiple providers ensure uptime and handle rate limits gracefully
 - **Future-Proofing:** Easy to add new providers or switch models based on performance data
 - **Learning Value:** Demonstrates understanding of different API patterns and provider trade-offs
@@ -54,10 +54,10 @@ You're currently interacting with an AI recruiting assistant Mikkel built to ser
 **Technical Implementation:**
 - Unified `ChatResponse` interface across all providers
 - Provider detection based on model name (`gemini-*` → Google, `deepseek-*` → DeepSeek, `claude-*` → Anthropic, otherwise OpenAI)
-- Chat default model when unset: `gemini-2.5-flash`. Default fallbacks: `deepseek-v4-pro`, then Claude Haiku. Completions are returned whole (no streaming).
-- HTTP 400 aborts the fallback chain. Quota, rate limits, 5xx, and network errors advance to the next provider.
+- When `AI_MODEL` and `AI_MODEL_FALLBACKS` are unset, the code default chain is Google, then DeepSeek, then Anthropic. OpenAI is used only when it is listed in `AI_MODEL_FALLBACKS`. Completions are returned whole (no streaming). Model ids stay in the fallback-chain code.
+- HTTP 400 aborts the fallback chain. Quota, rate limits, 401, 403, 5xx, network errors, and unknown errors advance to the next provider.
 - Environment-based model selection
-- **LangSmith and Langfuse.** LangSmith records the LLM call. Langfuse records step timings and prompt versions. The chat route awaits both flushes before it returns.
+- **LangSmith and Langfuse.** LangSmith records the LLM call when `LANGSMITH_TRACING=true`. Langfuse records step timings and prompt versions when it is enabled. Short-circuit replies are not LLM traces. Chat and analyze-jd await the LangSmith flush in `finally`, and the Langfuse flush when Langfuse is enabled.
 
 **Demonstrates:** Advanced system design, cost optimization, and understanding of API differences. This demonstrates not just technical capability but also cost-conscious architecture and understanding of different API patterns. The abstraction layer makes it trivial to add new providers or switch models based on performance data. LangSmith and Langfuse are there so model choice and latency are decided from traces, not from a hunch after a slow reply.
 
@@ -164,22 +164,13 @@ You're currently interacting with an AI recruiting assistant Mikkel built to ser
 - **Total development cost: ~$10-20**
 
 **Monthly Operating Cost (Multi-Provider Architecture):**
-- **Primary:** Google Gemini free tier (chat default `gemini-2.5-flash`) = $0
-- **First paid fallback:** DeepSeek (`deepseek-v4-pro` in the code default chain)
-- **Next fallback:** Claude Haiku 4.5 (~$0.001-0.005 per conversation)
+- **Primary:** Google Gemini free tier = $0
+- **Paid fallbacks:** DeepSeek, then Anthropic, in the code default chain. OpenAI only when listed in `AI_MODEL_FALLBACKS`
 - **With 15-message rate limit per user:** ~100 conversations = $0 (free tier)
 - **Even with heavy usage (500 conversations/month):** ~$0-2.50/month
 - **Cost optimization through intelligent provider selection**
 
-**Cost Comparison: Multi-Provider Architecture**
-
-| Scenario | Google Gemini (Free) | Claude Haiku 4.5 | GPT-4o-mini |
-|----------|---------------------|-------------------|-------------|
-| Per conversation | $0.00 | $0.001-0.005 | $0.002-0.005 |
-| 100 conversations | $0.00 | $0.10-0.50 | $0.20-0.50 |
-| 500 conversations/month | $0.00 | $0.50-2.50 | $1.00-2.50 |
-
-**Decision:** Start with Google's free tier as primary. The code default chain then tries DeepSeek, then Claude Haiku. OpenAI is used when it is listed in `AI_MODEL_FALLBACKS`. This minimizes cost while keeping a path when the free tier is exhausted. Why pay for a premium model before the concept has proven itself?
+**Decision:** Start with Google's free tier as primary. The code default chain then tries DeepSeek, then Anthropic. OpenAI is used when it is listed in `AI_MODEL_FALLBACKS`. Model ids stay in code so this writeup does not go stale when a provider renames a model. This minimizes cost while keeping a path when the free tier is exhausted. Why pay for a premium model before the concept has proven itself?
 
 **Business Value Proposition:**
 
@@ -221,7 +212,7 @@ The assistant demonstrates advanced technical capability through its multi-provi
 This project showcases senior-level engineering thinking: understanding not just HOW to build, but WHAT to build, WHY to build it, and WHEN to optimize vs ship. Mikkel chose simple keyword retrieval over full vector database RAG - recognizing that his knowledge base is small and sophisticated infrastructure would be premature optimization. The MVP strategy prioritizes shipping quickly and iterating based on real usage data.
 
 **Production Observability:**
-Mikkel traces every chat with LangSmith (the LLM call) and Langfuse (step timings for filter, retrieval, prompt, and the model, plus prompt versions). Both are flushed before the serverless function returns, so a cold exit does not throw away the evidence. He uses that split to decide whether a slow reply is the model or the pipeline before changing providers. Observability was in place before there was scale to look at.
+When `LANGSMITH_TRACING=true`, LangSmith records each LLM call. When Langfuse is enabled (`LANGFUSE_TRACING=true` and both keys), it records a `chat_request` span with step timings for filter, retrieval, prompt, and the model, plus prompt versions. Replies the short-circuit router handles never call the model, so they are not LLM traces. Chat and analyze-jd await those flushes before the serverless function returns, so a cold exit does not throw away the traces that were recorded. He uses that split to decide whether a slow reply is the model or the pipeline before changing providers. Observability was in place before there was scale to look at.
 
 **Meta-Awareness:**
 The assistant is designed with intentional meta-awareness - it can explain its own technical implementation and design decisions. This recursion adds another dimension to the demonstration, allowing users to experience both the functionality AND the technical sophistication simultaneously.
@@ -235,7 +226,7 @@ Operating costs stay near zero ($0-2.50/month) by leveraging Google's free tier 
 
 **If validated and gets traction:**
 - **Already implemented:** LangSmith and Langfuse observability, including step timings and flush-before-return
-- **Already implemented:** Provider fallback (Gemini, then DeepSeek, then Claude Haiku by default) on quota and provider errors. A 400 does not fail over.
+- **Already implemented:** Provider fallback (Google, then DeepSeek, then Anthropic by default) on quota, rate limits, 401, 403, 5xx, network errors, and unknown errors. A 400 does not fail over.
 - Implement persistent storage (Vercel KV for rate limiting and conversation history across sessions)
 - Add OpenAI embeddings for semantic search (more sophisticated RAG with vector similarity)
 - Email magic link authentication for extended conversations beyond free limit

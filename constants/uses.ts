@@ -40,9 +40,9 @@ export const uses = [
       "Framer Motion for complex animations, gestures, and page transitions. Aceternity UI for modern component libraries. Current Projects: Both are live in my portfolio (October 2025) and actively used in current personal projects.",
   },
   {
-    name: "LLM APIs: Google Gemini, Anthropic Claude, & OpenAI",
+    name: "LLM APIs: Google Gemini, DeepSeek, Anthropic Claude, and OpenAI",
     description:
-      "Current Projects: Production AI integration built for this portfolio site! Using all three major LLM APIs: Google's Gemini 2.5, Anthropic's Claude, and OpenAI's GPT. Includes RAG systems, prompt engineering, and streaming responses. Actively developing and using LLM skills through this personal project.",
+      "Current Projects: Production AI integration built for this portfolio site! Google Gemini, DeepSeek, Anthropic Claude, and OpenAI sit behind one chat function. Includes keyword retrieval over markdown and prompt engineering. Completions return in full. Actively developing and using LLM skills through this personal project.",
   },
   {
     name: "Vercel",

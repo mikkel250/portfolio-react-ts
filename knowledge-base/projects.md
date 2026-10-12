@@ -18,18 +18,18 @@ AI-powered recruiting assistant that analyzes job descriptions and answers quest
 
 
 ### Technologies
-Next.js 14, React 18, TypeScript 5, Next.js API Routes (Node.js runtime), multiple LLM APIs (Google, Anthropic, OpenAI), Tailwind CSS, Framer Motion, Aceternity UI
+Next.js 15, React 18, TypeScript 5, Next.js API Routes (Node.js runtime), multiple LLM APIs (Google, DeepSeek, Anthropic, OpenAI), Tailwind CSS, Framer Motion, Aceternity UI
 
 ### Key Features
 - Three-state expandable chat widget (minimized, compact, maximized)
 - Job description analysis with automated requirement matching
 - RAG-based knowledge retrieval from structured markdown knowledge base
-- Stateless rate limiting (10 free messages per session)
+- In-memory rate limiting: 15 messages per hour per IP and per session, plus a burst of 3 per second. Resets on serverless cold start.
 - Prompt guardrails for appropriate information sharing and marketing tone
 - Meta-awareness: can explain its own technical implementation and design decisions
 
 ### Technical Highlights
-- **MVP-first approach:** Chose Google Gemini 2.5 Pro for cost-effective validation before optimization, demonstrating business-conscious technical decision-making, with the ability to easily switch models and a stack of fallbacks in case of errors.
+- **MVP-first approach:** Google's free tier is the primary, with DeepSeek and Anthropic as the code-default fallbacks and OpenAI only when it is configured. Model ids live in code so this writeup does not pin a version. The point is the judgment: ship on the free tier, keep a fallback path, and switch models without a rewrite.
 - **Simple RAG implementation:** Keyword-based retrieval without vector database for faster MVP iteration
 - **Marketing-focused prompt engineering:** System prompts designed to effectively sell candidate using benefit-focused language
 - **Modern UI with Aceternity:** Professional, polished interface using Framer Motion animations

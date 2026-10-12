@@ -151,27 +151,27 @@ All production API routes use `export const runtime = 'nodejs'`.
 - Purpose: Primary LLM provider — free tier for cost optimization
 - SDK: `@google/genai`
 - Credentials: `GOOGLE_API_KEY` in `.env.local`
-- Default model: `gemini-2.5-flash` or `gemini-2.5-pro` (via `AI_MODEL` env var)
+- Model: whichever `gemini-*` id `AI_MODEL` selects. The unset default lives in `app/api/lib/llm.ts`. Do not copy that id into docs.
 - Rate limits: Free-tier quota is typically **project/account-level** (not per model); exhausting Gemini limits affects all Gemini models until reset
 
 ### DeepSeek (inexpensive fallback LLM)
 - Purpose: First paid fallback after Google when rate-limited or quota-exceeded; inexpensive vs Anthropic/OpenAI
 - SDK: `openai` package with `baseURL: https://api.deepseek.com` (OpenAI-compatible chat completions)
 - Credentials: `DEEPSEEK_API_KEY` in `.env.local` / Vercel (user-configured)
-- Default model in code fallback chain: `deepseek-v4-pro` (first fallback after primary when `AI_MODEL_FALLBACKS` unset; then Anthropic Haiku — OpenAI not in code defaults)
+- Place in the unset default chain: first paid fallback after the primary, then Anthropic. OpenAI is not in that default. The ids live in `app/api/lib/llm-fallback-chain.ts`.
 - Omitted from runtime chain when `DEEPSEEK_API_KEY` is unset
 
 ### Anthropic Claude (fallback LLM)
 - Purpose: Secondary/fallback provider
 - SDK: `@anthropic-ai/sdk`
 - Credentials: `ANTHROPIC_API_KEY` in `.env.local`
-- Model: Claude Haiku 4.5 (cost-optimized fallback)
+- Place in the unset default chain: after DeepSeek. Used only when `ANTHROPIC_API_KEY` is set. The id lives in `app/api/lib/llm-fallback-chain.ts`.
 
 ### OpenAI (fallback LLM)
 - Purpose: Tertiary/fallback provider
 - SDK: `openai`
 - Credentials: `OPENAI_API_KEY` in `.env.local`
-- Model: GPT-4o-mini
+- Used when a model id is listed in `AI_MODEL_FALLBACKS`. Not part of the code default chain.
 
 ### LangSmith
 - Purpose: LLM observability — tracing, token usage, performance analytics
@@ -190,8 +190,8 @@ All production API routes use `export const runtime = 'nodejs'`.
 
 ### DeepSeek reasoning dial
 - Env: `DEEPSEEK_REASONING_EFFORT` = `max` | `high` | `disabled` (default `high`)
-- Models: `deepseek-v4-pro`, `deepseek-v4-flash` via `AI_MODEL` / `AI_MODEL_FALLBACKS`
-- Latency ladder after attribution: Flash + `max` → `high` → `disabled`
+- Applies to the DeepSeek model selected by `AI_MODEL` / `AI_MODEL_FALLBACKS`
+- Latency ladder after attribution: `max` → `high` → `disabled`
 
 ### GitHub (portfolio data)
 - Purpose: Fetch contribution/repo data for portfolio pages
@@ -311,7 +311,7 @@ EVAL_DELAY_MS
 ### Multi-Provider LLM Architecture
 **Date:** October 2025
 **Context:** Need AI chat with minimal operating cost and high reliability
-**Decision:** Unified `ChatResponse` interface across Google Gemini, DeepSeek, Anthropic Claude, and OpenAI; provider selected by model name (`gemini-*` → Google, `deepseek-*` → DeepSeek, `claude-*` → Anthropic, else OpenAI). `chat()` walks `buildFallbackChain()` on retryable errors. Default chain when `AI_MODEL_FALLBACKS` unset: primary → `deepseek-v4-pro` → Claude Haiku.
+**Decision:** Unified `ChatResponse` interface across Google Gemini, DeepSeek, Anthropic Claude, and OpenAI; provider selected by model name (`gemini-*` → Google, `deepseek-*` → DeepSeek, `claude-*` → Anthropic, else OpenAI). `chat()` walks `buildFallbackChain()` on retryable errors. When `AI_MODEL_FALLBACKS` is unset the extra hops are DeepSeek, then Anthropic. OpenAI is included only when listed there. Model ids stay in `app/api/lib/llm.ts` and `app/api/lib/llm-fallback-chain.ts`.
 **Rationale:** Cost optimization (Google free tier primary), quality, reliability (graceful fallback), future-proofing
 **Tradeoffs accepted:** More complex provider abstraction layer
 **Revisit if:** Free tier limits become constraining, or a new provider offers better quality/cost
@@ -387,4 +387,4 @@ requests; clients that import the helpers avoid unsafe casts.
 ## Last Updated
 
 - Date: 2026-10-12
-- What changed: Corrected drift — session and transcript are React state, CI is GitHub Actions, chat completions are non-streaming, removed debug routes are no longer listed, rate limit documents IP plus session and the burst cap, both tracing flushes are awaited on chat and analyze-jd
+- What changed: Corrected drift — session and transcript are React state, CI is GitHub Actions, chat completions are non-streaming, removed debug routes are no longer listed, rate limit documents IP plus session and the burst cap, tracing flushes are awaited when enabled. Model ids are documented only in `llm.ts` and `llm-fallback-chain.ts`. The widget loads maximized; compact is the desktop reopen path.
