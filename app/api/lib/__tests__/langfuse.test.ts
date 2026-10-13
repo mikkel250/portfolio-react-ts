@@ -8,11 +8,15 @@ import {
 } from '../langfuse';
 import { setLangfuseSpanProcessor } from '../langfuse-span-processor-ref';
 
+const startActiveObservationMock = vi.fn();
+
 vi.mock('@langfuse/tracing', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@langfuse/tracing')>();
   return {
     ...actual,
     getLangfuseTracerProvider: vi.fn(),
+    startActiveObservation: (...args: unknown[]) =>
+      startActiveObservationMock(...args),
   };
 });
 
@@ -47,6 +51,40 @@ describe('traceLLMCall', () => {
   afterEach(() => {
     vi.unstubAllEnvs();
     vi.restoreAllMocks();
+    startActiveObservationMock.mockReset();
+  });
+
+  it('sends Langfuse usage types input/output when tracing is enabled', async () => {
+    vi.stubEnv('LANGFUSE_TRACING', 'true');
+    vi.stubEnv('LANGFUSE_PUBLIC_KEY', 'pk');
+    vi.stubEnv('LANGFUSE_SECRET_KEY', 'sk');
+
+    const update = vi.fn();
+    startActiveObservationMock.mockImplementation(
+      async (_name: string, fn: (g: { update: typeof update }) => unknown) => {
+        await fn({ update });
+      }
+    );
+
+    await traceLLMCall(
+      'deepseek',
+      'deepseek-v4-pro',
+      [{ role: 'user', content: 'hi' }],
+      'system',
+      {
+        content: 'ok',
+        usage: { promptTokens: 100, completionTokens: 50, totalTokens: 150 },
+        model: 'deepseek-v4-pro',
+        finishReason: 'stop',
+      },
+      Date.now() - 10
+    );
+
+    expect(update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        usageDetails: { input: 100, output: 50, total: 150 },
+      })
+    );
   });
 
   it('no-ops when tracing is disabled', async () => {
