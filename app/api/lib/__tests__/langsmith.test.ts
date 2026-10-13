@@ -1,5 +1,16 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+function mockLangsmithClient(
+  createRun: ReturnType<typeof vi.fn>,
+  flush: ReturnType<typeof vi.fn>
+) {
+  class Client {
+    createRun = createRun;
+    flush = flush;
+  }
+  vi.doMock('langsmith', () => ({ Client }));
+}
+
 describe('flushLangSmithTracing', () => {
   afterEach(() => {
     vi.useRealTimers();
@@ -21,12 +32,7 @@ describe('flushLangSmithTracing', () => {
     );
     const flush = vi.fn(async () => undefined);
 
-    vi.doMock('langsmith', () => ({
-      Client: vi.fn().mockImplementation(() => ({
-        createRun,
-        flush,
-      })),
-    }));
+    mockLangsmithClient(createRun, flush);
 
     const { traceLLMCall, flushLangSmithTracing } = await import('../langsmith');
 
@@ -69,12 +75,7 @@ describe('flushLangSmithTracing', () => {
     );
     const flush = vi.fn(async () => undefined);
 
-    vi.doMock('langsmith', () => ({
-      Client: vi.fn().mockImplementation(() => ({
-        createRun,
-        flush,
-      })),
-    }));
+    mockLangsmithClient(createRun, flush);
 
     const { traceLLMCall, flushLangSmithTracing } = await import('../langsmith');
 
@@ -112,12 +113,7 @@ describe('flushLangSmithTracing', () => {
       throw new Error('flush failed');
     });
 
-    vi.doMock('langsmith', () => ({
-      Client: vi.fn().mockImplementation(() => ({
-        createRun,
-        flush,
-      })),
-    }));
+    mockLangsmithClient(createRun, flush);
 
     const { traceLLMCall, flushLangSmithTracing } = await import('../langsmith');
 
@@ -147,12 +143,7 @@ describe('flushLangSmithTracing', () => {
     const createRun = vi.fn(() => new Promise<void>(() => undefined));
     const flush = vi.fn(async () => undefined);
 
-    vi.doMock('langsmith', () => ({
-      Client: vi.fn().mockImplementation(() => ({
-        createRun,
-        flush,
-      })),
-    }));
+    mockLangsmithClient(createRun, flush);
 
     const { traceLLMCall, flushLangSmithTracing } = await import('../langsmith');
 

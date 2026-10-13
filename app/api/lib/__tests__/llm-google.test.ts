@@ -3,9 +3,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 const generateContent = vi.fn();
 
 vi.mock('@google/genai', () => ({
-  GoogleGenAI: vi.fn().mockImplementation(() => ({
-    models: { generateContent },
-  })),
+  GoogleGenAI: class GoogleGenAI {
+    models = { generateContent };
+  },
 }));
 
 vi.mock('../langsmith', () => ({
