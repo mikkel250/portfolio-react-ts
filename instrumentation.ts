@@ -29,7 +29,7 @@ export async function register() {
     return;
   }
 
-  const { NodeSDK } = await import('@opentelemetry/sdk-node');
+  const { NodeTracerProvider } = await import('@opentelemetry/sdk-trace-node');
   const { LangfuseSpanProcessor } = await import('@langfuse/otel');
 
   // immediate: safer for serverless / short-lived requests
@@ -37,10 +37,10 @@ export async function register() {
     exportMode: 'immediate',
   });
 
-  const sdk = new NodeSDK({
+  const tracerProvider = new NodeTracerProvider({
     spanProcessors: [langfuseSpanProcessor],
   });
 
-  sdk.start();
+  tracerProvider.register();
   setLangfuseSpanProcessor(langfuseSpanProcessor);
 }

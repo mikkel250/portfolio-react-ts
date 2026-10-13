@@ -94,7 +94,7 @@ knowledge-base/            — Structured markdown knowledge files
   workingDocs/             — Draft/archived versions of knowledge files
 tests/                     — Ad-hoc evaluation scripts (not a unit test suite)
 scripts/                   — Prompt migration and maintenance scripts
-instrumentation.ts         — Langfuse OpenTelemetry bootstrap (Node.js runtime only)
+instrumentation.ts         — Langfuse OpenTelemetry bootstrap (`NodeTracerProvider` + `@langfuse/otel`, Node.js only)
 ```
 
 ---
