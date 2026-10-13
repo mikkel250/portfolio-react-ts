@@ -159,7 +159,7 @@ export async function flushLangfuseTracing(): Promise<void> {
  *   - Output: response content, token usage
  *   - Metadata: duration, temperature, max_tokens, prompt info
  *   - Model parameters: temperature, maxTokens
- *   - Usage details: prompt/completion/total tokens
+ *   - Usage details: input/output/total tokens (Langfuse usage types)
  *
  * Uses LangFuse's startActiveObservation which creates an
  * OpenTelemetry span context. Fire-and-forget: never blocks the
@@ -222,10 +222,11 @@ export async function traceLLMCall(
           ...(Object.keys(modelParameters).length > 0
             ? { modelParameters }
             : {}),
+          // Langfuse cost + dashboards expect usage types `input` / `output` (not OpenAI names).
           usageDetails: {
-            promptTokens: response.usage.promptTokens,
-            completionTokens: response.usage.completionTokens,
-            totalTokens: response.usage.totalTokens,
+            input: response.usage.promptTokens,
+            output: response.usage.completionTokens,
+            total: response.usage.totalTokens,
           },
         });
       },
