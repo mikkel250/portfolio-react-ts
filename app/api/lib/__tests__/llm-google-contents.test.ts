@@ -5,19 +5,28 @@ const openaiCreate = vi.fn();
 const deepseekCreate = vi.fn();
 
 vi.mock('@google/genai', () => ({
-  GoogleGenAI: vi.fn().mockImplementation(() => ({
-    models: { generateContent },
-  })),
+  GoogleGenAI: class GoogleGenAI {
+    models = { generateContent };
+  },
 }));
 
 vi.mock('openai', () => ({
-  default: vi.fn().mockImplementation((config?: { baseURL?: string }) => ({
+  default: class OpenAI {
     chat: {
       completions: {
-        create: config?.baseURL?.includes('deepseek') ? deepseekCreate : openaiCreate,
-      },
-    },
-  })),
+        create: typeof openaiCreate;
+      };
+    };
+    constructor(config?: { baseURL?: string }) {
+      this.chat = {
+        completions: {
+          create: config?.baseURL?.includes('deepseek')
+            ? deepseekCreate
+            : openaiCreate,
+        },
+      };
+    }
+  },
 }));
 
 vi.mock('../langsmith', () => ({
