@@ -39,15 +39,6 @@ const nextConfig = {
         'querystring',
         'string_decoder',
         'async_hooks',
-        // gRPC-related packages that require Node.js built-ins
-        '@grpc/grpc-js',
-        '@grpc/proto-loader',
-        '@opentelemetry/exporter-logs-otlp-grpc',
-        '@opentelemetry/exporter-trace-otlp-grpc',
-        '@opentelemetry/exporter-metrics-otlp-grpc',
-        '@opentelemetry/otlp-grpc-exporter-base',
-        '@opentelemetry/configuration',
-        '@opentelemetry/exporter-prometheus',
       ];
     }
     return config;
