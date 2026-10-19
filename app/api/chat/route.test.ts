@@ -31,9 +31,28 @@ vi.mock('@/lib/input-filter', () => ({
   filterInput: vi.fn(() => ({ shouldCallAPI: true })),
 }));
 
+const tracingState = vi.hoisted(() => ({ enabled: false }));
+const propagateAttributesMock = vi.hoisted(() =>
+  vi.fn(async (_attrs: unknown, fn: () => unknown) => fn())
+);
+const startActiveObservationMock = vi.hoisted(() =>
+  vi.fn(
+    async (
+      _name: unknown,
+      fn: (span: { update: ReturnType<typeof vi.fn> }) => unknown
+    ) => fn({ update: vi.fn() })
+  )
+);
+
 vi.mock('../lib/langfuse', () => ({
   flushLangfuseTracing: vi.fn(async () => undefined),
-  isLangfuseTracingEnabled: vi.fn(() => false),
+  isLangfuseTracingEnabled: vi.fn(() => tracingState.enabled),
+}));
+
+vi.mock('@langfuse/tracing', () => ({
+  propagateAttributes: (...args: unknown[]) => propagateAttributesMock(...args),
+  startActiveObservation: (...args: unknown[]) =>
+    startActiveObservationMock(...args),
 }));
 
 vi.mock('../lib/langsmith', () => ({
@@ -56,6 +75,7 @@ function postChat(body: Record<string, unknown>) {
 describe('POST /api/chat validation', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    tracingState.enabled = false;
   });
 
   afterEach(() => {
@@ -148,6 +168,7 @@ describe('POST /api/chat validation', () => {
 describe('POST /api/chat success payload', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    tracingState.enabled = false;
     vi.stubEnv('NODE_ENV', 'production');
   });
 
@@ -166,5 +187,30 @@ describe('POST /api/chat success payload', () => {
     expect(body.content).toBe('Hello from the assistant.');
     expect(body).not.toHaveProperty('traceUrl');
     expect(JSON.stringify(body)).not.toContain('smith.langchain.com');
+  });
+
+  it('propagates sessionId before the root observation when tracing is on', async () => {
+    tracingState.enabled = true;
+
+    const response = await postChat({
+      sessionId: 'session-prop',
+      messages: [{ role: 'user', content: 'Tell me about Mikkel' }],
+    });
+
+    expect(response.status).toBe(200);
+    expect(propagateAttributesMock).toHaveBeenCalledWith(
+      { sessionId: 'session-prop', traceName: 'chat_request' },
+      expect.any(Function)
+    );
+    expect(propagateAttributesMock.mock.invocationCallOrder[0]).toBeLessThan(
+      startActiveObservationMock.mock.invocationCallOrder[0]
+    );
+    expect(startActiveObservationMock.mock.invocationCallOrder[0]).toBeLessThan(
+      vi.mocked(chat).mock.invocationCallOrder[0]
+    );
+    expect(startActiveObservationMock).toHaveBeenCalledWith(
+      'chat_request',
+      expect.any(Function)
+    );
   });
 });

@@ -38,7 +38,7 @@ import {
   isLangfuseTracingEnabled,
 } from '../lib/langfuse';
 import { flushLangSmithTracing } from '../lib/langsmith';
-import { startActiveObservation } from '@langfuse/tracing';
+import { propagateAttributes, startActiveObservation } from '@langfuse/tracing';
 /* eslint-disable import/first */
 
 const MAX_MESSAGES = 50;
@@ -198,21 +198,27 @@ export async function POST(request: NextRequest) {
         return { llmResponse, timings_ms };
       };
 
+      // Open the propagation scope before the root span so the root and the
+      // nested generation both carry sessionId for session grouping and cost.
       const { llmResponse, timings_ms } = isLangfuseTracingEnabled()
-        ? await startActiveObservation(
-            'chat_request',
-            async (span) => {
-              const result = await runPipeline();
-              span.update({
-                input: { sessionId, messagePreview: query.slice(0, 200) },
-                output: {
-                  model: result.llmResponse.model,
-                  usage: result.llmResponse.usage,
-                },
-                metadata: { timings_ms: result.timings_ms, sessionId },
-              });
-              return result;
-            }
+        ? await propagateAttributes(
+            { sessionId, traceName: 'chat_request' },
+            () =>
+              startActiveObservation(
+                'chat_request',
+                async (span) => {
+                  const result = await runPipeline();
+                  span.update({
+                    input: { sessionId, messagePreview: query.slice(0, 200) },
+                    output: {
+                      model: result.llmResponse.model,
+                      usage: result.llmResponse.usage,
+                    },
+                    metadata: { timings_ms: result.timings_ms, sessionId },
+                  });
+                  return result;
+                }
+              )
           )
         : await runPipeline();
 

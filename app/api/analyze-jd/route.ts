@@ -25,6 +25,7 @@
 
 export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
+import { propagateAttributes } from '@langfuse/tracing';
 import { checkRateLimit, resolveClientIp } from '../lib/rate-limit';
 import { getAllContext, extractJobTitle } from '../lib/knowledge-base';
 import { compilePrompt } from '../lib/langfuse-prompts';
@@ -130,10 +131,19 @@ export async function POST(request: NextRequest) {
     // for prompt-version-level analytics. chat() awaits Langfuse generations;
     // flush here so serverless exit does not drop buffered spans.
     try {
-      const llmResponse = await chat(messages, systemPrompt, {
-        model: process.env.AI_MODEL || 'gemini-2.5-pro',
-        langfusePrompt: { name: 'portfolio-jd-analysis' },
-      });
+      const runAnalysis = () =>
+        chat(messages, systemPrompt, {
+          model: process.env.AI_MODEL || 'gemini-2.5-pro',
+          langfusePrompt: { name: 'portfolio-jd-analysis' },
+        });
+      // The generation is the root observation. Propagate sessionId before it
+      // is created so session cost includes this call.
+      const llmResponse = isLangfuseTracingEnabled()
+        ? await propagateAttributes(
+            { sessionId, traceName: 'jd_analysis' },
+            runAnalysis
+          )
+        : await runAnalysis();
 
       return NextResponse.json({
         analysis: llmResponse.content,
