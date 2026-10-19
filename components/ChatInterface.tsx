@@ -116,7 +116,7 @@ export default function ChatInterface({ className }: ChatInterfaceProps) {
         content: `Hi! I'm Mikkel's AI assistant—your interactive way to learn about his background and experience.
 
 **How to use me:**
-- **Paste a full job description** for a detailed match analysis with scoring
+- **Paste a full job description** for a detailed match analysis
 - **Ask me anything** about Mikkel's experience, projects, skills, or technical background
 - **Close this chat** (✕ button above) to view his traditional portfolio site
 
