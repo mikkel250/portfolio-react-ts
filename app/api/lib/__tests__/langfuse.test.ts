@@ -13,20 +13,58 @@ import {
   flushLangfuseTracing,
   isLangfuseTracingEnabled,
   traceLLMCall,
+  ensureLangfuseTracing,
 } from '../langfuse';
 import { setLangfuseSpanProcessor } from '../langfuse-span-processor-ref';
 
+const EXPORT_READY_KEY = '__portfolio_langfuse_export_ready__v1';
+const INIT_PROMISE_KEY = '__portfolio_langfuse_init_promise__v1';
+
 const startActiveObservationMock = vi.fn();
+const setLangfuseTracerProviderMock = vi.fn();
+const tracerProviderRegister = vi.fn();
+let langfuseProcessorCtorCount = 0;
+let langfuseProcessorShouldThrow = false;
 
 vi.mock('@langfuse/tracing', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@langfuse/tracing')>();
   return {
     ...actual,
     getLangfuseTracerProvider: vi.fn(),
+    setLangfuseTracerProvider: (...args: unknown[]) =>
+      setLangfuseTracerProviderMock(...args),
     startActiveObservation: (...args: unknown[]) =>
       startActiveObservationMock(...args),
   };
 });
+
+vi.mock('@opentelemetry/sdk-trace-node', () => ({
+  NodeTracerProvider: class NodeTracerProvider {
+    register = tracerProviderRegister;
+  },
+}));
+
+vi.mock('@langfuse/otel', () => ({
+  LangfuseSpanProcessor: class LangfuseSpanProcessor {
+    constructor() {
+      langfuseProcessorCtorCount += 1;
+      if (langfuseProcessorShouldThrow) {
+        throw new Error('exporter init failed');
+      }
+    }
+  },
+}));
+
+function clearLangfuseInitState(): void {
+  const g = globalThis as Record<string, unknown>;
+  delete g[EXPORT_READY_KEY];
+  delete g[INIT_PROMISE_KEY];
+  setLangfuseSpanProcessor(null);
+  langfuseProcessorCtorCount = 0;
+  langfuseProcessorShouldThrow = false;
+  tracerProviderRegister.mockClear();
+  setLangfuseTracerProviderMock.mockClear();
+}
 
 describe('isLangfuseTracingEnabled', () => {
   it('requires LANGFUSE_TRACING exactly true and both keys', () => {
@@ -55,11 +93,55 @@ describe('isLangfuseTracingEnabled', () => {
   });
 });
 
+describe('ensureLangfuseTracing', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    clearLangfuseInitState();
+  });
+
+  it('shares one in-flight initialization across concurrent callers', async () => {
+    vi.stubEnv('LANGFUSE_TRACING', 'true');
+    vi.stubEnv('LANGFUSE_PUBLIC_KEY', 'pk');
+    vi.stubEnv('LANGFUSE_SECRET_KEY', 'sk');
+
+    const results = await Promise.all([
+      ensureLangfuseTracing(),
+      ensureLangfuseTracing(),
+    ]);
+
+    expect(results).toEqual([true, true]);
+    expect(langfuseProcessorCtorCount).toBe(1);
+    expect(tracerProviderRegister).toHaveBeenCalledOnce();
+    expect(setLangfuseTracerProviderMock).toHaveBeenCalledOnce();
+  });
+
+  it('returns false when initialization fails and lets a later call retry', async () => {
+    vi.stubEnv('LANGFUSE_TRACING', 'true');
+    vi.stubEnv('LANGFUSE_PUBLIC_KEY', 'pk');
+    vi.stubEnv('LANGFUSE_SECRET_KEY', 'sk');
+    langfuseProcessorShouldThrow = true;
+    const errorLog = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    await expect(
+      Promise.all([ensureLangfuseTracing(), ensureLangfuseTracing()])
+    ).resolves.toEqual([false, false]);
+    expect(langfuseProcessorCtorCount).toBe(1);
+    expect(tracerProviderRegister).not.toHaveBeenCalled();
+    expect(errorLog).toHaveBeenCalledOnce();
+
+    langfuseProcessorShouldThrow = false;
+    await expect(ensureLangfuseTracing()).resolves.toBe(true);
+    expect(langfuseProcessorCtorCount).toBe(2);
+    errorLog.mockRestore();
+  });
+});
+
 describe('traceLLMCall', () => {
   afterEach(() => {
     vi.unstubAllEnvs();
     vi.restoreAllMocks();
     startActiveObservationMock.mockReset();
+    clearLangfuseInitState();
   });
 
   it('sends Langfuse usage types input/output when tracing is enabled', async () => {

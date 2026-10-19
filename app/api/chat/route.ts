@@ -40,7 +40,7 @@ import {
   pipelineGapMs,
   type ChatTimingsMs,
 } from '../lib/chat-timings';
-import { isLangfuseTracingEnabled } from '../lib/langfuse';
+import { ensureLangfuseTracing, isLangfuseTracingEnabled } from '../lib/langfuse';
 import { scheduleTracingFlush } from '../lib/schedule-tracing-flush';
 import { propagateAttributes, startActiveObservation } from '@langfuse/tracing';
 /* eslint-disable import/first */
@@ -226,9 +226,21 @@ export async function POST(request: NextRequest) {
         return { llmResponse, timings_ms: clock.finish() };
       };
 
+      let tracingReady = false;
+      if (isLangfuseTracingEnabled()) {
+        try {
+          tracingReady = await ensureLangfuseTracing();
+        } catch (error) {
+          console.error(
+            'Langfuse tracing init failed; continuing without tracing:',
+            error instanceof Error ? error.message : 'non-Error thrown'
+          );
+        }
+      }
+
       // Open the propagation scope before the root span so the root and the
       // nested generation both carry sessionId for session grouping and cost.
-      const pipeline = isLangfuseTracingEnabled()
+      const pipeline = tracingReady
         ? await propagateAttributes(
             { sessionId, traceName: 'chat_request' },
             () =>

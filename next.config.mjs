@@ -11,6 +11,15 @@ const nextConfig = {
   experimental: {
     scrollRestoration: true,
   },
+  // One Node copy of the tracing stack. Next otherwise compiles instrumentation
+  // and route handlers separately, so spans and the exporter miss each other.
+  serverExternalPackages: [
+    '@langfuse/core',
+    '@langfuse/otel',
+    '@langfuse/tracing',
+    '@opentelemetry/api',
+    '@opentelemetry/sdk-trace-node',
+  ],
   webpack: (config, { isServer }) => {
     if (isServer) {
       // Mark Node.js built-ins and gRPC-related packages as externals

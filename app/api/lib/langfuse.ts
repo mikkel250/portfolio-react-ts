@@ -18,11 +18,15 @@
 
 import { LangfuseClient } from '@langfuse/client';
 import {
+  setLangfuseTracerProvider,
   startActiveObservation,
   type LangfuseGeneration,
 } from '@langfuse/tracing';
 import { ChatMessage, ChatOptions, ChatResponse } from './llm';
-import { getLangfuseSpanProcessor } from './langfuse-span-processor-ref';
+import {
+  getLangfuseSpanProcessor,
+  setLangfuseSpanProcessor,
+} from './langfuse-span-processor-ref';
 
 /** Lazy singleton — reused across requests within a warm serverless function */
 let langfuseClient: LangfuseClient | null = null;
@@ -57,6 +61,82 @@ export function initLangFuse(): LangfuseClient | null {
     });
   }
   return langfuseClient;
+}
+
+const EXPORT_READY_KEY = '__portfolio_langfuse_export_ready__v1';
+const INIT_PROMISE_KEY = '__portfolio_langfuse_init_promise__v1';
+
+/**
+ * Bind Langfuse's tracer to a provider that actually owns the span processor.
+ *
+ * Next compiles `instrumentation.ts` and route handlers as separate bundles.
+ * `NodeTracerProvider.register()` in instrumentation updates one OpenTelemetry
+ * global; `startActiveObservation` in a route can still be talking to another,
+ * so generations are created and then flushed into an empty exporter.
+ * `setLangfuseTracerProvider` is stored on globalThis and is what the SDK reads.
+ *
+ * Concurrent callers share one in-flight promise so only one provider is
+ * registered. Returns false when tracing is disabled or initialization fails.
+ * Failures are logged and do not throw — callers run without tracing.
+ */
+export async function ensureLangfuseTracing(): Promise<boolean> {
+  if (!isLangfuseTracingEnabled()) return false;
+  const g = globalThis as Record<string, unknown>;
+  if (g[EXPORT_READY_KEY]) return true;
+
+  let pending = g[INIT_PROMISE_KEY] as Promise<boolean> | undefined;
+  if (!pending) {
+    pending = initializeLangfuseTracing(g);
+    g[INIT_PROMISE_KEY] = pending;
+  }
+
+  return pending;
+}
+
+async function initializeLangfuseTracing(
+  g: Record<string, unknown>
+): Promise<boolean> {
+  try {
+    const { NodeTracerProvider } = await import('@opentelemetry/sdk-trace-node');
+    const { LangfuseSpanProcessor } = await import('@langfuse/otel');
+
+    let processor = getLangfuseSpanProcessor();
+    if (!processor) {
+      processor = new LangfuseSpanProcessor({
+        exportMode: 'immediate',
+        publicKey: process.env.LANGFUSE_PUBLIC_KEY,
+        secretKey: process.env.LANGFUSE_SECRET_KEY,
+        baseUrl: process.env.LANGFUSE_BASE_URL || 'https://cloud.langfuse.com',
+      });
+      setLangfuseSpanProcessor(processor);
+    }
+
+    const provider = new NodeTracerProvider({
+      spanProcessors: [processor],
+    });
+    setLangfuseTracerProvider(provider);
+    provider.register();
+    g[EXPORT_READY_KEY] = true;
+
+    let host = process.env.LANGFUSE_BASE_URL || 'https://cloud.langfuse.com';
+    try {
+      host = new URL(host).host;
+    } catch {
+      host = 'invalid-base-url';
+    }
+    console.info(`[langfuse] tracing export ready (${host})`);
+    return true;
+  } catch (error) {
+    console.error(
+      'Langfuse tracing init failed; continuing without tracing:',
+      error instanceof Error ? error.message : 'non-Error thrown'
+    );
+    return false;
+  } finally {
+    if (!g[EXPORT_READY_KEY]) {
+      delete g[INIT_PROMISE_KEY];
+    }
+  }
 }
 
 type FlushableOtelProvider = {
@@ -224,6 +304,9 @@ export async function traceLLMCall(
       return;
     }
 
+    if (!(await ensureLangfuseTracing())) {
+      return;
+    }
     initLangFuse();
 
     const durationMs = Date.now() - startTime;
