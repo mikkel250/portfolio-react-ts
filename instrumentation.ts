@@ -10,7 +10,10 @@
  */
 
 import type { LangfuseSpanProcessor } from '@langfuse/otel';
-import { setLangfuseSpanProcessor } from './app/api/lib/langfuse-span-processor-ref';
+import {
+  getLangfuseSpanProcessor,
+  setLangfuseSpanProcessor,
+} from './app/api/lib/langfuse-span-processor-ref';
 
 /** Local handle for this instrumentation module graph. */
 let langfuseSpanProcessor: LangfuseSpanProcessor | null = null;
@@ -31,16 +34,25 @@ export async function register() {
 
   const { NodeTracerProvider } = await import('@opentelemetry/sdk-trace-node');
   const { LangfuseSpanProcessor } = await import('@langfuse/otel');
+  const { setLangfuseTracerProvider } = await import('@langfuse/tracing');
 
-  // immediate: safer for serverless / short-lived requests
+  // immediate: safer for serverless / short-lived requests.
+  // Pass credentials explicitly so the exporter does not depend on a later env load.
   langfuseSpanProcessor = new LangfuseSpanProcessor({
     exportMode: 'immediate',
+    publicKey: process.env.LANGFUSE_PUBLIC_KEY,
+    secretKey: process.env.LANGFUSE_SECRET_KEY,
+    baseUrl: process.env.LANGFUSE_BASE_URL || 'https://cloud.langfuse.com',
   });
 
   const tracerProvider = new NodeTracerProvider({
     spanProcessors: [langfuseSpanProcessor],
   });
 
+  // SDK reads this provider even when the OTEL global belongs to another bundle.
+  setLangfuseTracerProvider(tracerProvider);
   tracerProvider.register();
-  setLangfuseSpanProcessor(langfuseSpanProcessor);
+  if (!getLangfuseSpanProcessor()) {
+    setLangfuseSpanProcessor(langfuseSpanProcessor);
+  }
 }

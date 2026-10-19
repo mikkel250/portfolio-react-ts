@@ -40,11 +40,23 @@ describe('normalizeConversationTurns', () => {
     ]);
   });
 
-  it('ignores unsupported roles instead of coercing them to user', () => {
+  it('omits an unsupported system role', () => {
     expect(
       normalizeConversationTurns([
         { role: 'user', content: 'ok' },
         { role: 'system', content: 'hidden' },
+        { role: 'assistant', content: 'reply' },
+      ])
+    ).toEqual([
+      { role: 'user', content: 'ok' },
+      { role: 'assistant', content: 'reply' },
+    ]);
+  });
+
+  it('merges adjacent user turns with a double newline', () => {
+    expect(
+      normalizeConversationTurns([
+        { role: 'user', content: 'ok' },
         { role: 'user', content: 'again' },
       ])
     ).toEqual([{ role: 'user', content: 'ok\n\nagain' }]);
