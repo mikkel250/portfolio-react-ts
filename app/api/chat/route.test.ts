@@ -34,14 +34,24 @@ vi.mock('@/lib/input-filter', () => ({
 vi.mock('../lib/langfuse', () => ({
   flushLangfuseTracing: vi.fn(async () => undefined),
   isLangfuseTracingEnabled: vi.fn(() => false),
+  ensureLangfuseTracing: vi.fn(async () => false),
 }));
 
 vi.mock('../lib/langsmith', () => ({
   flushLangSmithTracing: vi.fn(async () => undefined),
 }));
 
+vi.mock('@langfuse/tracing', () => ({
+  startActiveObservation: vi.fn(),
+}));
+
 import { POST } from './route';
 import { chat } from '../lib/llm';
+import {
+  ensureLangfuseTracing,
+  isLangfuseTracingEnabled,
+} from '../lib/langfuse';
+import { startActiveObservation } from '@langfuse/tracing';
 
 function postChat(body: Record<string, unknown>) {
   return POST(
@@ -142,6 +152,52 @@ describe('POST /api/chat validation', () => {
     expect(response.status).toBe(400);
     const body = await response.json();
     expect(body.error).toContain('Last message must be from a user');
+  });
+});
+
+describe('POST /api/chat tracing init failure', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.mocked(isLangfuseTracingEnabled).mockReset();
+    vi.mocked(isLangfuseTracingEnabled).mockReturnValue(false);
+    vi.mocked(ensureLangfuseTracing).mockReset();
+    vi.mocked(ensureLangfuseTracing).mockResolvedValue(false);
+    vi.mocked(startActiveObservation).mockReset();
+    vi.unstubAllEnvs();
+  });
+
+  it('runs the pipeline when tracing initialization returns false', async () => {
+    vi.mocked(isLangfuseTracingEnabled).mockReturnValue(true);
+    vi.mocked(ensureLangfuseTracing).mockResolvedValue(false);
+
+    const response = await postChat({
+      sessionId: 'session-trace-off',
+      messages: [{ role: 'user', content: 'Tell me about Mikkel' }],
+    });
+
+    expect(response.status).toBe(200);
+    expect(chat).toHaveBeenCalledOnce();
+    expect(startActiveObservation).not.toHaveBeenCalled();
+  });
+
+  it('runs the pipeline when tracing initialization throws', async () => {
+    vi.mocked(isLangfuseTracingEnabled).mockReturnValue(true);
+    vi.mocked(ensureLangfuseTracing).mockRejectedValue(new Error('otel import failed'));
+    const errorLog = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    const response = await postChat({
+      sessionId: 'session-trace-throw',
+      messages: [{ role: 'user', content: 'Tell me about Mikkel' }],
+    });
+
+    expect(response.status).toBe(200);
+    expect(chat).toHaveBeenCalledOnce();
+    expect(startActiveObservation).not.toHaveBeenCalled();
+    expect(errorLog).toHaveBeenCalled();
+    errorLog.mockRestore();
   });
 });
 

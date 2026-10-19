@@ -34,6 +34,7 @@ import { chat, ChatMessage } from '../lib/llm';
 import { filterInput } from '@/lib/input-filter';
 import { createStepClock } from '../lib/chat-timings';
 import {
+  ensureLangfuseTracing,
   flushLangfuseTracing,
   isLangfuseTracingEnabled,
 } from '../lib/langfuse';
@@ -198,7 +199,19 @@ export async function POST(request: NextRequest) {
         return { llmResponse, timings_ms };
       };
 
-      const { llmResponse, timings_ms } = isLangfuseTracingEnabled()
+      let tracingReady = false;
+      if (isLangfuseTracingEnabled()) {
+        try {
+          tracingReady = await ensureLangfuseTracing();
+        } catch (error) {
+          console.error(
+            'Langfuse tracing init failed; continuing without tracing:',
+            error instanceof Error ? error.message : 'non-Error thrown'
+          );
+        }
+      }
+
+      const { llmResponse, timings_ms } = tracingReady
         ? await startActiveObservation(
             'chat_request',
             async (span) => {
