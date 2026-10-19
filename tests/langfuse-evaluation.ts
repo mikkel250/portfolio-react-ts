@@ -168,8 +168,15 @@ async function main(): Promise<void> {
 
     console.log(await result.format({ includeItemResults: true }));
   } finally {
-    await spanProcessor.forceFlush();
-    await langfuse.shutdown();
+    try {
+      await spanProcessor.forceFlush();
+    } finally {
+      try {
+        await tracerProvider.shutdown();
+      } finally {
+        await langfuse.shutdown();
+      }
+    }
   }
 }
 
