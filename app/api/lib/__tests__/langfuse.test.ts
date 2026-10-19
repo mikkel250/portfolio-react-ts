@@ -1,6 +1,14 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { LangfuseSpanProcessor } from '@langfuse/otel';
 import { getLangfuseTracerProvider } from '@langfuse/tracing';
+
+const clientFlush = vi.hoisted(() => vi.fn(async () => undefined));
+
+vi.mock('@langfuse/client', () => ({
+  LangfuseClient: class LangfuseClient {
+    flush = clientFlush;
+  },
+}));
 import {
   flushLangfuseTracing,
   isLangfuseTracingEnabled,
@@ -112,10 +120,13 @@ describe('traceLLMCall', () => {
 
 describe('flushLangfuseTracing', () => {
   afterEach(() => {
+    vi.useRealTimers();
     vi.unstubAllEnvs();
     vi.restoreAllMocks();
     setLangfuseSpanProcessor(null);
     vi.mocked(getLangfuseTracerProvider).mockReset();
+    clientFlush.mockReset();
+    clientFlush.mockImplementation(async () => undefined);
   });
 
   it('no-ops without throwing when tracing is off', async () => {
@@ -256,5 +267,38 @@ describe('flushLangfuseTracing', () => {
     expect(warn).toHaveBeenCalledWith(
       'Langfuse OTel flush skipped: no span processor or provider forceFlush'
     );
+  });
+
+  it('skips client.flush when forceFlush consumes the shared 2s deadline', async () => {
+    vi.useFakeTimers();
+    vi.stubEnv('LANGFUSE_TRACING', 'true');
+    vi.stubEnv('LANGFUSE_PUBLIC_KEY', 'pk');
+    vi.stubEnv('LANGFUSE_SECRET_KEY', 'sk');
+
+    setLangfuseSpanProcessor({
+      forceFlush: () => new Promise(() => undefined),
+    } as unknown as LangfuseSpanProcessor);
+
+    const flushPromise = flushLangfuseTracing();
+    await vi.advanceTimersByTimeAsync(2_000);
+    await flushPromise;
+    expect(clientFlush).not.toHaveBeenCalled();
+  });
+
+  it('resolves when client.flush exceeds the time left on the deadline', async () => {
+    vi.useFakeTimers();
+    vi.stubEnv('LANGFUSE_TRACING', 'true');
+    vi.stubEnv('LANGFUSE_PUBLIC_KEY', 'pk');
+    vi.stubEnv('LANGFUSE_SECRET_KEY', 'sk');
+    clientFlush.mockImplementation(() => new Promise(() => undefined));
+
+    setLangfuseSpanProcessor({
+      forceFlush: async () => undefined,
+    } as unknown as LangfuseSpanProcessor);
+
+    const flushPromise = flushLangfuseTracing();
+    await vi.advanceTimersByTimeAsync(2_000);
+    await expect(flushPromise).resolves.toBeUndefined();
+    expect(clientFlush).toHaveBeenCalledOnce();
   });
 });

@@ -17,10 +17,12 @@
 //   - Runtime: 'nodejs' (required for fs module in KB, gRPC in OpenTelemetry)
 //   - All requests are rate-limited; filtered queries skip LLM cost only
 //   - Failed LLM calls automatically fall back through provider chain
-//   - Tracing: chat awaits Langfuse and LangSmith flushes in `finally`
-//     so a serverless exit does not drop spans. LangSmith's flush is
-//     best-effort (about 2s) and must not fail the response.
-//     Langfuse runs only when LANGFUSE_TRACING=true.
+//   - Tracing: chat schedules Langfuse and LangSmith flushes with
+//     next/server `after()` so they run after the response is sent.
+//     Each flush is capped at about 2s and must not fail the response.
+//     Langfuse runs only when LANGFUSE_TRACING=true. LangSmith runs
+//     only when LANGSMITH_TRACING=true. With both flags off, no flush
+//     is scheduled.
 // ---------------------------------------------------------------------------
 
 /* eslint-disable import/first */
@@ -32,18 +34,48 @@ import { buildChatSystemPrompt } from '../lib/prompts';
 import { normalizeConversationTurns } from '../lib/conversation-turns';
 import { chat, ChatMessage } from '../lib/llm';
 import { filterInput } from '@/lib/input-filter';
-import { createStepClock } from '../lib/chat-timings';
 import {
-  flushLangfuseTracing,
-  isLangfuseTracingEnabled,
-} from '../lib/langfuse';
-import { flushLangSmithTracing } from '../lib/langsmith';
+  blockingTailMs,
+  createStepClock,
+  pipelineGapMs,
+  type ChatTimingsMs,
+} from '../lib/chat-timings';
+import { isLangfuseTracingEnabled } from '../lib/langfuse';
+import { scheduleTracingFlush } from '../lib/schedule-tracing-flush';
 import { propagateAttributes, startActiveObservation } from '@langfuse/tracing';
 /* eslint-disable import/first */
 
 const MAX_MESSAGES = 50;
 const MAX_MESSAGE_CHARS = 32_768;
 const ALLOWED_MESSAGE_ROLES = new Set(['user', 'assistant']);
+
+/**
+ * Pipeline clock vs handler wall clock.
+ * blocking_tail_ms is time after the pipeline clock stopped (span update).
+ * pipeline_gap_ms is time inside the clock that no step recorded (Langfuse
+ * generation await inside chat()). The flush is in `[tracing] flush_ms`,
+ * not in either number. Compare a request with the flags on and off.
+ */
+function reportHandlerLatency(
+  clock: ReturnType<typeof createStepClock>,
+  timings_ms: ChatTimingsMs
+): ChatTimingsMs {
+  const handler_ms = clock.elapsed();
+  const blocking_tail_ms = blockingTailMs(timings_ms.total, handler_ms);
+  const pipeline_gap_ms = pipelineGapMs(timings_ms);
+  const reported: ChatTimingsMs = {
+    ...timings_ms,
+    pipeline_gap_ms,
+    handler_ms,
+    blocking_tail_ms,
+  };
+  console.log('[chat] latency', {
+    ...reported,
+    langfuse: isLangfuseTracingEnabled(),
+    langsmith: process.env.LANGSMITH_TRACING === 'true',
+  });
+  return reported;
+}
 
 /** Shape of the JSON body expected from the client */
 interface ChatRequest {
@@ -155,8 +187,7 @@ export async function POST(request: NextRequest) {
 
       if (!filterResult.shouldCallAPI) {
         console.log(`[Filter] Blocked query (${filterResult.reason}), length: ${query.length}, sessionId: ${sessionId}`);
-        const timings_ms = clock.finish();
-        console.log('[chat] timings_ms', timings_ms);
+        const timings_ms = reportHandlerLatency(clock, clock.finish());
 
         return NextResponse.json({
           content: filterResult.response || 'Invalid input',
@@ -192,15 +223,12 @@ export async function POST(request: NextRequest) {
           clock.lap('llm');
         }
 
-        const timings_ms = clock.finish();
-        console.log('[chat] timings_ms', timings_ms);
-
-        return { llmResponse, timings_ms };
+        return { llmResponse, timings_ms: clock.finish() };
       };
 
       // Open the propagation scope before the root span so the root and the
       // nested generation both carry sessionId for session grouping and cost.
-      const { llmResponse, timings_ms } = isLangfuseTracingEnabled()
+      const pipeline = isLangfuseTracingEnabled()
         ? await propagateAttributes(
             { sessionId, traceName: 'chat_request' },
             () =>
@@ -221,6 +249,8 @@ export async function POST(request: NextRequest) {
               )
           )
         : await runPipeline();
+      const { llmResponse, timings_ms: pipelineTimings } = pipeline;
+      const timings_ms = reportHandlerLatency(clock, pipelineTimings);
 
       // STEP 7: Return successful response.
       return NextResponse.json({
@@ -232,8 +262,7 @@ export async function POST(request: NextRequest) {
         ...(process.env.NODE_ENV === 'development' ? { timings_ms } : {}),
       });
     } catch (pipelineError: unknown) {
-      const timings_ms = clock.finish();
-      console.log('[chat] timings_ms (error)', timings_ms);
+      const timings_ms = reportHandlerLatency(clock, clock.finish());
       throw Object.assign(
         pipelineError instanceof Error
           ? pipelineError
@@ -241,19 +270,7 @@ export async function POST(request: NextRequest) {
         { timings_ms }
       );
     } finally {
-      if (isLangfuseTracingEnabled()) {
-        try {
-          await flushLangfuseTracing();
-        } catch (flushError) {
-          console.error('Langfuse flush failed:', flushError);
-        }
-      }
-      // Best-effort LangSmith flush. Capped inside flushLangSmithTracing; never fails the response.
-      try {
-        await flushLangSmithTracing();
-      } catch {
-        // Silently ignore — observability must not block the response.
-      }
+      scheduleTracingFlush();
     }
 
   } catch (error: any) {

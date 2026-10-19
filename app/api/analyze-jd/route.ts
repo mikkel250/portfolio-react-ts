@@ -30,11 +30,8 @@ import { checkRateLimit, resolveClientIp } from '../lib/rate-limit';
 import { getAllContext, extractJobTitle } from '../lib/knowledge-base';
 import { compilePrompt } from '../lib/langfuse-prompts';
 import { chat } from '../lib/llm';
-import {
-  flushLangfuseTracing,
-  isLangfuseTracingEnabled,
-} from '../lib/langfuse';
-import { flushLangSmithTracing } from '../lib/langsmith';
+import { isLangfuseTracingEnabled } from '../lib/langfuse';
+import { scheduleTracingFlush } from '../lib/schedule-tracing-flush';
 
 const MAX_JD_CHARS = 50_000;
 
@@ -128,8 +125,9 @@ export async function POST(request: NextRequest) {
     // STEP 7: Call the LLM (same multi-provider fallback as chat).
     // Default model for JD analysis is gemini-2.5-pro unless overridden.
     // Traces to LangFuse under the 'portfolio-jd-analysis' prompt name
-    // for prompt-version-level analytics. chat() awaits Langfuse generations;
-    // flush here so serverless exit does not drop buffered spans.
+    // for prompt-version-level analytics. chat() awaits Langfuse generations.
+    // The finally block schedules the flush with after() so it does not
+    // hold this response.
     try {
       const runAnalysis = () =>
         chat(messages, systemPrompt, {
@@ -154,19 +152,7 @@ export async function POST(request: NextRequest) {
         resetTime: rateLimit.resetTime,
       });
     } finally {
-      if (isLangfuseTracingEnabled()) {
-        try {
-          await flushLangfuseTracing();
-        } catch (flushError) {
-          console.error('Langfuse flush failed:', flushError);
-        }
-      }
-      // Best-effort LangSmith flush. Capped inside flushLangSmithTracing; never fails the response.
-      try {
-        await flushLangSmithTracing();
-      } catch {
-        // Silently ignore — observability must not block the response.
-      }
+      scheduleTracingFlush();
     }
 
   } catch (error: any) {

@@ -6,8 +6,8 @@
 // outputs (response, tokens, model), and metadata (duration, temperature).
 //
 // createRun does not block the model call. The chat and analyze-jd routes
-// then await flushLangSmithTracing() before return (about 2s, never throws).
-// If tracing fails, the user still gets their answer.
+// schedule flushLangSmithTracing() with next/server after() (about 2s,
+// never throws). If tracing fails, the user still gets their answer.
 //
 // Toggle: LANGSMITH_TRACING=true in .env.local
 //

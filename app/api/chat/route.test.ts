@@ -61,6 +61,7 @@ vi.mock('../lib/langsmith', () => ({
 
 import { POST } from './route';
 import { chat } from '../lib/llm';
+import { flushLangfuseTracing } from '../lib/langfuse';
 
 function postChat(body: Record<string, unknown>) {
   return POST(
@@ -211,6 +212,49 @@ describe('POST /api/chat success payload', () => {
     expect(startActiveObservationMock).toHaveBeenCalledWith(
       'chat_request',
       expect.any(Function)
+    );
+  });
+
+  it('returns before a hung tracing flush settles', async () => {
+    tracingState.enabled = true;
+    let releaseFlush: () => void = () => undefined;
+    vi.mocked(flushLangfuseTracing).mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          releaseFlush = resolve;
+        })
+    );
+
+    const started = Date.now();
+    const response = await postChat({
+      sessionId: 'session-flush',
+      messages: [{ role: 'user', content: 'Tell me about Mikkel' }],
+    });
+
+    expect(response.status).toBe(200);
+    expect(Date.now() - started).toBeLessThan(500);
+    expect(flushLangfuseTracing).toHaveBeenCalled();
+    releaseFlush();
+    await Promise.resolve();
+  });
+
+  it('reports handler wall clock and blocking tail in development', async () => {
+    vi.stubEnv('NODE_ENV', 'development');
+
+    const response = await postChat({
+      sessionId: 'session-tail',
+      messages: [{ role: 'user', content: 'Tell me about Mikkel' }],
+    });
+
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.timings_ms.total).toEqual(expect.any(Number));
+    expect(body.timings_ms.pipeline_gap_ms).toEqual(expect.any(Number));
+    expect(body.timings_ms.handler_ms).toEqual(expect.any(Number));
+    expect(body.timings_ms.blocking_tail_ms).toEqual(expect.any(Number));
+    expect(body.timings_ms.handler_ms).toBeGreaterThanOrEqual(body.timings_ms.total);
+    expect(body.timings_ms.blocking_tail_ms).toBe(
+      body.timings_ms.handler_ms - body.timings_ms.total
     );
   });
 });

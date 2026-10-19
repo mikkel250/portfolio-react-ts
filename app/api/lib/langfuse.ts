@@ -101,30 +101,68 @@ function resolveOtelFlushTarget(
 }
 
 /**
+ * Shared deadline for the OTel forceFlush and the Langfuse client flush.
+ * Same cap as LangSmith (`FLUSH_TIMEOUT_MS` in langsmith.ts). Each phase
+ * gets only the time still left; the total wait is capped here.
+ */
+const FLUSH_TIMEOUT_MS = 2_000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | undefined> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => resolve(undefined), ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (err) => {
+        clearTimeout(timer);
+        reject(err);
+      }
+    );
+  });
+}
+
+function remainingMs(deadline: number): number {
+  return Math.max(0, deadline - Date.now());
+}
+
+/**
  * Flush pending Langfuse / OTel spans before a serverless function exits.
  * No-op when tracing is disabled. Never throws to callers.
  *
  * Prefer LangfuseSpanProcessor.forceFlush. If missing, unwrap the OTel
  * ProxyTracerProvider via getDelegate() so the underlying SDK provider
  * (which implements forceFlush) can be flushed.
+ *
+ * One 2s deadline covers forceFlush and client.flush. client.flush is
+ * skipped when that deadline has already passed.
  */
 export async function flushLangfuseTracing(): Promise<void> {
   if (!isLangfuseTracingEnabled()) {
     return;
   }
 
+  const deadline = Date.now() + FLUSH_TIMEOUT_MS;
+
   try {
     const processor = getLangfuseSpanProcessor();
 
     if (processor && typeof processor.forceFlush === 'function') {
-      await processor.forceFlush();
+      const pendingBudget = remainingMs(deadline);
+      if (pendingBudget > 0) {
+        await withTimeout(Promise.resolve(processor.forceFlush()), pendingBudget);
+      }
     } else {
       const { getLangfuseTracerProvider } = await import('@langfuse/tracing');
       const flushTarget = resolveOtelFlushTarget(
         getLangfuseTracerProvider() as FlushableOtelProvider
       );
       if (flushTarget?.forceFlush) {
-        await flushTarget.forceFlush();
+        const pendingBudget = remainingMs(deadline);
+        if (pendingBudget > 0) {
+          await withTimeout(Promise.resolve(flushTarget.forceFlush()), pendingBudget);
+        }
       } else {
         console.warn(
           'Langfuse OTel flush skipped: no span processor or provider forceFlush'
@@ -141,7 +179,10 @@ export async function flushLangfuseTracing(): Promise<void> {
   try {
     const client = initLangFuse();
     if (client && typeof client.flush === 'function') {
-      await client.flush();
+      const flushBudget = remainingMs(deadline);
+      if (flushBudget > 0) {
+        await withTimeout(Promise.resolve(client.flush()), flushBudget);
+      }
     }
   } catch (error) {
     console.error(

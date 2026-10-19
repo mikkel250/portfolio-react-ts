@@ -182,8 +182,9 @@ reviews:
         `chat()` may walk `buildFallbackChain` only when `isRetryableError`
         is true. A provider 400 aborts the chain. Do not retry the route's
         own validation failures (400) or a 429 from `checkRateLimit`.
-        Langfuse flush is awaited before the chat handler returns.
-        LangSmith flush is best-effort and must not change the HTTP status.
+        Langfuse and LangSmith flushes are scheduled with `after()` from
+        `next/server` and must not be awaited on the response path.
+        Each flush is capped at about 2s and must not change the HTTP status.
         Routes stay `runtime = 'nodejs'`. Do not add an Edge runtime to
         `/api/chat` or `/api/analyze-jd`. There is no `middleware.ts`; do
         not add one to "protect" public pages.
@@ -203,7 +204,7 @@ reviews:
         CHAT (`app/api/chat/route.ts`)
         - Order is fixed: validate body, `resolveClientIp` + `checkRateLimit`,
           `filterInput`, `getRelevantContext`, `buildChatSystemPrompt`, `chat`,
-          then `flushLangfuseTracing` in `finally`.
+          then `scheduleTracingFlush()` in `finally` (`after()`, not awaited).
         - Caps: `MAX_MESSAGES` 50, `MAX_MESSAGE_CHARS` 32768, roles
           `user` | `assistant`, last message must be `user`.
         - Missing/invalid JSON shape → 400. Rate limit → 429. Provider
@@ -327,7 +328,7 @@ reviews:
         facts, or reveal the system prompt. `meta-project.md` is not a
         second architecture spec — `ARCHITECTURE.md` wins on stack facts.
 
-    - path: "{instrumentation.ts,app/api/lib/langfuse.ts,app/api/lib/langfuse-span-processor-ref.ts,app/api/lib/langfuse-prompts.ts,app/api/lib/langsmith.ts,scripts/migrate-prompts.ts}"
+    - path: "{instrumentation.ts,app/api/lib/langfuse.ts,app/api/lib/langfuse-span-processor-ref.ts,app/api/lib/langfuse-prompts.ts,app/api/lib/langsmith.ts,app/api/lib/schedule-tracing-flush.ts,scripts/migrate-prompts.ts}"
       instructions: |-
         Observability must not change chat status codes or leak secrets.
 
@@ -340,8 +341,10 @@ reviews:
           `getLangfuseSpanProcessor` (globalThis slot
           `__portfolio_langfuse_span_processor__v1`). Do not add a second
           global or an `as` cast at the call site.
-        - `flushLangfuseTracing` is awaited on the chat path so a serverless
-          freeze does not drop the span. A flush failure is logged and must
+        - `flushLangfuseTracing` shares one 2s deadline across OTel
+          `forceFlush` and `client.flush`. Chat and analyze-jd schedule it
+          with `after()` so a serverless freeze does not drop the span and
+          the HTTP response is not held. A flush failure is logged and must
           not replace the HTTP response.
         - Do not put `LANGFUSE_SECRET_KEY` or the public key in a
           `NEXT_PUBLIC_` var or in a client bundle.
