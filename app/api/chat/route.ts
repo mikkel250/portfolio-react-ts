@@ -187,10 +187,45 @@ export async function POST(request: NextRequest) {
 
       if (!filterResult.shouldCallAPI) {
         console.log(`[Filter] Blocked query (${filterResult.reason}), length: ${query.length}, sessionId: ${sessionId}`);
-        const timings_ms = reportHandlerLatency(clock, clock.finish());
+        const pipelineTimings = clock.finish();
+        const content = filterResult.response || 'Invalid input';
+
+        // Filtered replies are still turns in the browser session. Record them
+        // on the same Langfuse session as LLM turns so the replay is complete.
+        // Stop the pipeline clock first, then report latency after the span,
+        // matching the success path so blocking_tail_ms includes this wait.
+        if (isLangfuseTracingEnabled()) {
+          try {
+            if (await ensureLangfuseTracing()) {
+              await propagateAttributes(
+                { sessionId, traceName: 'chat_filtered' },
+                () =>
+                  startActiveObservation('chat_filtered', async (span) => {
+                    span.update({
+                      input: [{ role: 'user', content: query }],
+                      output: [{ role: 'assistant', content }],
+                      metadata: {
+                        sessionId,
+                        ...(filterResult.reason
+                          ? { filterReason: filterResult.reason }
+                          : {}),
+                      },
+                    });
+                  })
+              );
+            }
+          } catch (error) {
+            console.error(
+              'Langfuse filtered-turn trace failed:',
+              error instanceof Error ? error.message : 'non-Error thrown'
+            );
+          }
+        }
+
+        const timings_ms = reportHandlerLatency(clock, pipelineTimings);
 
         return NextResponse.json({
-          content: filterResult.response || 'Invalid input',
+          content,
           usage: {
             promptTokens: 0,
             completionTokens: 0,
@@ -249,11 +284,10 @@ export async function POST(request: NextRequest) {
                 async (span) => {
                   const result = await runPipeline();
                   span.update({
-                    input: { sessionId, messagePreview: query.slice(0, 200) },
-                    output: {
-                      model: result.llmResponse.model,
-                      usage: result.llmResponse.usage,
-                    },
+                    input: [{ role: 'user', content: query }],
+                    output: [
+                      { role: 'assistant', content: result.llmResponse.content },
+                    ],
                     metadata: { timings_ms: result.timings_ms, sessionId },
                   });
                   return result;

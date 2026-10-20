@@ -7,8 +7,11 @@
 // supported; static export is not. `after()` still counts against the
 // route's maxDuration, so each flush keeps its own 2s cap.
 //
-// Unit tests call the route outside Next's request store, where `after()`
-// throws. That path starts the same flush without awaiting it.
+// Unit tests call handlers outside Next's request store, where `after()`
+// throws. Only that test runtime starts the flush without awaiting it.
+// If `after()` fails in a real runtime, the flush is logged and skipped.
+// A detached promise is not passed to `waitUntil`, so the instance can
+// freeze before the export finishes.
 
 import { after } from 'next/server';
 import { flushLangfuseTracing, isLangfuseTracingEnabled } from './langfuse';
@@ -16,6 +19,10 @@ import { flushLangSmithTracing } from './langsmith';
 
 function langsmithTracingEnabled(): boolean {
   return process.env.LANGSMITH_TRACING === 'true';
+}
+
+function isTracingTestRuntime(): boolean {
+  return process.env.VITEST === 'true' || process.env.NODE_ENV === 'test';
 }
 
 async function flushTracing(): Promise<void> {
@@ -59,12 +66,14 @@ export function scheduleTracingFlush(): void {
     after(task);
   } catch (error) {
     const message = error instanceof Error ? error.message : '';
-    if (!message.includes('outside a request scope')) {
-      console.error(
-        'tracing flush could not use after():',
-        message || 'non-Error thrown'
-      );
+    const outsideRequestScope = message.includes('outside a request scope');
+    if (outsideRequestScope && isTracingTestRuntime()) {
+      void task();
+      return;
     }
-    void task();
+    console.error(
+      'tracing flush skipped: after() did not schedule it:',
+      message || 'non-Error thrown'
+    );
   }
 }

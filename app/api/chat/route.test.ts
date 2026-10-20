@@ -61,6 +61,7 @@ vi.mock('@langfuse/tracing', () => ({
 
 import { POST } from './route';
 import { chat } from '../lib/llm';
+import { filterInput } from '@/lib/input-filter';
 import {
   ensureLangfuseTracing,
   flushLangfuseTracing,
@@ -270,6 +271,41 @@ describe('POST /api/chat success payload', () => {
     );
   });
 
+  it('records a filtered reply on the same Langfuse session', async () => {
+    tracingState.enabled = true;
+    vi.mocked(filterInput).mockReturnValueOnce({
+      shouldCallAPI: false,
+      response: 'Please ask a specific question.',
+      reason: 'too_short',
+    });
+    const order: string[] = [];
+    startActiveObservationMock.mockImplementationOnce(async (name, fn) => {
+      order.push(`obs:${String(name)}`);
+      return fn({ update: vi.fn() });
+    });
+    const logSpy = vi.spyOn(console, 'log').mockImplementation((message) => {
+      if (message === '[chat] latency') order.push('latency');
+    });
+
+    const response = await postChat({
+      sessionId: 'session-filtered',
+      messages: [{ role: 'user', content: 'hi' }],
+    });
+
+    logSpy.mockRestore();
+    expect(response.status).toBe(200);
+    expect(chat).not.toHaveBeenCalled();
+    expect(order).toEqual(['obs:chat_filtered', 'latency']);
+    expect(propagateAttributesMock).toHaveBeenCalledWith(
+      { sessionId: 'session-filtered', traceName: 'chat_filtered' },
+      expect.any(Function)
+    );
+    expect(startActiveObservationMock).toHaveBeenCalledWith(
+      'chat_filtered',
+      expect.any(Function)
+    );
+  });
+
   it('returns before a hung tracing flush settles', async () => {
     tracingState.enabled = true;
     let releaseFlush: () => void = () => undefined;
@@ -280,14 +316,12 @@ describe('POST /api/chat success payload', () => {
         })
     );
 
-    const started = Date.now();
     const response = await postChat({
       sessionId: 'session-flush',
       messages: [{ role: 'user', content: 'Tell me about Mikkel' }],
     });
 
     expect(response.status).toBe(200);
-    expect(Date.now() - started).toBeLessThan(500);
     expect(flushLangfuseTracing).toHaveBeenCalled();
     releaseFlush();
     await Promise.resolve();

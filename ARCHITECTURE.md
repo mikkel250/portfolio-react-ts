@@ -187,6 +187,7 @@ All production API routes use `export const runtime = 'nodejs'`.
 - Enabled when `LANGFUSE_TRACING=true` (exact string) and keys are present
 - Chat path awaits Langfuse generation spans so they nest under `chat_request`. Both tracers flush via `after()` from `next/server` after the response is sent (2s cap each). `after()` uses Vercel `waitUntil` so the invocation stays alive without holding the HTTP response. Flags default off unless set to the exact string `true`
 - Parent observation name: `chat_request` with `timings_ms` metadata (filter / knowledgeBase / prompt / llm / total)
+- The browser session id is propagated with `propagateAttributes({ sessionId })` on chat, filtered replies, and JD analysis so Langfuse groups those traces in the Sessions view. Generation input/output are role-labeled messages, and later turns repeat the prior conversation.
 
 ### DeepSeek reasoning dial
 - Env: `DEEPSEEK_REASONING_EFFORT` = `max` | `high` | `disabled` (default `high`)

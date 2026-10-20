@@ -22,7 +22,11 @@ import { scheduleTracingFlush } from '../schedule-tracing-flush';
 
 describe('scheduleTracingFlush', () => {
   afterEach(() => {
-    vi.clearAllMocks();
+    afterMock.mockReset();
+    flushLangfuse.mockReset();
+    flushLangsmith.mockReset();
+    flushLangfuse.mockImplementation(async () => undefined);
+    flushLangsmith.mockImplementation(async () => undefined);
     vi.unstubAllEnvs();
     langfuseEnabled.value = false;
   });
@@ -57,6 +61,20 @@ describe('scheduleTracingFlush', () => {
     expect(flushLangsmith).toHaveBeenCalledOnce();
   });
 
+  it('schedules and runs a LangSmith flush when only LangSmith is enabled', async () => {
+    vi.stubEnv('LANGSMITH_TRACING', 'true');
+
+    scheduleTracingFlush();
+
+    expect(afterMock).toHaveBeenCalledOnce();
+    expect(flushLangsmith).not.toHaveBeenCalled();
+
+    const task = afterMock.mock.calls[0][0] as () => Promise<void>;
+    await task();
+
+    expect(flushLangsmith).toHaveBeenCalledOnce();
+  });
+
   it('still starts the flush when after() has no request scope', async () => {
     vi.stubEnv('LANGSMITH_TRACING', 'true');
     afterMock.mockImplementation(() => {
@@ -78,5 +96,25 @@ describe('scheduleTracingFlush', () => {
     await vi.waitFor(() => {
       expect(flushLangsmith).toHaveBeenCalledOnce();
     });
+  });
+
+  it('skips the flush when after() fails outside the test runtime', () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    vi.stubEnv('VITEST', '');
+    vi.stubEnv('LANGSMITH_TRACING', 'true');
+    afterMock.mockImplementation(() => {
+      throw new Error('`after` was called outside a request scope');
+    });
+    const errorLog = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    scheduleTracingFlush();
+
+    expect(flushLangfuse).not.toHaveBeenCalled();
+    expect(flushLangsmith).not.toHaveBeenCalled();
+    expect(errorLog).toHaveBeenCalledWith(
+      'tracing flush skipped: after() did not schedule it:',
+      '`after` was called outside a request scope'
+    );
+    errorLog.mockRestore();
   });
 });

@@ -46,6 +46,14 @@ import { POST as postJd } from '../../analyze-jd/route';
 const SESSION_ID_ATTR = 'session.id';
 const TRACE_NAME_ATTR = 'langfuse.trace.name';
 const OBSERVATION_TYPE_ATTR = 'langfuse.observation.type';
+const OBSERVATION_INPUT_ATTR = 'langfuse.observation.input';
+const OBSERVATION_OUTPUT_ATTR = 'langfuse.observation.output';
+
+function parsedAttr(span: { attributes: Record<string, unknown> }, key: string) {
+  const raw = span.attributes[key];
+  if (typeof raw !== 'string') return raw;
+  return JSON.parse(raw);
+}
 
 const exporter = new InMemorySpanExporter();
 let provider: NodeTracerProvider | undefined;
@@ -137,6 +145,24 @@ describe('sessionId on exported Langfuse spans', () => {
     expect(root?.attributes[TRACE_NAME_ATTR]).toBe('chat_request');
     expect(generation?.attributes[TRACE_NAME_ATTR]).toBe('chat_request');
     expect(generation?.parentSpanContext?.spanId).toBe(root?.spanContext().spanId);
+    expect(parsedAttr(root!, OBSERVATION_INPUT_ATTR)).toEqual([
+      {
+        role: 'user',
+        content: 'Tell me about Mikkel React experience in production systems.',
+      },
+    ]);
+    expect(parsedAttr(root!, OBSERVATION_OUTPUT_ATTR)).toEqual([
+      { role: 'assistant', content: 'mocked generation' },
+    ]);
+    const generationInput = parsedAttr(generation!, OBSERVATION_INPUT_ATTR);
+    expect(Array.isArray(generationInput)).toBe(true);
+    expect(generationInput.at(-1)).toEqual({
+      role: 'user',
+      content: 'Tell me about Mikkel React experience in production systems.',
+    });
+    expect(parsedAttr(generation!, OBSERVATION_OUTPUT_ATTR)).toEqual([
+      { role: 'assistant', content: 'mocked generation' },
+    ]);
   });
 
   it('stamps session.id on the jd analysis generation', async () => {
@@ -150,12 +176,19 @@ describe('sessionId on exported Langfuse spans', () => {
 
     expect(response.status, await response.clone().text()).toBe(200);
 
-    const generations = exporter
-      .getFinishedSpans()
-      .filter((span) => span.attributes[OBSERVATION_TYPE_ATTR] === 'generation');
+    const spans = exporter.getFinishedSpans();
+    const generations = spans.filter(
+      (span) =>
+        span.attributes[OBSERVATION_TYPE_ATTR] === 'generation' &&
+        span.name.startsWith('llm_call_')
+    );
+    const generation = generations[0];
+    const roots = spans.filter((span) => !span.parentSpanContext?.spanId);
 
     expect(generations).toHaveLength(1);
-    expect(generations[0]?.attributes[SESSION_ID_ATTR]).toBe(sessionId);
-    expect(generations[0]?.attributes[TRACE_NAME_ATTR]).toBe('jd_analysis');
+    expect(generation?.attributes[SESSION_ID_ATTR]).toBe(sessionId);
+    expect(generation?.attributes[TRACE_NAME_ATTR]).toBe('jd_analysis');
+    expect(generation?.parentSpanContext?.spanId).toBeUndefined();
+    expect(roots).toContain(generation);
   });
 });

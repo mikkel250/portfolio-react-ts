@@ -14,11 +14,12 @@ import {
   isLangfuseTracingEnabled,
   traceLLMCall,
   ensureLangfuseTracing,
+  resetLangfuseTracingInitStateForTests,
 } from '../langfuse';
-import { setLangfuseSpanProcessor } from '../langfuse-span-processor-ref';
-
-const EXPORT_READY_KEY = '__portfolio_langfuse_export_ready__v1';
-const INIT_PROMISE_KEY = '__portfolio_langfuse_init_promise__v1';
+import {
+  getLangfuseSpanProcessor,
+  setLangfuseSpanProcessor,
+} from '../langfuse-span-processor-ref';
 
 const startActiveObservationMock = vi.fn();
 const setLangfuseTracerProviderMock = vi.fn();
@@ -56,9 +57,7 @@ vi.mock('@langfuse/otel', () => ({
 }));
 
 function clearLangfuseInitState(): void {
-  const g = globalThis as Record<string, unknown>;
-  delete g[EXPORT_READY_KEY];
-  delete g[INIT_PROMISE_KEY];
+  resetLangfuseTracingInitStateForTests();
   setLangfuseSpanProcessor(null);
   langfuseProcessorCtorCount = 0;
   langfuseProcessorShouldThrow = false;
@@ -113,6 +112,25 @@ describe('ensureLangfuseTracing', () => {
     expect(langfuseProcessorCtorCount).toBe(1);
     expect(tracerProviderRegister).toHaveBeenCalledOnce();
     expect(setLangfuseTracerProviderMock).toHaveBeenCalledOnce();
+  });
+
+  it('reuses a span processor already published by instrumentation', async () => {
+    vi.stubEnv('LANGFUSE_TRACING', 'true');
+    vi.stubEnv('LANGFUSE_PUBLIC_KEY', 'pk');
+    vi.stubEnv('LANGFUSE_SECRET_KEY', 'sk');
+
+    const existingProcessor = {
+      forceFlush: vi.fn(),
+    } as unknown as LangfuseSpanProcessor;
+    setLangfuseSpanProcessor(existingProcessor);
+
+    await expect(ensureLangfuseTracing()).resolves.toBe(true);
+    await expect(ensureLangfuseTracing()).resolves.toBe(true);
+
+    expect(getLangfuseSpanProcessor()).toBe(existingProcessor);
+    expect(langfuseProcessorCtorCount).toBe(0);
+    expect(tracerProviderRegister).not.toHaveBeenCalled();
+    expect(setLangfuseTracerProviderMock).not.toHaveBeenCalled();
   });
 
   it('returns false when initialization fails and lets a later call retry', async () => {
@@ -172,6 +190,11 @@ describe('traceLLMCall', () => {
 
     expect(update).toHaveBeenCalledWith(
       expect.objectContaining({
+        input: [
+          { role: 'system', content: 'system' },
+          { role: 'user', content: 'hi' },
+        ],
+        output: [{ role: 'assistant', content: 'ok' }],
         usageDetails: { input: 100, output: 50, total: 150 },
       })
     );

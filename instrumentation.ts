@@ -4,6 +4,8 @@
  *
  * Registers the processor via typed get/set helpers so API routes can
  * forceFlush before serverless exit without importing this file.
+ * Routes treat a published processor as the active provider and must not
+ * register a second NodeTracerProvider.
  *
  * @see https://nextjs.org/docs/app/building-your-application/optimizing/instrumentation
  * @see https://langfuse.com/docs/observability/features/queuing-batching
