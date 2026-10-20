@@ -73,4 +73,43 @@ test.describe('chat', () => {
     ).toBeVisible();
     expect(chatHits).toBe(0);
   });
+
+  test('stubbed 503 rolls back the message and retry sends again', async ({
+    page,
+  }) => {
+    let chatHits = 0;
+    const errorText = 'AI service error. Please try again.';
+
+    await page.route('**/api/chat', async (route) => {
+      chatHits += 1;
+      await route.fulfill({
+        status: 503,
+        contentType: 'application/json',
+        body: JSON.stringify({ error: errorText }),
+      });
+    });
+
+    await page.goto('/');
+
+    const input = page.getByRole('textbox', { name: 'Message input' });
+    await expect(input).toBeVisible({ timeout: 15_000 });
+
+    await input.fill(FILTER_PASSING_MESSAGE);
+    await page.getByRole('button', { name: 'Send message' }).click();
+
+    const alert = page.getByRole('alert').filter({ hasText: errorText });
+    await expect(alert).toContainText(errorText);
+    await expect(
+      page
+        .getByRole('article', { name: 'Your message' })
+        .filter({ hasText: FILTER_PASSING_MESSAGE }),
+    ).toHaveCount(0);
+    await expect(input).toHaveValue(FILTER_PASSING_MESSAGE);
+    expect(chatHits).toBe(1);
+
+    await page.getByRole('button', { name: 'Retry' }).click();
+    await expect.poll(() => chatHits).toBe(2);
+    await expect(alert).toContainText(errorText);
+    await expect(input).toHaveValue(FILTER_PASSING_MESSAGE);
+  });
 });
