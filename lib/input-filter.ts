@@ -142,9 +142,23 @@ function checkWorkAuthorizationQuery(query: string): JobFilterResult {
   return { shouldProceed: true };
 }
 
-/** Verbatim reply for compensation-expectation asks. Also embedded in the chat system prompt. */
-export const SALARY_EXPECTATION_REPLY =
-  "Mikkel would be happy to discuss compensation expectations once there's a conversation about the role and opportunity. His absolute minimum expectation is that the pay is equivalent to a living wage for someone living and paying rent in downtown San Francisco. Please feel free to reach out if you'd like to learn more about his background and experience!";
+const SALARY_EXPECTATION_BASE =
+  "Mikkel would be happy to discuss compensation expectations once there's a conversation about the role and opportunity. His absolute minimum expectation is that the pay is equivalent to a living wage for someone living and paying rent in downtown San Francisco.";
+
+/**
+ * Verbatim reply for compensation-expectation asks. Also embedded in the chat system prompt.
+ * Booking URL is NEXT_PUBLIC_ so the client canned path and the server prompt share one link.
+ * Markdown so ChatMessage renders it as a link.
+ */
+function buildSalaryExpectationReply(): string {
+  const bookingLink = process.env.NEXT_PUBLIC_CALENDLY_LINK?.trim();
+  if (!bookingLink) {
+    return `${SALARY_EXPECTATION_BASE} Please feel free to reach out if you'd like to learn more about his background and experience!`;
+  }
+  return `${SALARY_EXPECTATION_BASE} Please feel free to reach out if you'd like to learn more about his background and experience, or [book time with Mikkel here](${bookingLink}).`;
+}
+
+export const SALARY_EXPECTATION_REPLY = buildSalaryExpectationReply();
 
 function checkSalaryQuery(query: string): JobFilterResult {
   // Ask-shaped only — avoid employer copy like "salary range for this role is $X"
