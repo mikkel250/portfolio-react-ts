@@ -159,6 +159,7 @@ export function buildFallbackChain(
  *   429  — Rate limited (try another provider)
  *   500/502/503 — Server errors (try another provider)
  *   401/403 — Auth errors (maybe a different provider works)
+ *   400 with API_KEY_INVALID — Gemini's invalid/expired key (not a 401)
  *   Quota exceeded, RESOURCE_EXHAUSTED, MAX_TOKENS
  *   Network errors (ENOTFOUND, ECONNREFUSED, ETIMEDOUT)
  *   Unknown errors (default: retry to be safe)
@@ -215,6 +216,16 @@ export function isRetryableError(error: unknown): boolean {
   // The chain already filters out providers with missing keys, but a key
   // could be present yet disabled/invalid — advance to next fallback.
   if (err.status === 401 || err.status === 403) {
+    return true;
+  }
+
+  // Gemini reports an invalid or expired API key as 400 INVALID_ARGUMENT
+  // (reason API_KEY_INVALID), not 401. That is a provider-scoped auth failure,
+  // so advance to the next provider instead of aborting the whole chain.
+  if (
+    err.status === 400 &&
+    /API_KEY_INVALID|API key not valid|API key expired/i.test(err.message ?? '')
+  ) {
     return true;
   }
 

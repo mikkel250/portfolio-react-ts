@@ -89,4 +89,33 @@ describe('isRetryableError', () => {
     expect(isRetryableError({ status: 401 })).toBe(true);
     expect(isRetryableError({ status: 403 })).toBe(true);
   });
+
+  it('aborts on a plain 400 (bad request)', () => {
+    expect(isRetryableError({ status: 400, message: 'Invalid JSON payload' })).toBe(false);
+  });
+
+  it('advances on Gemini invalid or expired API key reported as 400', () => {
+    expect(
+      isRetryableError({
+        status: 400,
+        message: 'API key not valid. Please pass a valid API key.',
+      }),
+    ).toBe(true);
+    expect(isRetryableError({ status: 400, message: 'reason: API_KEY_INVALID' })).toBe(true);
+  });
+
+  it('advances on 5xx and network error codes', () => {
+    for (const status of [500, 502, 503]) {
+      expect(isRetryableError({ status })).toBe(true);
+    }
+    for (const code of ['ENOTFOUND', 'ECONNREFUSED', 'ETIMEDOUT']) {
+      expect(isRetryableError({ code })).toBe(true);
+    }
+  });
+
+  it('defaults unknown and non-object errors to retryable', () => {
+    expect(isRetryableError(new Error('something odd'))).toBe(true);
+    expect(isRetryableError(null)).toBe(true);
+    expect(isRetryableError('boom')).toBe(true);
+  });
 });
