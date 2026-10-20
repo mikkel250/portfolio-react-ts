@@ -142,6 +142,10 @@ function checkWorkAuthorizationQuery(query: string): JobFilterResult {
   return { shouldProceed: true };
 }
 
+/** Verbatim reply for compensation-expectation asks. Also embedded in the chat system prompt. */
+export const SALARY_EXPECTATION_REPLY =
+  "Mikkel would be happy to discuss compensation expectations once there's a conversation about the role and opportunity. His absolute minimum expectation is that the pay is equivalent to a living wage for someone living and paying rent in downtown San Francisco. Please feel free to reach out if you'd like to learn more about his background and experience!";
+
 function checkSalaryQuery(query: string): JobFilterResult {
   // Ask-shaped only — avoid employer copy like "salary range for this role is $X"
   const salaryQuestionPatterns = [
@@ -161,8 +165,7 @@ function checkSalaryQuery(query: string): JobFilterResult {
   if (isSalaryQuestion) {
     return {
       shouldProceed: false,
-      response:
-        "Mikkel would be happy to discuss compensation expectations once there's a conversation about the role and opportunity. His absolute minimum expectation is that the pay is equivalent to a living wage for someone living and paying rent in downtown San Francisco. Please feel free to reach out if you'd like to learn more about his background and experience!",
+      response: SALARY_EXPECTATION_REPLY,
       reason: 'salary_query',
     };
   }

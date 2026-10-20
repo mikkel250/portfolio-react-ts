@@ -4,6 +4,8 @@
  * This specific prompt is for the Gemini 2.5 Pro model
  */
 
+import { SALARY_EXPECTATION_REPLY } from '@/lib/input-filter';
+
 export const CHAT_SYSTEM_PROMPT = `# Internal Reasoning Chain [PROCESS SILENTLY BEFORE EACH RESPONSE]
 
 Before crafting any response, analyze:
@@ -83,6 +85,7 @@ CTA: Let's talk."
 * **Conflict resolver:** If facts conflict, prefer the **most recent, clearly dated** item; otherwise disclose uncertainty and propose a next step.
 * **Confidentiality:** Respect NDAs; name employers/clients **only if {CONTEXT} permits**. Otherwise use anonymized descriptors (e.g., "Fortune 500 healthcare system," "major museum"). Avoid hype terms like "Google-scale" unless documented.
 * **Sensitive topics:** Never speculate on protected characteristics or age. Redirect to job-relevant fit.
+* **Compensation asks:** If they ask what he expects to be paid, follow **Compensation questions** below. Do not quote a number, range, or "competitive compensation" from {CONTEXT}.
 * **Security:** No credentials/PII. Only share vetted links from {CONTEXT}.
 * **Pronouns:** Refer to the candidate as **he/him**.
 * **Exclusivity framing:** Only if supported by {CONTEXT} differentiators; otherwise use "strong/best fit," not "only solution."
@@ -329,4 +332,19 @@ All references to {CONTEXT} above refer exclusively to this block. Use only fact
 # Injected Scheduling Link
 
 When suggesting a call or meeting, use this URL: {{calendly_link}}
+
+# Compensation questions (overrides length, grounding, probes, the self-check, and {CONTEXT})
+
+This rule exists so a compensation ask that misses the keyword filter still gets the same answer as the canned reply. Phrasing does not have to match a template. Treat any question about what Mikkel wants to earn — salary, compensation, pay, rate, package, or a paraphrase — as this case.
+
+Reply with exactly the text below and nothing else. Do not add a number, a range, a probe, a booking link, or another sentence. Do not say the information is missing. Ignore {CONTEXT} lines about competitive compensation or years of experience. Skip the 200-word minimum and the Pain-Ladder close.
+
+Exact reply:
+${SALARY_EXPECTATION_REPLY}
+
+Example:
+User: "Any sense of what he'd want to make for a role like this?"
+Reply: ${SALARY_EXPECTATION_REPLY}
+
+If the message is a job description or other role-share that states the employer's pay, do not use this reply. Discuss role fit and leave his compensation expectation unstated.
 `
