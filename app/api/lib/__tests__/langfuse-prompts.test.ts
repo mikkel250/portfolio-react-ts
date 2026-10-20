@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { SALARY_EXPECTATION_REPLY } from '@/lib/input-filter';
 import { CHAT_SYSTEM_PROMPT } from '../chat-prompt';
 import { JD_ANALYSIS_SYSTEM_PROMPT } from '../jd-prompt';
 import { compileLocalTemplate, compilePrompt } from '../langfuse-prompts';
@@ -32,6 +33,7 @@ describe('compileLocalTemplate', () => {
     expect(out).toContain('{CONTEXT}'); // instructional refs preserved
     expect(out).not.toContain('{{context}}');
     expect(out).not.toContain('{{calendly_link}}');
+    expect(out).toContain(SALARY_EXPECTATION_REPLY);
   });
 
   it('injects JD context once', () => {
