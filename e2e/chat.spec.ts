@@ -113,4 +113,96 @@ test.describe('chat', () => {
     await expect(alert).toContainText(errorText);
     await expect(input).toHaveValue(FILTER_PASSING_MESSAGE);
   });
+
+  test('non-JSON 504 rolls the message back and retry sends again', async ({
+    page,
+  }) => {
+    let chatHits = 0;
+    let releaseSecond: (() => void) | undefined;
+    // Chromium's JSON parser message. The route never returns 504; a platform
+    // timeout is HTML, so response.json() throws before response.ok is checked.
+    const errorText = `Unexpected token '<', "<!DOCTYPE "... is not valid JSON`;
+
+    await page.route('**/api/chat', async (route) => {
+      chatHits += 1;
+      if (chatHits > 1) {
+        await new Promise<void>((resolve) => {
+          releaseSecond = resolve;
+        });
+      }
+      await route.fulfill({
+        status: 504,
+        contentType: 'text/html',
+        body: '<!DOCTYPE html><title>504</title>',
+      });
+    });
+
+    await page.goto('/');
+
+    const input = page.getByRole('textbox', { name: 'Message input' });
+    await expect(input).toBeVisible({ timeout: 15_000 });
+
+    await input.fill(FILTER_PASSING_MESSAGE);
+    await page.getByRole('button', { name: 'Send message' }).click();
+
+    const alert = page.getByRole('alert').filter({ hasText: errorText });
+    await expect(alert).toContainText(errorText);
+    await expect(
+      page
+        .getByRole('article', { name: 'Your message' })
+        .filter({ hasText: FILTER_PASSING_MESSAGE }),
+    ).toHaveCount(0);
+    await expect(input).toHaveValue(FILTER_PASSING_MESSAGE);
+    expect(chatHits).toBe(1);
+
+    await page.getByRole('button', { name: 'Retry' }).click();
+    await expect(alert).toBeHidden();
+    await expect.poll(() => chatHits).toBe(2);
+    releaseSecond?.();
+    await expect(alert).toContainText(errorText);
+    await expect(input).toHaveValue(FILTER_PASSING_MESSAGE);
+  });
+
+  test('a dropped network request rolls the message back and retry sends again', async ({
+    page,
+  }) => {
+    let chatHits = 0;
+    let releaseSecond: (() => void) | undefined;
+    const errorText = 'Failed to fetch';
+
+    await page.route('**/api/chat', async (route) => {
+      chatHits += 1;
+      if (chatHits > 1) {
+        await new Promise<void>((resolve) => {
+          releaseSecond = resolve;
+        });
+      }
+      await route.abort('failed');
+    });
+
+    await page.goto('/');
+
+    const input = page.getByRole('textbox', { name: 'Message input' });
+    await expect(input).toBeVisible({ timeout: 15_000 });
+
+    await input.fill(FILTER_PASSING_MESSAGE);
+    await page.getByRole('button', { name: 'Send message' }).click();
+
+    const alert = page.getByRole('alert').filter({ hasText: errorText });
+    await expect(alert).toContainText(errorText);
+    await expect(
+      page
+        .getByRole('article', { name: 'Your message' })
+        .filter({ hasText: FILTER_PASSING_MESSAGE }),
+    ).toHaveCount(0);
+    await expect(input).toHaveValue(FILTER_PASSING_MESSAGE);
+    expect(chatHits).toBe(1);
+
+    await page.getByRole('button', { name: 'Retry' }).click();
+    await expect(alert).toBeHidden();
+    await expect.poll(() => chatHits).toBe(2);
+    releaseSecond?.();
+    await expect(alert).toContainText(errorText);
+    await expect(input).toHaveValue(FILTER_PASSING_MESSAGE);
+  });
 });

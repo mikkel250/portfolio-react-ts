@@ -78,7 +78,7 @@ Today, Playwright stubs `200` for `/api/chat`, and route unit tests mock `chat()
 **Out of scope**
 
 - `/api/analyze-jd` routes, tests, or 503 parity fixes.
-- Platform timeout (504), non-JSON error bodies, or client-specific network abort messaging.
+- Friendlier copy for a platform timeout or a dropped request. The widget still shows the browser's parse or fetch error.
 - Expanding the LLM provider adapter matrix beyond exhaustion of a two-entry chain.
 - Contact form, debug API routes, or consolidating the second chat route suite under `app/api/chat/__tests__/`.
 
@@ -90,7 +90,7 @@ Today, Playwright stubs `200` for `/api/chat`, and route unit tests mock `chat()
 
 ### Deferred to Follow-Up Work
 
-- E2E or unit coverage for 504 / malformed responses and friendlier timeout copy.
+- Friendlier timeout copy. Playwright covers the current non-JSON 504 and dropped-request behavior.
 - Widget tests for 429 and 500 (the route tests cover those statuses).
 - Route integration test of rate limit and burst with a realistic env, beyond a mocked `checkRateLimit`.
 - Optional component tests for `ChatInterface` if the Playwright case is flaky.
