@@ -34,6 +34,7 @@ describe('compileLocalTemplate', () => {
     expect(out).not.toContain('{{context}}');
     expect(out).not.toContain('{{calendly_link}}');
     expect(out).toContain(SALARY_EXPECTATION_REPLY);
+    expect(out).toContain(`Exact reply:\n${SALARY_EXPECTATION_REPLY}`);
   });
 
   it('injects JD context once', () => {
