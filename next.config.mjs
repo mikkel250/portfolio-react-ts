@@ -1,3 +1,7 @@
+import { createRequire } from 'node:module'
+
+const require = createRequire(import.meta.url)
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   pageExtensions: ["ts", "tsx"],
@@ -54,4 +58,11 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+// The analyzer is a devDependency. Load it only for the opt-in command so
+// `next start` still works when production installs omit devDependencies.
+const config =
+  process.env.ANALYZE === 'true'
+    ? require('@next/bundle-analyzer')({ enabled: true })(nextConfig)
+    : nextConfig
+
+export default config
