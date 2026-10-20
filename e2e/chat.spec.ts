@@ -11,6 +11,15 @@ test.describe('chat', () => {
 
     await page.route('**/api/chat', async (route) => {
       chatHits += 1;
+      const body = route.request().postDataJSON() as {
+        sessionId?: string;
+        messages?: { role: string; content: string }[];
+      };
+      expect(body.sessionId).toMatch(/^session-\d+-/);
+      expect(body.messages?.at(-1)).toEqual({
+        role: 'user',
+        content: FILTER_PASSING_MESSAGE,
+      });
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -78,10 +87,16 @@ test.describe('chat', () => {
     page,
   }) => {
     let chatHits = 0;
+    let releaseSecond: (() => void) | undefined;
     const errorText = 'AI service error. Please try again.';
 
     await page.route('**/api/chat', async (route) => {
       chatHits += 1;
+      if (chatHits > 1) {
+        await new Promise<void>((resolve) => {
+          releaseSecond = resolve;
+        });
+      }
       await route.fulfill({
         status: 503,
         contentType: 'application/json',
@@ -110,6 +125,7 @@ test.describe('chat', () => {
     await page.getByRole('button', { name: 'Retry' }).click();
     await expect(alert).toBeHidden();
     await expect.poll(() => chatHits).toBe(2);
+    releaseSecond?.();
     await expect(alert).toContainText(errorText);
     await expect(input).toHaveValue(FILTER_PASSING_MESSAGE);
   });

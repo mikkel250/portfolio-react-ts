@@ -69,4 +69,56 @@ describe('chat() fallback exhaustion', () => {
     expect(deepseekCreate).toHaveBeenCalledOnce();
     expect(openaiCreate).not.toHaveBeenCalled();
   });
+
+  it('aborts on a plain 400 and does not call the fallback', async () => {
+    vi.stubEnv('GOOGLE_API_KEY', 'test-google-key');
+    vi.stubEnv('DEEPSEEK_API_KEY', 'test-deepseek-key');
+    vi.stubEnv('AI_MODEL', 'gemini-2.5-flash');
+    vi.stubEnv('AI_MODEL_FALLBACKS', '["deepseek-v4-pro"]');
+
+    generateContent.mockRejectedValue(
+      Object.assign(new Error('Invalid JSON payload'), { status: 400 })
+    );
+
+    const { chat } = await import('../llm');
+
+    await expect(
+      chat([{ role: 'user', content: 'Hello' }], 'Server system prompt', {
+        model: 'gemini-2.5-flash',
+      })
+    ).rejects.toMatchObject({
+      status: 400,
+      message: 'Invalid JSON payload',
+    });
+
+    expect(generateContent).toHaveBeenCalledOnce();
+    expect(deepseekCreate).not.toHaveBeenCalled();
+    expect(openaiCreate).not.toHaveBeenCalled();
+  });
+
+  it('exhausts the chain when a Gemini API-key 400 is retryable and the fallback fails', async () => {
+    vi.stubEnv('GOOGLE_API_KEY', 'test-google-key');
+    vi.stubEnv('DEEPSEEK_API_KEY', 'test-deepseek-key');
+    vi.stubEnv('AI_MODEL', 'gemini-2.5-flash');
+    vi.stubEnv('AI_MODEL_FALLBACKS', '["deepseek-v4-pro"]');
+
+    generateContent.mockRejectedValue(
+      Object.assign(new Error('API key not valid. Please pass a valid API key.'), {
+        status: 400,
+      })
+    );
+    deepseekCreate.mockRejectedValue(Object.assign(new Error('rate limit'), { status: 429 }));
+
+    const { chat } = await import('../llm');
+
+    await expect(
+      chat([{ role: 'user', content: 'Hello' }], 'Server system prompt', {
+        model: 'gemini-2.5-flash',
+      })
+    ).rejects.toThrow('All LLM providers failed. Last error: rate limit');
+
+    expect(generateContent).toHaveBeenCalledOnce();
+    expect(deepseekCreate).toHaveBeenCalledOnce();
+    expect(openaiCreate).not.toHaveBeenCalled();
+  });
 });
