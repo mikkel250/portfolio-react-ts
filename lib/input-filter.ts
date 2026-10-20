@@ -142,13 +142,40 @@ function checkWorkAuthorizationQuery(query: string): JobFilterResult {
   return { shouldProceed: true };
 }
 
-/** Verbatim reply for compensation asks. Also embedded in the chat system prompt. */
-const bookingLink = process.env.NEXT_PUBLIC_CALENDLY_LINK?.trim();
-export const SALARY_EXPECTATION_REPLY = `Mikkel would be happy to discuss compensation expectations once there's a conversation about the role and opportunity. His absolute minimum expectation is that the pay is equivalent to a living wage for someone living in San Francisco.${
-  bookingLink
-    ? ` Please [book time with Mikkel to discuss it, here](${bookingLink}).`
-    : ""
-}`;
+export function httpsBookingLink(raw: string | undefined): string | undefined {
+  const trimmed = raw?.trim();
+  if (!trimmed) return undefined;
+
+  try {
+    const url = new URL(trimmed);
+    if (url.protocol !== 'https:' || !url.hostname) return undefined;
+    return trimmed;
+  } catch {
+    return undefined;
+  }
+}
+
+const SALARY_BOOKING_SENTENCE =
+  ' Please [book time with Mikkel to discuss it, here]({{calendly_link}}).';
+
+/**
+ * Compensation reply. The chat prompt embeds this unchanged, including the
+ * `{{calendly_link}}` placeholder. The short-circuit filter substitutes a
+ * validated URL at call time.
+ */
+export const SALARY_EXPECTATION_REPLY_TEMPLATE =
+  "Mikkel would be happy to discuss compensation expectations once there's a conversation about the role and opportunity. His absolute minimum expectation is that the pay is equivalent to a living wage for someone living in San Francisco." +
+  SALARY_BOOKING_SENTENCE;
+
+export function salaryExpectationReply(raw: string | undefined): string {
+  const link = httpsBookingLink(raw);
+  if (!link) {
+    return SALARY_EXPECTATION_REPLY_TEMPLATE.split(SALARY_BOOKING_SENTENCE).join(
+      '',
+    );
+  }
+  return SALARY_EXPECTATION_REPLY_TEMPLATE.split('{{calendly_link}}').join(link);
+}
 
 function checkSalaryQuery(query: string): JobFilterResult {
   // Ask-shaped only — avoid employer copy like "salary range for this role is $X"
@@ -169,7 +196,7 @@ function checkSalaryQuery(query: string): JobFilterResult {
   if (isSalaryQuestion) {
     return {
       shouldProceed: false,
-      response: SALARY_EXPECTATION_REPLY,
+      response: salaryExpectationReply(process.env.NEXT_PUBLIC_CALENDLY_LINK),
       reason: 'salary_query',
     };
   }

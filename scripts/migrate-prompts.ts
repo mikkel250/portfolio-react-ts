@@ -3,11 +3,14 @@
  *
  * Usage:
  *   1. Set LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY, LANGFUSE_BASE_URL
- *   2. npm run migrate:prompts
+ *   2. npm run migrate:prompts -- --check   (compare production to local; no upload)
+ *   3. npm run migrate:prompts
  *
  * Uploads the local chat/JD system templates (with {{context}} injection
  * slots) as Langfuse Prompt Management versions labeled `production`.
  * Subsequent runs create new versions and promote them to production.
+ * `--check` compiles the production prompt and the local template with the
+ * same vars and fails when they differ.
  */
 
 import { config } from 'dotenv';
@@ -19,6 +22,12 @@ config({ path: resolve(process.cwd(), '.env') });
 import { LangfuseClient } from '@langfuse/client';
 import { CHAT_SYSTEM_PROMPT } from '../app/api/lib/chat-prompt';
 import { JD_ANALYSIS_SYSTEM_PROMPT } from '../app/api/lib/jd-prompt';
+import {
+  PROMPT_SMOKE_CALENDLY_LINK,
+  PROMPT_SMOKE_CONTEXT,
+  assertSalaryExactReplyCompiles,
+  compiledPromptDiff,
+} from '../app/api/lib/prompt-parity';
 
 /** App-facing label used by runtime `client.prompt.get(..., { label })`. */
 const APP_PROMPT_LABEL = 'production';
@@ -34,7 +43,57 @@ type MigratablePrompt = {
   config: { description: string };
 };
 
+async function productionMatchesLocal(
+  client: LangfuseClient,
+  prompts: MigratablePrompt[],
+): Promise<boolean> {
+  let ok = true;
+
+  for (const p of prompts) {
+    if (!p.appLabel || !p.compileSmokeVars) continue;
+    try {
+      const fetched = await client.prompt.get(p.name, { label: p.appLabel });
+      const remote = typeof fetched.prompt === 'string' ? fetched.prompt : '';
+      if (!remote) {
+        ok = false;
+        console.error(
+          `  ❌  ${p.name}  label=${p.appLabel}  version=${fetched.version} has no text body`,
+        );
+        continue;
+      }
+      const diff = compiledPromptDiff(p.prompt, remote, p.compileSmokeVars);
+      if (diff) {
+        ok = false;
+        console.error(
+          `  ❌  ${p.name}  label=${p.appLabel}  version=${fetched.version} does not match the local template after compile\n${diff}`,
+        );
+      } else {
+        console.log(
+          `  ✅  ${p.name}  label=${p.appLabel}  version=${fetched.version} matches the local template`,
+        );
+      }
+    } catch (err: unknown) {
+      ok = false;
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(
+        `  ❌  ${p.name}  label=${p.appLabel}  fetch failed: ${message}`,
+      );
+    }
+  }
+
+  return ok;
+}
+
 async function main(): Promise<void> {
+  try {
+    assertSalaryExactReplyCompiles(CHAT_SYSTEM_PROMPT);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`❌  ${message}`);
+    process.exitCode = 1;
+    return;
+  }
+
   if (!process.env.LANGFUSE_PUBLIC_KEY || !process.env.LANGFUSE_SECRET_KEY) {
     console.error(
       '❌ Missing LANGFUSE_PUBLIC_KEY or LANGFUSE_SECRET_KEY.\n' +
@@ -58,8 +117,8 @@ async function main(): Promise<void> {
       labels: [APP_PROMPT_LABEL],
       appLabel: APP_PROMPT_LABEL,
       compileSmokeVars: {
-        context: 'KB_SMOKE',
-        calendly_link: 'https://example.com/cal',
+        context: PROMPT_SMOKE_CONTEXT,
+        calendly_link: PROMPT_SMOKE_CALENDLY_LINK,
       },
       config: {
         description:
@@ -73,7 +132,7 @@ async function main(): Promise<void> {
       labels: [APP_PROMPT_LABEL],
       appLabel: APP_PROMPT_LABEL,
       compileSmokeVars: {
-        context: 'KB_SMOKE',
+        context: PROMPT_SMOKE_CONTEXT,
         job_title: 'Engineer',
       },
       config: {
@@ -82,6 +141,21 @@ async function main(): Promise<void> {
       },
     },
   ];
+
+  if (process.argv.includes('--check')) {
+    console.log(`\n🔍 Comparing production prompts to the local templates (${baseUrl})...\n`);
+    const ok = await productionMatchesLocal(client, prompts);
+    await client.shutdown();
+    if (!ok) {
+      console.error(
+        '\n❌ Production prompts do not match the local templates. Re-run npm run migrate:prompts after reviewing the diff.\n',
+      );
+      process.exitCode = 1;
+      return;
+    }
+    console.log('\n✨ Production prompts match the local templates.\n');
+    return;
+  }
 
   console.log(`\n📦 Migrating ${prompts.length} prompts to Langfuse (${baseUrl})...\n`);
 
