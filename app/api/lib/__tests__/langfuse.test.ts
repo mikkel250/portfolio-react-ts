@@ -1,16 +1,25 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { LangfuseSpanProcessor } from '@langfuse/otel';
 import { getLangfuseTracerProvider } from '@langfuse/tracing';
+
+const clientFlush = vi.hoisted(() => vi.fn(async () => undefined));
+
+vi.mock('@langfuse/client', () => ({
+  LangfuseClient: class LangfuseClient {
+    flush = clientFlush;
+  },
+}));
 import {
   flushLangfuseTracing,
   isLangfuseTracingEnabled,
   traceLLMCall,
   ensureLangfuseTracing,
+  resetLangfuseTracingInitStateForTests,
 } from '../langfuse';
-import { setLangfuseSpanProcessor } from '../langfuse-span-processor-ref';
-
-const EXPORT_READY_KEY = '__portfolio_langfuse_export_ready__v1';
-const INIT_PROMISE_KEY = '__portfolio_langfuse_init_promise__v1';
+import {
+  getLangfuseSpanProcessor,
+  setLangfuseSpanProcessor,
+} from '../langfuse-span-processor-ref';
 
 const startActiveObservationMock = vi.fn();
 const setLangfuseTracerProviderMock = vi.fn();
@@ -48,9 +57,7 @@ vi.mock('@langfuse/otel', () => ({
 }));
 
 function clearLangfuseInitState(): void {
-  const g = globalThis as Record<string, unknown>;
-  delete g[EXPORT_READY_KEY];
-  delete g[INIT_PROMISE_KEY];
+  resetLangfuseTracingInitStateForTests();
   setLangfuseSpanProcessor(null);
   langfuseProcessorCtorCount = 0;
   langfuseProcessorShouldThrow = false;
@@ -105,6 +112,25 @@ describe('ensureLangfuseTracing', () => {
     expect(langfuseProcessorCtorCount).toBe(1);
     expect(tracerProviderRegister).toHaveBeenCalledOnce();
     expect(setLangfuseTracerProviderMock).toHaveBeenCalledOnce();
+  });
+
+  it('reuses a span processor already published by instrumentation', async () => {
+    vi.stubEnv('LANGFUSE_TRACING', 'true');
+    vi.stubEnv('LANGFUSE_PUBLIC_KEY', 'pk');
+    vi.stubEnv('LANGFUSE_SECRET_KEY', 'sk');
+
+    const existingProcessor = {
+      forceFlush: vi.fn(),
+    } as unknown as LangfuseSpanProcessor;
+    setLangfuseSpanProcessor(existingProcessor);
+
+    await expect(ensureLangfuseTracing()).resolves.toBe(true);
+    await expect(ensureLangfuseTracing()).resolves.toBe(true);
+
+    expect(getLangfuseSpanProcessor()).toBe(existingProcessor);
+    expect(langfuseProcessorCtorCount).toBe(0);
+    expect(tracerProviderRegister).not.toHaveBeenCalled();
+    expect(setLangfuseTracerProviderMock).not.toHaveBeenCalled();
   });
 
   it('returns false when initialization fails and lets a later call retry', async () => {
@@ -164,6 +190,11 @@ describe('traceLLMCall', () => {
 
     expect(update).toHaveBeenCalledWith(
       expect.objectContaining({
+        input: [
+          { role: 'system', content: 'system' },
+          { role: 'user', content: 'hi' },
+        ],
+        output: [{ role: 'assistant', content: 'ok' }],
         usageDetails: { input: 100, output: 50, total: 150 },
       })
     );
@@ -194,10 +225,13 @@ describe('traceLLMCall', () => {
 
 describe('flushLangfuseTracing', () => {
   afterEach(() => {
+    vi.useRealTimers();
     vi.unstubAllEnvs();
     vi.restoreAllMocks();
     setLangfuseSpanProcessor(null);
     vi.mocked(getLangfuseTracerProvider).mockReset();
+    clientFlush.mockReset();
+    clientFlush.mockImplementation(async () => undefined);
   });
 
   it('no-ops without throwing when tracing is off', async () => {
@@ -338,5 +372,38 @@ describe('flushLangfuseTracing', () => {
     expect(warn).toHaveBeenCalledWith(
       'Langfuse OTel flush skipped: no span processor or provider forceFlush'
     );
+  });
+
+  it('skips client.flush when forceFlush consumes the shared 2s deadline', async () => {
+    vi.useFakeTimers();
+    vi.stubEnv('LANGFUSE_TRACING', 'true');
+    vi.stubEnv('LANGFUSE_PUBLIC_KEY', 'pk');
+    vi.stubEnv('LANGFUSE_SECRET_KEY', 'sk');
+
+    setLangfuseSpanProcessor({
+      forceFlush: () => new Promise(() => undefined),
+    } as unknown as LangfuseSpanProcessor);
+
+    const flushPromise = flushLangfuseTracing();
+    await vi.advanceTimersByTimeAsync(2_000);
+    await flushPromise;
+    expect(clientFlush).not.toHaveBeenCalled();
+  });
+
+  it('resolves when client.flush exceeds the time left on the deadline', async () => {
+    vi.useFakeTimers();
+    vi.stubEnv('LANGFUSE_TRACING', 'true');
+    vi.stubEnv('LANGFUSE_PUBLIC_KEY', 'pk');
+    vi.stubEnv('LANGFUSE_SECRET_KEY', 'sk');
+    clientFlush.mockImplementation(() => new Promise(() => undefined));
+
+    setLangfuseSpanProcessor({
+      forceFlush: async () => undefined,
+    } as unknown as LangfuseSpanProcessor);
+
+    const flushPromise = flushLangfuseTracing();
+    await vi.advanceTimersByTimeAsync(2_000);
+    await expect(flushPromise).resolves.toBeUndefined();
+    expect(clientFlush).toHaveBeenCalledOnce();
   });
 });

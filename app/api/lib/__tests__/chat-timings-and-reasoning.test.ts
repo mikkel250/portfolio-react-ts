@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createStepClock } from '../chat-timings';
+import { blockingTailMs, createStepClock, pipelineGapMs } from '../chat-timings';
 import { resolveDeepseekReasoningEffort } from '../llm';
 import { detectProvider } from '../llm-fallback-chain';
 
@@ -22,6 +22,23 @@ describe('createStepClock', () => {
     clock.set('llm', 1234);
     const timings = clock.finish();
     expect(timings.llm).toBe(1234);
+  });
+
+  it('elapsed keeps growing after finish and blockingTailMs is the gap', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-10-19T00:00:00.000Z'));
+    const clock = createStepClock();
+    vi.advanceTimersByTime(1_000);
+    clock.lap('llm');
+    const timings = clock.finish();
+    vi.advanceTimersByTime(40);
+    expect(timings.total).toBe(1_000);
+    expect(clock.elapsed()).toBe(1_040);
+    expect(blockingTailMs(timings.total, clock.elapsed())).toBe(40);
+    expect(blockingTailMs(1_000, 900)).toBe(0);
+    expect(pipelineGapMs({ filter: 10, llm: 100, total: 150 })).toBe(40);
+    expect(pipelineGapMs({ llm: 100, total: 100 })).toBe(0);
+    vi.useRealTimers();
   });
 
   it('supports filter-only path without llm lap', () => {

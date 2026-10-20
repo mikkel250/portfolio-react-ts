@@ -31,10 +31,23 @@ vi.mock('@/lib/input-filter', () => ({
   filterInput: vi.fn(() => ({ shouldCallAPI: true })),
 }));
 
+const tracingState = vi.hoisted(() => ({ enabled: false }));
+const propagateAttributesMock = vi.hoisted(() =>
+  vi.fn(async (_attrs: unknown, fn: () => unknown) => fn())
+);
+const startActiveObservationMock = vi.hoisted(() =>
+  vi.fn(
+    async (
+      _name: unknown,
+      fn: (span: { update: ReturnType<typeof vi.fn> }) => unknown
+    ) => fn({ update: vi.fn() })
+  )
+);
+
 vi.mock('../lib/langfuse', () => ({
   flushLangfuseTracing: vi.fn(async () => undefined),
-  isLangfuseTracingEnabled: vi.fn(() => false),
-  ensureLangfuseTracing: vi.fn(async () => false),
+  isLangfuseTracingEnabled: vi.fn(() => tracingState.enabled),
+  ensureLangfuseTracing: vi.fn(async () => tracingState.enabled),
 }));
 
 vi.mock('../lib/langsmith', () => ({
@@ -42,13 +55,16 @@ vi.mock('../lib/langsmith', () => ({
 }));
 
 vi.mock('@langfuse/tracing', () => ({
-  startActiveObservation: vi.fn(),
+  propagateAttributes: (...args: unknown[]) => propagateAttributesMock(...args),
+  startActiveObservation: startActiveObservationMock,
 }));
 
 import { POST } from './route';
 import { chat } from '../lib/llm';
+import { filterInput } from '@/lib/input-filter';
 import {
   ensureLangfuseTracing,
+  flushLangfuseTracing,
   isLangfuseTracingEnabled,
 } from '../lib/langfuse';
 import { startActiveObservation } from '@langfuse/tracing';
@@ -66,6 +82,7 @@ function postChat(body: Record<string, unknown>) {
 describe('POST /api/chat validation', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    tracingState.enabled = false;
   });
 
   afterEach(() => {
@@ -161,11 +178,15 @@ describe('POST /api/chat tracing init failure', () => {
   });
 
   afterEach(() => {
-    vi.mocked(isLangfuseTracingEnabled).mockReset();
-    vi.mocked(isLangfuseTracingEnabled).mockReturnValue(false);
-    vi.mocked(ensureLangfuseTracing).mockReset();
-    vi.mocked(ensureLangfuseTracing).mockResolvedValue(false);
-    vi.mocked(startActiveObservation).mockReset();
+    tracingState.enabled = false;
+    vi.mocked(isLangfuseTracingEnabled).mockImplementation(() => tracingState.enabled);
+    vi.mocked(ensureLangfuseTracing).mockImplementation(async () => tracingState.enabled);
+    startActiveObservationMock.mockImplementation(
+      async (
+        _name: unknown,
+        fn: (span: { update: ReturnType<typeof vi.fn> }) => unknown
+      ) => fn({ update: vi.fn() })
+    );
     vi.unstubAllEnvs();
   });
 
@@ -204,6 +225,7 @@ describe('POST /api/chat tracing init failure', () => {
 describe('POST /api/chat success payload', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    tracingState.enabled = false;
     vi.stubEnv('NODE_ENV', 'production');
   });
 
@@ -222,5 +244,118 @@ describe('POST /api/chat success payload', () => {
     expect(body.content).toBe('Hello from the assistant.');
     expect(body).not.toHaveProperty('traceUrl');
     expect(JSON.stringify(body)).not.toContain('smith.langchain.com');
+  });
+
+  it('propagates sessionId before the root observation when tracing is on', async () => {
+    tracingState.enabled = true;
+
+    const response = await postChat({
+      sessionId: 'session-prop',
+      messages: [{ role: 'user', content: 'Tell me about Mikkel' }],
+    });
+
+    expect(response.status).toBe(200);
+    expect(propagateAttributesMock).toHaveBeenCalledWith(
+      { sessionId: 'session-prop', traceName: 'chat_request' },
+      expect.any(Function)
+    );
+    expect(propagateAttributesMock.mock.invocationCallOrder[0]).toBeLessThan(
+      startActiveObservationMock.mock.invocationCallOrder[0]
+    );
+    expect(startActiveObservationMock.mock.invocationCallOrder[0]).toBeLessThan(
+      vi.mocked(chat).mock.invocationCallOrder[0]
+    );
+    expect(startActiveObservationMock).toHaveBeenCalledWith(
+      'chat_request',
+      expect.any(Function)
+    );
+  });
+
+  it('records a filtered reply on the same Langfuse session', async () => {
+    tracingState.enabled = true;
+    vi.mocked(filterInput).mockReturnValueOnce({
+      shouldCallAPI: false,
+      response: 'Please ask a specific question.',
+      reason: 'too_short',
+    });
+    const order: string[] = [];
+    const spanUpdate = vi.fn();
+    startActiveObservationMock.mockImplementationOnce(async (name, fn) => {
+      order.push(`obs:${String(name)}`);
+      return fn({ update: spanUpdate });
+    });
+    const logSpy = vi.spyOn(console, 'log').mockImplementation((message) => {
+      if (message === '[chat] latency') order.push('latency');
+    });
+
+    const response = await postChat({
+      sessionId: 'session-filtered',
+      messages: [{ role: 'user', content: 'hi' }],
+    });
+
+    logSpy.mockRestore();
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.content).toBe('Please ask a specific question.');
+    expect(body.model).toBe('filtered');
+    expect(chat).not.toHaveBeenCalled();
+    expect(order).toEqual(['obs:chat_filtered', 'latency']);
+    expect(propagateAttributesMock).toHaveBeenCalledWith(
+      { sessionId: 'session-filtered', traceName: 'chat_filtered' },
+      expect.any(Function)
+    );
+    expect(startActiveObservationMock).toHaveBeenCalledWith(
+      'chat_filtered',
+      expect.any(Function)
+    );
+    expect(spanUpdate).toHaveBeenCalledWith({
+      input: [{ role: 'user', content: 'hi' }],
+      output: [{ role: 'assistant', content: 'Please ask a specific question.' }],
+      metadata: {
+        sessionId: 'session-filtered',
+        filterReason: 'too_short',
+      },
+    });
+  });
+
+  it('returns before a hung tracing flush settles', async () => {
+    tracingState.enabled = true;
+    let releaseFlush: () => void = () => undefined;
+    vi.mocked(flushLangfuseTracing).mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          releaseFlush = resolve;
+        })
+    );
+
+    const response = await postChat({
+      sessionId: 'session-flush',
+      messages: [{ role: 'user', content: 'Tell me about Mikkel' }],
+    });
+
+    expect(response.status).toBe(200);
+    expect(flushLangfuseTracing).toHaveBeenCalled();
+    releaseFlush();
+    await Promise.resolve();
+  });
+
+  it('reports handler wall clock and blocking tail in development', async () => {
+    vi.stubEnv('NODE_ENV', 'development');
+
+    const response = await postChat({
+      sessionId: 'session-tail',
+      messages: [{ role: 'user', content: 'Tell me about Mikkel' }],
+    });
+
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.timings_ms.total).toEqual(expect.any(Number));
+    expect(body.timings_ms.pipeline_gap_ms).toEqual(expect.any(Number));
+    expect(body.timings_ms.handler_ms).toEqual(expect.any(Number));
+    expect(body.timings_ms.blocking_tail_ms).toEqual(expect.any(Number));
+    expect(body.timings_ms.handler_ms).toBeGreaterThanOrEqual(body.timings_ms.total);
+    expect(body.timings_ms.blocking_tail_ms).toBe(
+      body.timings_ms.handler_ms - body.timings_ms.total
+    );
   });
 });

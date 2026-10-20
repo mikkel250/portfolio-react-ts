@@ -16,6 +16,8 @@ config({ path: resolve(process.cwd(), '.env.local') });
 config({ path: resolve(process.cwd(), '.env') });
 
 import { LangfuseClient } from '@langfuse/client';
+import { LangfuseSpanProcessor } from '@langfuse/otel';
+import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
 import fetch from 'node-fetch';
 
 const DATASET_NAME = 'portfolio-chat-guardrails';
@@ -109,53 +111,73 @@ async function main(): Promise<void> {
     metadata: { caseName: c.name },
   }));
 
+  // v6 records experiments as OpenTelemetry spans, not POST /dataset-run-items.
+  // This script is not a Next.js server, so it has to register the exporter
+  // itself. immediate + forceFlush matches the short-lived serverless setup.
+  const spanProcessor = new LangfuseSpanProcessor({ exportMode: 'immediate' });
+  const tracerProvider = new NodeTracerProvider({
+    spanProcessors: [spanProcessor],
+  });
+  tracerProvider.register();
+
   console.log('Running Langfuse experiment against live chat API...\n');
 
-  const result = await langfuse.experiment.run({
-    name: 'portfolio-chat-guardrails-smoke',
-    description:
-      'Smoke test: Calendly presence heuristic (full guardrails live in LangSmith suite).',
-    runName: `guardrails-${new Date().toISOString().slice(0, 19)}`,
-    data: experimentData,
-    maxConcurrency: 2,
-    task: async ({ input }) => {
-      const query = typeof input === 'string' ? input : String(input);
-      return callChatAPI(query);
-    },
-    evaluators: [
-      async ({ output, metadata }) => {
-        const text = typeof output === 'string' ? output : String(output);
-        const hasCalendly =
-          !!calendly && text.includes(calendly);
-        return {
-          name: 'includes_calendly',
-          value: hasCalendly ? 1 : 0,
-          comment:
-            (metadata as { caseName?: string })?.caseName ?? undefined,
-        };
+  try {
+    const result = await langfuse.experiment.run({
+      name: 'portfolio-chat-guardrails-smoke',
+      description:
+        'Smoke test: Calendly presence heuristic (full guardrails live in LangSmith suite).',
+      runName: `guardrails-${new Date().toISOString().slice(0, 19)}`,
+      data: experimentData,
+      maxConcurrency: 2,
+      task: async ({ input }) => {
+        const query = typeof input === 'string' ? input : String(input);
+        return callChatAPI(query);
       },
-    ],
-    runEvaluators: [
-      async ({ itemResults }) => {
-        const scores = itemResults.flatMap((r) =>
-          r.evaluations.filter((e) => e.name === 'includes_calendly')
-        );
-        const avg =
-          scores.length === 0
-            ? 0
-            : scores.reduce((a, s) => a + Number(s.value ?? 0), 0) /
-              scores.length;
-        return {
-          name: 'avg_calendly_score',
-          value: avg,
-          comment: 'Fraction of responses containing the configured Calendly URL',
-        };
-      },
-    ],
-  });
+      evaluators: [
+        async ({ output, metadata }) => {
+          const text = typeof output === 'string' ? output : String(output);
+          const hasCalendly = !!calendly && text.includes(calendly);
+          return {
+            name: 'includes_calendly',
+            value: hasCalendly ? 1 : 0,
+            comment:
+              (metadata as { caseName?: string })?.caseName ?? undefined,
+          };
+        },
+      ],
+      runEvaluators: [
+        async ({ itemResults }) => {
+          const scores = itemResults.flatMap((r) =>
+            r.evaluations.filter((e) => e.name === 'includes_calendly')
+          );
+          const avg =
+            scores.length === 0
+              ? 0
+              : scores.reduce((a, s) => a + Number(s.value ?? 0), 0) /
+                scores.length;
+          return {
+            name: 'avg_calendly_score',
+            value: avg,
+            comment:
+              'Fraction of responses containing the configured Calendly URL',
+          };
+        },
+      ],
+    });
 
-  console.log(await result.format({ includeItemResults: true }));
-  await langfuse.shutdown();
+    console.log(await result.format({ includeItemResults: true }));
+  } finally {
+    try {
+      await spanProcessor.forceFlush();
+    } finally {
+      try {
+        await tracerProvider.shutdown();
+      } finally {
+        await langfuse.shutdown();
+      }
+    }
+  }
 }
 
 main().catch((err) => {

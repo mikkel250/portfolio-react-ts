@@ -9,7 +9,7 @@ Stack and invariants live in [`ARCHITECTURE.md`](./ARCHITECTURE.md). The assista
 - Three-state chat widget on every page (minimized, compact side panel, maximized modal). It loads maximized. At 768px or below, opening it from the button stays maximized. On a wider screen, opening it from the button uses the compact side panel.
 - `POST /api/chat` validates the body, rate-limits, runs a shared short-circuit router, retrieves markdown by keyword, and calls an LLM.
 - Providers: Google Gemini, DeepSeek, Anthropic Claude, and OpenAI behind one `chat()` function. When `AI_MODEL` and `AI_MODEL_FALLBACKS` are unset, the code default is Google, then DeepSeek, then Anthropic. OpenAI runs only when it is listed in `AI_MODEL_FALLBACKS`. Model ids live in `app/api/lib/llm.ts` and `app/api/lib/llm-fallback-chain.ts`.
-- Observability: LangSmith and Langfuse, when their tracing flags are on. Chat and analyze-jd await those flushes before the serverless handler returns. Short-circuit replies never call the model.
+- Observability: LangSmith and Langfuse, when their tracing flags are on. Chat and analyze-jd schedule those flushes with `after()` after the response is sent. Each flush gives up after about two seconds. Short-circuit replies never call the model.
 - Operating target about $0–2.50/month. No database, no accounts, Vercel free tier.
 
 `POST /api/analyze-jd` scores a job description with a weighted rubric. The widget does not call it. Pasted roles go through `/api/chat`.

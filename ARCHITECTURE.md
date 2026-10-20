@@ -185,8 +185,9 @@ All production API routes use `export const runtime = 'nodejs'`.
 - Credentials: `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `LANGFUSE_BASE_URL`, `LANGFUSE_TRACING` in `.env.local`
 - Used in: `instrumentation.ts`, `app/api/lib/langfuse.ts`, `scripts/migrate-prompts.ts`
 - Enabled when `LANGFUSE_TRACING=true` (exact string) and keys are present
-- Chat path awaits Langfuse generation spans and `forceFlush` before returning so serverless exits do not drop traces
+- Chat path awaits Langfuse generation spans so they nest under `chat_request`. Both tracers flush via `after()` from `next/server` after the response is sent (2s cap each). `after()` uses Vercel `waitUntil` so the invocation stays alive without holding the HTTP response. Flags default off unless set to the exact string `true`
 - Parent observation name: `chat_request` with `timings_ms` metadata (filter / knowledgeBase / prompt / llm / total)
+- The browser session id is propagated with `propagateAttributes({ sessionId })` on chat, filtered replies, and JD analysis so Langfuse groups those traces in the Sessions view. Generation input/output are role-labeled messages, and later turns repeat the prior conversation.
 
 ### DeepSeek reasoning dial
 - Env: `DEEPSEEK_REASONING_EFFORT` = `max` | `high` | `disabled` (default `high`)
@@ -272,8 +273,9 @@ EVAL_DELAY_MS
 - Shared short-circuit router in `lib/input-filter.ts` runs in the widget and again in `POST /api/chat` before any LLM call
 
 **Logging:**
-- LangSmith traces LLM calls via `traceLLMCall` / `traceableChat`. Chat and analyze-jd await `flushLangSmithTracing()` in a `finally` (2s deadline; a flush failure does not fail the response)
-- Langfuse traces via OpenTelemetry when `LANGFUSE_TRACING=true`. The same routes await `flushLangfuseTracing()` in that `finally`
+- LangSmith traces LLM calls via `traceLLMCall` / `traceableChat`. Chat and analyze-jd schedule `flushLangSmithTracing()` with `after()` (2s deadline; a flush failure does not fail the response)
+- Langfuse traces via OpenTelemetry when `LANGFUSE_TRACING=true`. The same routes schedule `flushLangfuseTracing()` in that `after()` callback (2s deadline shared by `forceFlush` and `client.flush`)
+- Dev chat JSON includes `timings_ms.handler_ms`, `blocking_tail_ms` (`handler_ms` minus pipeline `total`), and `pipeline_gap_ms` (`total` minus named steps). Server logs `[chat] latency` with the tracing flags and `[tracing] flush_ms` for the off-path flush
 - Some debug `console.log` in chat route (development)
 
 **Testing:**

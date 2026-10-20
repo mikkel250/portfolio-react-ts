@@ -63,60 +63,65 @@ export function initLangFuse(): LangfuseClient | null {
   return langfuseClient;
 }
 
-const EXPORT_READY_KEY = '__portfolio_langfuse_export_ready__v1';
-const INIT_PROMISE_KEY = '__portfolio_langfuse_init_promise__v1';
+let langfuseExportReady = false;
+let langfuseInitPromise: Promise<boolean> | undefined;
+
+/** Test-only. Clears the module-local ready flag and in-flight init promise. */
+export function resetLangfuseTracingInitStateForTests(): void {
+  langfuseExportReady = false;
+  langfuseInitPromise = undefined;
+}
 
 /**
- * Bind Langfuse's tracer to a provider that actually owns the span processor.
+ * Make Langfuse span export available in this module.
  *
- * Next compiles `instrumentation.ts` and route handlers as separate bundles.
- * `NodeTracerProvider.register()` in instrumentation updates one OpenTelemetry
- * global; `startActiveObservation` in a route can still be talking to another,
- * so generations are created and then flushed into an empty exporter.
- * `setLangfuseTracerProvider` is stored on globalThis and is what the SDK reads.
+ * Instrumentation and route handlers do not share module state.
+ * Instrumentation publishes its processor on the shared span-processor slot
+ * and registers that provider with `setLangfuseTracerProvider` (globalThis,
+ * which is what the SDK reads). When that processor is already present, mark
+ * this module ready and return. A second `NodeTracerProvider.register()` would
+ * replace the global provider.
  *
- * Concurrent callers share one in-flight promise so only one provider is
- * registered. Returns false when tracing is disabled or initialization fails.
- * Failures are logged and do not throw — callers run without tracing.
+ * With no published processor, create one provider and publish it. Callers in
+ * this module share one in-flight promise. The ready flag and that promise
+ * stay module-local. A failed init clears the promise so a later call can
+ * retry. Returns false when tracing is disabled or initialization fails.
+ * Failures are logged and do not throw.
  */
 export async function ensureLangfuseTracing(): Promise<boolean> {
   if (!isLangfuseTracingEnabled()) return false;
-  const g = globalThis as Record<string, unknown>;
-  if (g[EXPORT_READY_KEY]) return true;
+  if (langfuseExportReady) return true;
 
-  let pending = g[INIT_PROMISE_KEY] as Promise<boolean> | undefined;
-  if (!pending) {
-    pending = initializeLangfuseTracing(g);
-    g[INIT_PROMISE_KEY] = pending;
+  if (!langfuseInitPromise) {
+    langfuseInitPromise = initializeLangfuseTracing();
   }
 
-  return pending;
+  return langfuseInitPromise;
 }
 
-async function initializeLangfuseTracing(
-  g: Record<string, unknown>
-): Promise<boolean> {
+async function initializeLangfuseTracing(): Promise<boolean> {
   try {
+    if (getLangfuseSpanProcessor()) {
+      langfuseExportReady = true;
+      return true;
+    }
+
     const { NodeTracerProvider } = await import('@opentelemetry/sdk-trace-node');
     const { LangfuseSpanProcessor } = await import('@langfuse/otel');
 
-    let processor = getLangfuseSpanProcessor();
-    if (!processor) {
-      processor = new LangfuseSpanProcessor({
-        exportMode: 'immediate',
-        publicKey: process.env.LANGFUSE_PUBLIC_KEY,
-        secretKey: process.env.LANGFUSE_SECRET_KEY,
-        baseUrl: process.env.LANGFUSE_BASE_URL || 'https://cloud.langfuse.com',
-      });
-      setLangfuseSpanProcessor(processor);
-    }
-
+    const processor = new LangfuseSpanProcessor({
+      exportMode: 'immediate',
+      publicKey: process.env.LANGFUSE_PUBLIC_KEY,
+      secretKey: process.env.LANGFUSE_SECRET_KEY,
+      baseUrl: process.env.LANGFUSE_BASE_URL || 'https://cloud.langfuse.com',
+    });
     const provider = new NodeTracerProvider({
       spanProcessors: [processor],
     });
     setLangfuseTracerProvider(provider);
     provider.register();
-    g[EXPORT_READY_KEY] = true;
+    setLangfuseSpanProcessor(processor);
+    langfuseExportReady = true;
 
     let host = process.env.LANGFUSE_BASE_URL || 'https://cloud.langfuse.com';
     try {
@@ -133,8 +138,8 @@ async function initializeLangfuseTracing(
     );
     return false;
   } finally {
-    if (!g[EXPORT_READY_KEY]) {
-      delete g[INIT_PROMISE_KEY];
+    if (!langfuseExportReady) {
+      langfuseInitPromise = undefined;
     }
   }
 }
@@ -181,30 +186,68 @@ function resolveOtelFlushTarget(
 }
 
 /**
+ * Shared deadline for the OTel forceFlush and the Langfuse client flush.
+ * Same cap as LangSmith (`FLUSH_TIMEOUT_MS` in langsmith.ts). Each phase
+ * gets only the time still left; the total wait is capped here.
+ */
+const FLUSH_TIMEOUT_MS = 2_000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | undefined> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => resolve(undefined), ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (err) => {
+        clearTimeout(timer);
+        reject(err);
+      }
+    );
+  });
+}
+
+function remainingMs(deadline: number): number {
+  return Math.max(0, deadline - Date.now());
+}
+
+/**
  * Flush pending Langfuse / OTel spans before a serverless function exits.
  * No-op when tracing is disabled. Never throws to callers.
  *
  * Prefer LangfuseSpanProcessor.forceFlush. If missing, unwrap the OTel
  * ProxyTracerProvider via getDelegate() so the underlying SDK provider
  * (which implements forceFlush) can be flushed.
+ *
+ * One 2s deadline covers forceFlush and client.flush. client.flush is
+ * skipped when that deadline has already passed.
  */
 export async function flushLangfuseTracing(): Promise<void> {
   if (!isLangfuseTracingEnabled()) {
     return;
   }
 
+  const deadline = Date.now() + FLUSH_TIMEOUT_MS;
+
   try {
     const processor = getLangfuseSpanProcessor();
 
     if (processor && typeof processor.forceFlush === 'function') {
-      await processor.forceFlush();
+      const pendingBudget = remainingMs(deadline);
+      if (pendingBudget > 0) {
+        await withTimeout(Promise.resolve(processor.forceFlush()), pendingBudget);
+      }
     } else {
       const { getLangfuseTracerProvider } = await import('@langfuse/tracing');
       const flushTarget = resolveOtelFlushTarget(
         getLangfuseTracerProvider() as FlushableOtelProvider
       );
       if (flushTarget?.forceFlush) {
-        await flushTarget.forceFlush();
+        const pendingBudget = remainingMs(deadline);
+        if (pendingBudget > 0) {
+          await withTimeout(Promise.resolve(flushTarget.forceFlush()), pendingBudget);
+        }
       } else {
         console.warn(
           'Langfuse OTel flush skipped: no span processor or provider forceFlush'
@@ -221,7 +264,10 @@ export async function flushLangfuseTracing(): Promise<void> {
   try {
     const client = initLangFuse();
     if (client && typeof client.flush === 'function') {
-      await client.flush();
+      const flushBudget = remainingMs(deadline);
+      if (flushBudget > 0) {
+        await withTimeout(Promise.resolve(client.flush()), flushBudget);
+      }
     }
   } catch (error) {
     console.error(
@@ -232,21 +278,16 @@ export async function flushLangfuseTracing(): Promise<void> {
 }
 
 /**
- * traceLLMCall: Submits a trace to LangFuse for each LLM call.
+ * traceLLMCall: Submits a generation to Langfuse for each LLM call.
  *
- * Creates an OpenTelemetry-compatible "generation" span with:
- *   - Input: provider, model, messages, system prompt, options
- *   - Output: response content, token usage
- *   - Metadata: duration, temperature, max_tokens, prompt info
- *   - Model parameters: temperature, maxTokens
- *   - Usage details: input/output/total tokens (Langfuse usage types)
+ * Input and output are OpenAI-style messages so the Sessions view can
+ * replay a multi-turn chat. Prior turns are repeated on each generation.
+ * Provider, timing, and prompt version stay in metadata. Token counts use
+ * Langfuse usage types (`input` / `output` / `total`).
  *
- * Uses LangFuse's startActiveObservation which creates an
- * OpenTelemetry span context. Fire-and-forget: never blocks the
- * actual LLM response.
- *
- * Unlike LangSmith, LangFuse traces support linking to managed prompts
- * via the langfusePrompt parameter, enabling prompt-version-level analytics.
+ * Callers that already opened `propagateAttributes({ sessionId })` inherit
+ * that session on this generation. Awaited so the generation nests under
+ * the active parent span.
  */
 export async function traceLLMCall(
   provider: string,
@@ -278,21 +319,22 @@ export async function traceLLMCall(
       modelParameters.maxTokens = opts.maxTokens;
     }
 
+    const conversation: ChatMessage[] = [
+      ...(systemPrompt
+        ? [{ role: 'system' as const, content: systemPrompt }]
+        : []),
+      ...messages.map((message) => ({
+        role: message.role,
+        content: message.content,
+      })),
+    ];
+
     await startActiveObservation(
       `llm_call_${provider}_${model}`,
       async (generation: LangfuseGeneration) => {
         generation.update({
-          input: {
-            provider,
-            model,
-            messages,
-            system_prompt: systemPrompt,
-            options,
-          },
-          output: {
-            content: response.content,
-            usage: response.usage,
-          },
+          input: conversation,
+          output: [{ role: 'assistant' as const, content: response.content }],
           metadata: {
             provider,
             model,
