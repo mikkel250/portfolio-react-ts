@@ -279,9 +279,10 @@ describe('POST /api/chat success payload', () => {
       reason: 'too_short',
     });
     const order: string[] = [];
+    const spanUpdate = vi.fn();
     startActiveObservationMock.mockImplementationOnce(async (name, fn) => {
       order.push(`obs:${String(name)}`);
-      return fn({ update: vi.fn() });
+      return fn({ update: spanUpdate });
     });
     const logSpy = vi.spyOn(console, 'log').mockImplementation((message) => {
       if (message === '[chat] latency') order.push('latency');
@@ -294,6 +295,9 @@ describe('POST /api/chat success payload', () => {
 
     logSpy.mockRestore();
     expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.content).toBe('Please ask a specific question.');
+    expect(body.model).toBe('filtered');
     expect(chat).not.toHaveBeenCalled();
     expect(order).toEqual(['obs:chat_filtered', 'latency']);
     expect(propagateAttributesMock).toHaveBeenCalledWith(
@@ -304,6 +308,14 @@ describe('POST /api/chat success payload', () => {
       'chat_filtered',
       expect.any(Function)
     );
+    expect(spanUpdate).toHaveBeenCalledWith({
+      input: [{ role: 'user', content: 'hi' }],
+      output: [{ role: 'assistant', content: 'Please ask a specific question.' }],
+      metadata: {
+        sessionId: 'session-filtered',
+        filterReason: 'too_short',
+      },
+    });
   });
 
   it('returns before a hung tracing flush settles', async () => {
