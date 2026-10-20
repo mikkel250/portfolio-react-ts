@@ -374,7 +374,7 @@ describe('POST /api/chat orchestration errors', () => {
 
   it('returns 503 when every LLM provider fails', async () => {
     vi.mocked(chat).mockRejectedValueOnce(
-      new Error('All LLM providers failed. Last error: rate limit')
+      new Error('All LLM providers failed. Last error: Rate limit')
     );
 
     const response = await postChat({
@@ -393,7 +393,7 @@ describe('POST /api/chat orchestration errors', () => {
       allowed: false,
       remaining: 0,
       resetTime,
-      message: 'Rate Limit exceeded',
+      message: 'Too many requests from this network. Please slow down and try again.',
     });
 
     const response = await postChat({
@@ -403,13 +403,15 @@ describe('POST /api/chat orchestration errors', () => {
 
     expect(response.status).toBe(429);
     const body = await response.json();
-    expect(body.error).toBe('Rate Limit exceeded');
+    expect(body.error).toBe(
+      'Too many requests from this network. Please slow down and try again.'
+    );
     expect(body.remaining).toBe(0);
     expect(body.resetTime).toBe(resetTime);
     expect(chat).not.toHaveBeenCalled();
   });
 
-  it('returns 500 for an error outside the 503 and 429 classifiers', async () => {
+  it('returns 500 when chat throws an unrelated error', async () => {
     vi.mocked(chat).mockRejectedValueOnce(new Error('knowledge base read failed'));
 
     const response = await postChat({

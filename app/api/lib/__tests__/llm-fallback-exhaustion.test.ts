@@ -53,9 +53,9 @@ describe('chat() fallback exhaustion', () => {
     vi.stubEnv('AI_MODEL', 'gemini-2.5-flash');
     vi.stubEnv('AI_MODEL_FALLBACKS', '["deepseek-v4-pro"]');
 
-    const rateLimit = Object.assign(new Error('rate limit'), { status: 429 });
-    generateContent.mockRejectedValue(rateLimit);
-    deepseekCreate.mockRejectedValue(rateLimit);
+    const provider429 = Object.assign(new Error('rate limit'), { status: 429 });
+    generateContent.mockRejectedValue(provider429);
+    deepseekCreate.mockRejectedValue(provider429);
 
     const { chat } = await import('../llm');
 

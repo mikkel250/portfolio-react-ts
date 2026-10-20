@@ -108,6 +108,7 @@ test.describe('chat', () => {
     expect(chatHits).toBe(1);
 
     await page.getByRole('button', { name: 'Retry' }).click();
+    await expect(alert).toBeHidden();
     await expect.poll(() => chatHits).toBe(2);
     await expect(alert).toContainText(errorText);
     await expect(input).toHaveValue(FILTER_PASSING_MESSAGE);
