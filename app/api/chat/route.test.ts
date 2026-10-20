@@ -61,6 +61,7 @@ vi.mock('@langfuse/tracing', () => ({
 
 import { POST } from './route';
 import { chat } from '../lib/llm';
+import { checkRateLimit } from '../lib/rate-limit';
 import { filterInput } from '@/lib/input-filter';
 import {
   ensureLangfuseTracing,
@@ -357,5 +358,69 @@ describe('POST /api/chat success payload', () => {
     expect(body.timings_ms.blocking_tail_ms).toBe(
       body.timings_ms.handler_ms - body.timings_ms.total
     );
+  });
+});
+
+describe('POST /api/chat orchestration errors', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    tracingState.enabled = false;
+    vi.stubEnv('NODE_ENV', 'production');
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it('returns 503 when every LLM provider fails', async () => {
+    vi.mocked(chat).mockRejectedValueOnce(
+      new Error('All LLM providers failed. Last error: Rate limit')
+    );
+
+    const response = await postChat({
+      sessionId: 'session-exhausted',
+      messages: [{ role: 'user', content: 'Tell me about Mikkel' }],
+    });
+
+    expect(response.status).toBe(503);
+    const body = await response.json();
+    expect(body.error).toBe('AI service error. Please try again.');
+  });
+
+  it('returns 429 when the rate limit denies the request', async () => {
+    const resetTime = 1_700_000_000_000;
+    vi.mocked(checkRateLimit).mockReturnValueOnce({
+      allowed: false,
+      remaining: 0,
+      resetTime,
+      message: 'Too many requests from this network. Please slow down and try again.',
+    });
+
+    const response = await postChat({
+      sessionId: 'session-limited',
+      messages: [{ role: 'user', content: 'Tell me about Mikkel' }],
+    });
+
+    expect(response.status).toBe(429);
+    const body = await response.json();
+    expect(body.error).toBe(
+      'Too many requests from this network. Please slow down and try again.'
+    );
+    expect(body.remaining).toBe(0);
+    expect(body.resetTime).toBe(resetTime);
+    expect(chat).not.toHaveBeenCalled();
+  });
+
+  it('returns 500 when chat throws an unrelated error', async () => {
+    vi.mocked(chat).mockRejectedValueOnce(new Error('knowledge base read failed'));
+
+    const response = await postChat({
+      sessionId: 'session-internal',
+      messages: [{ role: 'user', content: 'Tell me about Mikkel' }],
+    });
+
+    expect(response.status).toBe(500);
+    const body = await response.json();
+    expect(body.error).toBe('Internal server error, please try again later.');
   });
 });
