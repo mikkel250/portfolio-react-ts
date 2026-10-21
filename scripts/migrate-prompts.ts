@@ -5,6 +5,9 @@
  *   1. Set LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY, LANGFUSE_BASE_URL
  *   2. npm run migrate:prompts -- --check   (compare production to local; no upload)
  *   3. npm run migrate:prompts
+ *   4. --sync: run by the production build; uploads only when production
+ *      differs from the local templates, then re-checks (fails the build if
+ *      it still differs). Skipped unless VERCEL_ENV=production.
  *
  * Uploads the local chat/JD system templates (with {{context}} injection
  * slots) as Langfuse Prompt Management versions labeled `production`.
@@ -94,6 +97,25 @@ async function main(): Promise<void> {
     return;
   }
 
+  // --sync runs at the end of the Vercel production build. Never from local or
+  // preview builds: that would promote an unmerged prompt to `production`.
+  const syncMode = process.argv.includes('--sync');
+  if (syncMode && process.env.VERCEL_ENV !== 'production') {
+    console.log(
+      `ℹ️  Prompt sync skipped (VERCEL_ENV=${process.env.VERCEL_ENV ?? 'unset'}; runs on production builds only).`,
+    );
+    return;
+  }
+  if (
+    syncMode &&
+    (!process.env.LANGFUSE_PUBLIC_KEY || !process.env.LANGFUSE_SECRET_KEY)
+  ) {
+    console.warn(
+      '⚠️  Prompt sync skipped: Langfuse keys are not set, so the app serves the local prompts.',
+    );
+    return;
+  }
+
   if (!process.env.LANGFUSE_PUBLIC_KEY || !process.env.LANGFUSE_SECRET_KEY) {
     console.error(
       '❌ Missing LANGFUSE_PUBLIC_KEY or LANGFUSE_SECRET_KEY.\n' +
@@ -141,6 +163,16 @@ async function main(): Promise<void> {
       },
     },
   ];
+
+  if (syncMode) {
+    console.log(`\n🔄 Syncing prompts to Langfuse (${baseUrl})...\n`);
+    if (await productionMatchesLocal(client, prompts)) {
+      await client.shutdown();
+      console.log('\n✨ Production prompts already match the local templates; no new version.\n');
+      return;
+    }
+    console.log('\nProduction differs from the local templates; creating new versions.\n');
+  }
 
   if (process.argv.includes('--check')) {
     console.log(`\n🔍 Comparing production prompts to the local templates (${baseUrl})...\n`);
@@ -263,6 +295,13 @@ async function main(): Promise<void> {
     console.log(
       '\nℹ️  Verification is non-blocking. Migration can still succeed if some checks fail (renamed prompts/labels).\n'
     );
+  }
+
+  // Blocking in sync mode: the build fails if production still differs after
+  // the upload, so the previous deployment stays live.
+  if (syncMode && stats.failed === 0 && !(await productionMatchesLocal(client, prompts))) {
+    stats.failed += 1;
+    console.error('❌ Production prompts still differ from the local templates after upload.');
   }
 
   await client.shutdown();
