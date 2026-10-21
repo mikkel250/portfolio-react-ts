@@ -37,6 +37,8 @@ jobs:
       - run: npm ci
       - run: npx playwright install chromium --with-deps
       - run: npm run build
+        env:
+          NEXT_PUBLIC_CALENDLY_LINK: https://example.com/calendly
       - run: npm run test:e2e
         env:
           CI: true

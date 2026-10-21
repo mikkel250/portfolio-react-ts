@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { filterInput, filterJobCriteria } from './input-filter';
+import {
+  filterInput,
+  filterJobCriteria,
+  SALARY_EXPECTATION_REPLY_TEMPLATE,
+  salaryExpectationReply,
+} from './input-filter';
 
 /** Observed-style JD paste that previously false-positived on compensation. */
 const JD_WITH_COMPENSATION = `This is for a role described as: The Role: Senior Full-Stack Engineer Engineers in us design, create and deploy generative AI products. You'll work across the stack on: • Developing full stack generative AI functionality • Shipping high performance UI code and backend systems that process and analyze millions of contracts reliably • Designing pipelines that orchestrate LLMs, data extraction, and clustering algorithms at scale • Collaborating with designers, lawyers and other engineers to re-imagine how lawyers work in the AI age *Compensation: The USD salary range for this role is $249K - $405K. Final offer amounts are determined by multiple factors, including, experience and expertise, and may vary from the amounts listed above. *Work culture : We have an in-office culture, with some hybrid flexibility. Mission Every major business has an in-house legal team, and all of those lawyers are overworked. 80 hour weeks, tight deadlines and contract-reading death marches are the industry norm. Up until recently, there wasn't anything technology could do to help this situation. LLMs have given us the ability to give these lawyers their lives back, and at the organization, that's our mission. We're building an AI-native platform to automate legal drudgery. People love our software - despite high competition, we have the highest trial win rate on the market (85%). We're genuinely improving people's lives, and we're only just getting started. We might be a good fit for you if you: You love writing code, but you love having impact more: We're a team of engineers at heart, but our #1 goal is building the best possible product. That means making pragmatic choices and looking for 80/20 solutions. Would describe yourself as being relentlessly resourceful. You have a strong internal sense of urgency. You have a bias towards doing things today, rather than tomorrow. Experience working in a startup environment is preferred but not required. Are excited about the adventure of building a company`;
@@ -279,5 +284,38 @@ describe('filterInput short-circuit router', () => {
       expect(result.shouldProceed).toBe(false);
       expect(result.reason).toBe('role_mismatch');
     });
+  });
+});
+
+const SALARY_EXPECTATION_BASE =
+  "Mikkel would be happy to discuss compensation expectations once there's a conversation about the role and opportunity. His absolute minimum expectation is that the pay is equivalent to a living wage for someone living in San Francisco.";
+
+describe('salary expectation reply', () => {
+  it('keeps one template with a calendly placeholder', () => {
+    expect(SALARY_EXPECTATION_REPLY_TEMPLATE).toBe(
+      `${SALARY_EXPECTATION_BASE} Please [book time with Mikkel to discuss it, here]({{calendly_link}}).`,
+    );
+    expect(SALARY_EXPECTATION_REPLY_TEMPLATE).not.toMatch(/https?:\/\//);
+  });
+
+  it('omits the booking sentence when the link is missing or invalid', () => {
+    for (const link of [
+      undefined,
+      '',
+      '   ',
+      'http://calendly.com/mikkel',
+      'javascript:alert(1)',
+      'not a url',
+      'https://',
+      'ftp://calendly.com/mikkel',
+    ]) {
+      expect(salaryExpectationReply(link)).toBe(SALARY_EXPECTATION_BASE);
+    }
+  });
+
+  it('substitutes a trimmed https link into the template', () => {
+    expect(salaryExpectationReply('  https://calendly.com/mikkel  ')).toBe(
+      `${SALARY_EXPECTATION_BASE} Please [book time with Mikkel to discuss it, here](https://calendly.com/mikkel).`,
+    );
   });
 });

@@ -4,7 +4,7 @@
  * This specific prompt is for the Gemini 2.5 Pro model
  */
 
-import { SALARY_EXPECTATION_REPLY } from '@/lib/input-filter';
+import { SALARY_EXPECTATION_REPLY_TEMPLATE } from '@/lib/input-filter';
 
 export const CHAT_SYSTEM_PROMPT = `# Internal Reasoning Chain [PROCESS SILENTLY BEFORE EACH RESPONSE]
 
@@ -337,14 +337,14 @@ When suggesting a call or meeting, use this URL: {{calendly_link}}
 
 This rule exists so a compensation ask that misses the keyword filter still gets the same answer as the canned reply. Phrasing does not have to match a template. Treat any question about what Mikkel wants to earn — salary, compensation, pay, rate, package, or a paraphrase — as this case.
 
-Reply with exactly the text below and nothing else. Do not add a number, a range, a probe, a booking link, or another sentence. Do not say the information is missing. Ignore {CONTEXT} lines about competitive compensation or years of experience. Skip the 200-word minimum and the Pain-Ladder close.
+Reply with exactly the text below and nothing else. Do not add a number, a range, a probe, or another sentence. Do not include any booking link that is not already present in the exact reply. Do not say the information is missing. Ignore {CONTEXT} lines about competitive compensation or years of experience. Skip the 200-word minimum and the Pain-Ladder close.
 
 Exact reply:
-${SALARY_EXPECTATION_REPLY}
+${SALARY_EXPECTATION_REPLY_TEMPLATE}
 
 Example:
 User: "Any sense of what he'd want to make for a role like this?"
-Reply: ${SALARY_EXPECTATION_REPLY}
+Reply: ${SALARY_EXPECTATION_REPLY_TEMPLATE}
 
 If the message is a job description or other role-share that states the employer's pay, do not use this reply. Discuss role fit and leave his compensation expectation unstated.
 `

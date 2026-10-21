@@ -4,15 +4,16 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
-    "analyze": "ANALYZE=true next build",
+    "build": "npx tsx scripts/check-calendly-link.ts && next build",
+    "analyze": "npx tsx scripts/check-calendly-link.ts && ANALYZE=true next build",
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "eval:langfuse": "npx tsx tests/langfuse-evaluation.ts",
-    "migrate:prompts": "npx tsx scripts/migrate-prompts.ts"
+    "migrate:prompts": "npx tsx scripts/migrate-prompts.ts",
+    "migrate:prompts:check": "npx tsx scripts/migrate-prompts.ts --check"
   },
   "dependencies": {
     "@acebuilder/component-tagger": "^0.0.1",

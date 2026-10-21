@@ -1,5 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { SALARY_EXPECTATION_REPLY } from '@/lib/input-filter';
+import {
+  SALARY_EXPECTATION_REPLY_TEMPLATE,
+  salaryExpectationReply,
+} from '@/lib/input-filter';
 import { CHAT_SYSTEM_PROMPT } from '../chat-prompt';
 import { JD_ANALYSIS_SYSTEM_PROMPT } from '../jd-prompt';
 import { compileLocalTemplate, compilePrompt } from '../langfuse-prompts';
@@ -33,8 +36,13 @@ describe('compileLocalTemplate', () => {
     expect(out).toContain('{CONTEXT}'); // instructional refs preserved
     expect(out).not.toContain('{{context}}');
     expect(out).not.toContain('{{calendly_link}}');
-    expect(out).toContain(SALARY_EXPECTATION_REPLY);
-    expect(out).toContain(`Exact reply:\n${SALARY_EXPECTATION_REPLY}`);
+    expect(CHAT_SYSTEM_PROMPT).toContain(SALARY_EXPECTATION_REPLY_TEMPLATE);
+    const salaryReply = salaryExpectationReply('https://cal.example/x');
+    expect(out).toContain(salaryReply);
+    expect(out).toContain(`Exact reply:\n${salaryReply}`);
+    expect(out).toContain(
+      'Do not include any booking link that is not already present in the exact reply.',
+    );
   });
 
   it('injects JD context once', () => {
