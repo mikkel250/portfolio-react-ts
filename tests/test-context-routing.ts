@@ -3,7 +3,7 @@
  * Run with: npx tsx tests/test-context-routing.ts
  */
 
-import { getRelevantContext, extractJobTitle } from '../app/api/lib/knowledge-base';
+import { getRelevantContext } from '../app/api/lib/knowledge-base';
 
 interface TestCase {
   name: string;

@@ -5,7 +5,7 @@
 // Every chat API call is traced with full inputs (messages, system prompt),
 // outputs (response, tokens, model), and metadata (duration, temperature).
 //
-// createRun does not block the model call. The chat and analyze-jd routes
+// createRun does not block the model call. The chat route
 // schedule flushLangSmithTracing() with next/server after() (about 2s,
 // never throws). If tracing fails, the user still gets their answer.
 //

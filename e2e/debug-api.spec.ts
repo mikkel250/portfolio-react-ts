@@ -13,3 +13,12 @@ test.describe('debug API risk (removed)', () => {
     expect(response.status()).toBe(404);
   });
 });
+
+test.describe('removed analyze-jd route', () => {
+  test('POST /api/analyze-jd returns 404', async ({ request }) => {
+    const response = await request.post('/api/analyze-jd', {
+      data: { jobDescription: 'Engineer', sessionId: 'session-removed' },
+    });
+    expect(response.status()).toBe(404);
+  });
+});

@@ -23,7 +23,7 @@
 language: en-US
 enable_free_tier: true
 tone_instructions: >-
-  Terse and evidence-first. Cite file and function. Do not restate next lint
+  Terse and evidence-first. Cite file and function. Do not restate eslint
   or tsc findings. No filler praise. Prefer one high-confidence issue over
   five speculative nits.
 
@@ -39,8 +39,8 @@ reviews:
     auth or a database added without the change saying so, Redis / Vercel KV /
     embeddings / a vector DB, a public debug route that calls chat() or
     returns key metadata, trusting the first X-Forwarded-For hop, serving
-    knowledge-base/workingDocs, or an Edge runtime on /api/chat or
-    /api/analyze-jd. If the PR is docs-only, say so in one line.
+    knowledge-base/workingDocs, or an Edge runtime on /api/chat.
+    If the PR is docs-only, say so in one line.
 
   poem: false
   in_progress_fortune: false
@@ -104,15 +104,13 @@ reviews:
 
         REAL MODULES (use these names; do not invent layers):
         - Chat route: `POST` in `app/api/chat/route.ts` (`runtime = 'nodejs'`)
-        - JD route: `POST` in `app/api/analyze-jd/route.ts`
         - LLM: `chat` in `app/api/lib/llm.ts`; chain in
           `buildFallbackChain` / `isRetryableError` /
           `detectProvider` in `app/api/lib/llm-fallback-chain.ts`
-        - RAG: `getRelevantContext` / `getAllContext` in
+        - RAG: `getRelevantContext` in
           `app/api/lib/knowledge-base.ts` (keyword match, `fs`, no embeddings)
         - Prompts: `buildChatSystemPrompt` in `app/api/lib/prompts.ts`;
-          JD prompt in `app/api/lib/jd-prompt.ts`; Langfuse compile in
-          `app/api/lib/langfuse-prompts.ts`
+          Langfuse compile in `app/api/lib/langfuse-prompts.ts`
         - Abuse controls: `resolveClientIp` / `checkRateLimit` in
           `app/api/lib/rate-limit.ts`; `filterInput` in `lib/input-filter.ts`
         - Tracing: `instrumentation.ts` `register`, helpers in
@@ -148,18 +146,19 @@ reviews:
         - `knowledge-base/workingDocs/` added to `KB_CONFIG`
 
         TYPESCRIPT (second line of defense)
-        `strict` lives in tsconfig. `npm run lint` is `next lint`. Do not
+        `strict` lives in tsconfig. `npm run lint` is `eslint .` (flat
+        config). Do not
         restate those as primary findings. Flag remaining fake type safety
         they cannot see: `as SomeType` / `as unknown as` / `as never` on
-        external JSON (chat bodies, JD bodies, provider payloads) instead of
-        a narrowing check. `catch (error: any)` on the chat and JD routes
+        external JSON (chat bodies, provider payloads) instead of
+        a narrowing check. `catch (error: any)` on the chat route
         is the existing hole — do not grow new `any` beside it.
         The Langfuse processor lives only in
         `getLangfuseSpanProcessor` / `setLangfuseSpanProcessor`. Do not add
         new `globalThis` casts.
 
-        Prefer a checked shape before use. HTTP status mapping for chat and
-        JD stays in those route files. Do not invent HTTP-shaped results
+        Prefer a checked shape before use. HTTP status mapping for chat
+        stays in that route file. Do not invent HTTP-shaped results
         inside `lib/input-filter.ts` or client components.
 
         SECURITY
@@ -186,7 +185,7 @@ reviews:
         `next/server` and must not be awaited on the response path.
         Each flush is capped at about 2s and must not change the HTTP status.
         Routes stay `runtime = 'nodejs'`. Do not add an Edge runtime to
-        `/api/chat` or `/api/analyze-jd`. There is no `middleware.ts`; do
+        `/api/chat`. There is no `middleware.ts`; do
         not add one to "protect" public pages.
 
         CONFIG
@@ -198,7 +197,7 @@ reviews:
 
     - path: "app/api/**/route.ts"
       instructions: |-
-        Production HTTP handlers today: `POST /api/chat`, `POST /api/analyze-jd`,
+        Production HTTP handlers today: `POST /api/chat`,
         and low-risk stubs `GET /api/hello` and `GET /api/test`.
 
         CHAT (`app/api/chat/route.ts`)
@@ -222,20 +221,17 @@ reviews:
           change says so.
         - `GET` stays 405. Do not add an unauthenticated debug verb.
 
-        ANALYZE-JD (`app/api/analyze-jd/route.ts`)
-        - Same rate-limit and IP rules. Cap is `MAX_JD_CHARS` (50000).
-        - Uses `getAllContext` and the JD prompt, not `getRelevantContext`.
-        - Success JSON is `{ analysis, jobTitle, usage, model, remaining }`.
-          Do not persist it. Do not call a second model to "score the score".
-
-        STUBS AND DELETED DEBUG ROUTES
+        STUBS AND DELETED ROUTES
         - `GET /api/hello` and `GET /api/test` are inert stubs. Do not grow
           them into LLM, env, or tracing probes.
         - `GET /api/test-fallback` and `GET /api/test-langsmith` stay
           deleted (App Router 404). Do not bring them back behind a header
           secret. E2E asserts 404 in `e2e/debug-api.spec.ts`.
+        - `POST /api/analyze-jd` stays deleted (App Router 404). Do not
+          bring it back. Pasted roles go through `POST /api/chat`.
+          E2E asserts 404 in `e2e/debug-api.spec.ts`.
 
-    - path: "{app/api/chat/route.ts,app/api/analyze-jd/route.ts,app/api/lib/llm.ts,app/api/lib/llm-fallback-chain.ts,app/api/lib/prompts.ts,app/api/lib/jd-prompt.ts,app/api/lib/langfuse-prompts.ts,components/ChatInterface.tsx,components/ChatWidget.tsx}"
+    - path: "{app/api/chat/route.ts,app/api/lib/llm.ts,app/api/lib/llm-fallback-chain.ts,app/api/lib/prompts.ts,app/api/lib/langfuse-prompts.ts,components/ChatInterface.tsx,components/ChatWidget.tsx}"
       instructions: |-
         The browser is a caller of `/api/chat`. `chat()` is the only product
         LLM client.
@@ -312,7 +308,6 @@ reviews:
         Keyword RAG over a fixed file list in `KB_CONFIG`:
         `experience.md`, `projects.md`, `skills.md`, `career-story.md`,
         `meta-project.md`. `getRelevantContext` selects among those.
-        `getAllContext` loads all of them for `/api/analyze-jd`.
 
         REJECT
         - Reading `knowledge-base/workingDocs/` or any path outside
@@ -342,7 +337,7 @@ reviews:
           `__portfolio_langfuse_span_processor__v1`). Do not add a second
           global or an `as` cast at the call site.
         - `flushLangfuseTracing` shares one 2s deadline across OTel
-          `forceFlush` and `client.flush`. Chat and analyze-jd schedule it
+          `forceFlush` and `client.flush`. Chat schedules it
           with `after()` so a serverless freeze does not drop the span and
           the HTTP response is not held. A flush failure is logged and must
           not replace the HTTP response.
@@ -425,7 +420,7 @@ reviews:
       instructions: |-
         Flag documentation that contradicts runtime code (public routes,
         no auth, no database, keyword RAG, in-memory rate limit,
-        `resolveClientIp` hop order, Node runtime on chat and analyze-jd,
+        `resolveClientIp` hop order, Node runtime on chat,
         deleted `/api/test-fallback` and `/api/test-langsmith`, env names
         in `ARCHITECTURE.md`). Prefer `app/api/**`, `lib/**`, and
         `instrumentation.ts` over stale plan notes.

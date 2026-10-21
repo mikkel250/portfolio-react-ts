@@ -19,8 +19,6 @@ vi.mock('../rate-limit', () => ({
 
 vi.mock('../knowledge-base', () => ({
   getRelevantContext: vi.fn(() => ''),
-  getAllContext: vi.fn(() => ''),
-  extractJobTitle: vi.fn(() => 'Engineer'),
 }));
 
 vi.mock('../langfuse-prompts', () => ({
@@ -41,7 +39,6 @@ vi.mock('@google/genai', () => {
 });
 
 import { POST as postChat } from '../../chat/route';
-import { POST as postJd } from '../../analyze-jd/route';
 
 const SESSION_ID_ATTR = 'session.id';
 const TRACE_NAME_ATTR = 'langfuse.trace.name';
@@ -163,32 +160,5 @@ describe('sessionId on exported Langfuse spans', () => {
     expect(parsedAttr(generation!, OBSERVATION_OUTPUT_ATTR)).toEqual([
       { role: 'assistant', content: 'mocked generation' },
     ]);
-  });
-
-  it('stamps session.id on the jd analysis generation', async () => {
-    const sessionId = 'session-span-jd';
-    const response = await postJd(
-      post('http://localhost/api/analyze-jd', {
-        sessionId,
-        jobDescription: 'Senior Engineer role building React systems',
-      })
-    );
-
-    expect(response.status, await response.clone().text()).toBe(200);
-
-    const spans = exporter.getFinishedSpans();
-    const generations = spans.filter(
-      (span) =>
-        span.attributes[OBSERVATION_TYPE_ATTR] === 'generation' &&
-        span.name.startsWith('llm_call_')
-    );
-    const generation = generations[0];
-    const roots = spans.filter((span) => !span.parentSpanContext?.spanId);
-
-    expect(generations).toHaveLength(1);
-    expect(generation?.attributes[SESSION_ID_ATTR]).toBe(sessionId);
-    expect(generation?.attributes[TRACE_NAME_ATTR]).toBe('jd_analysis');
-    expect(generation?.parentSpanContext?.spanId).toBeUndefined();
-    expect(roots).toContain(generation);
   });
 });
