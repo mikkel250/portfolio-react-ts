@@ -433,7 +433,7 @@ export async function chat(
 
   for (let i = 0; i < fallbackChain.length; i++) {
     const { provider, model, reason } = fallbackChain[i];
-    let startTime = Date.now(); // Declare outside try block so it's available in catch
+    const startTime = Date.now(); // Declare outside try block so it's available in catch
     
     try {
       console.log(`Attempting ${provider} (${model}) - ${reason}`);
