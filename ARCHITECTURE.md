@@ -77,7 +77,6 @@ app/                       — Next.js App Router pages and API routes
       langsmith.ts         — LangSmith tracing helpers
       langfuse.ts          — Langfuse tracing helpers
     chat/route.ts          — Main chat endpoint (POST)
-    analyze-jd/route.ts    — Job description analysis (POST)
   about/                   — About page
   contributions/           — GitHub contributions page
   events/                  — Events page
@@ -137,9 +136,8 @@ No database. All state is ephemeral or client-side:
 Key routes:
 
 - `POST /api/chat` — Main chat endpoint; accepts `{ messages: ChatMessage[], sessionId }`; returns the LLM response with RAG context. The widget sends job-description pastes here.
-- `POST /api/analyze-jd` — Weighted job-description scoring against the full knowledge base. No UI caller.
 - `GET /api/hello` — Health check
-- `GET /api/test` — Stub. Public debug routes `/api/test-fallback` and `/api/test-langsmith` were removed.
+- `GET /api/test` — Stub. Public debug routes `/api/test-fallback` and `/api/test-langsmith` were removed. `POST /api/analyze-jd` was removed; pasted roles stay on `/api/chat`.
 
 All production API routes use `export const runtime = 'nodejs'`.
 
@@ -187,7 +185,7 @@ All production API routes use `export const runtime = 'nodejs'`.
 - Enabled when `LANGFUSE_TRACING=true` (exact string) and keys are present
 - Chat path awaits Langfuse generation spans so they nest under `chat_request`. Both tracers flush via `after()` from `next/server` after the response is sent (2s cap each). `after()` uses Vercel `waitUntil` so the invocation stays alive without holding the HTTP response. Flags default off unless set to the exact string `true`
 - Parent observation name: `chat_request` with `timings_ms` metadata (filter / knowledgeBase / prompt / llm / total)
-- The browser session id is propagated with `propagateAttributes({ sessionId })` on chat, filtered replies, and JD analysis so Langfuse groups those traces in the Sessions view. Generation input/output are role-labeled messages, and later turns repeat the prior conversation.
+- The browser session id is propagated with `propagateAttributes({ sessionId })` on chat (traceName `chat_request`) and filtered replies (traceName `chat_filtered`) so Langfuse groups those traces in the Sessions view. Generation input/output are role-labeled messages, and later turns repeat the prior conversation.
 
 ### DeepSeek reasoning dial
 - Env: `DEEPSEEK_REASONING_EFFORT` = `max` | `high` | `disabled` (default `high`)
@@ -273,8 +271,8 @@ EVAL_DELAY_MS
 - Shared short-circuit router in `lib/input-filter.ts` runs in the widget and again in `POST /api/chat` before any LLM call
 
 **Logging:**
-- LangSmith traces LLM calls via `traceLLMCall` / `traceableChat`. Chat and analyze-jd schedule `flushLangSmithTracing()` with `after()` (2s deadline; a flush failure does not fail the response)
-- Langfuse traces via OpenTelemetry when `LANGFUSE_TRACING=true`. The same routes schedule `flushLangfuseTracing()` in that `after()` callback (2s deadline shared by `forceFlush` and `client.flush`)
+- LangSmith traces LLM calls via `traceLLMCall` / `traceableChat`. Chat schedules `flushLangSmithTracing()` with `after()` (2s deadline; a flush failure does not fail the response)
+- Langfuse traces via OpenTelemetry when `LANGFUSE_TRACING=true`. Chat schedules `flushLangfuseTracing()` in that `after()` callback (2s deadline shared by `forceFlush` and `client.flush`)
 - Dev chat JSON includes `timings_ms.handler_ms`, `blocking_tail_ms` (`handler_ms` minus pipeline `total`), and `pipeline_gap_ms` (`total` minus named steps). Server logs `[chat] latency` with the tracing flags and `[tracing] flush_ms` for the off-path flush
 - Some debug `console.log` in chat route (development)
 

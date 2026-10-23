@@ -433,7 +433,7 @@ export async function chat(
 
   for (let i = 0; i < fallbackChain.length; i++) {
     const { provider, model, reason } = fallbackChain[i];
-    let startTime = Date.now(); // Declare outside try block so it's available in catch
+    const startTime = Date.now(); // Declare outside try block so it's available in catch
     
     try {
       console.log(`Attempting ${provider} (${model}) - ${reason}`);
@@ -443,7 +443,7 @@ export async function chat(
       
       // Trace successful call. Await Langfuse generation so it nests under an
       // active parent span when one exists. Do not flush here — HTTP handlers
-      // that call chat() must flush once before return (/api/chat, /api/analyze-jd)
+      // that call chat() must flush once before return (/api/chat)
       // so providerDurationMs excludes observability I/O and parent spans export.
       const providerDurationMs = Date.now() - startTime;
       traceLLMCall(provider, model, conversation, systemPrompt, response, startTime, options)

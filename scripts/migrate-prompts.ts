@@ -9,8 +9,8 @@
  *      differs from the local templates, then re-checks (fails the build if
  *      it still differs). Skipped unless VERCEL_ENV=production.
  *
- * Uploads the local chat/JD system templates (with {{context}} injection
- * slots) as Langfuse Prompt Management versions labeled `production`.
+ * Uploads the local chat system template (with {{context}} injection
+ * slots) as a Langfuse Prompt Management version labeled `production`.
  * Subsequent runs create new versions and promote them to production.
  * `--check` compiles the production prompt and the local template with the
  * same vars and fails when they differ.
@@ -24,7 +24,6 @@ config({ path: resolve(process.cwd(), '.env') });
 
 import { LangfuseClient } from '@langfuse/client';
 import { CHAT_SYSTEM_PROMPT } from '../app/api/lib/chat-prompt';
-import { JD_ANALYSIS_SYSTEM_PROMPT } from '../app/api/lib/jd-prompt';
 import {
   PROMPT_SMOKE_CALENDLY_LINK,
   PROMPT_SMOKE_CONTEXT,
@@ -145,21 +144,6 @@ async function main(): Promise<void> {
       config: {
         description:
           'Chat system prompt for the AI recruiting assistant (vars: context, calendly_link)',
-      },
-    },
-    {
-      name: 'portfolio-jd-analysis',
-      type: 'text',
-      prompt: JD_ANALYSIS_SYSTEM_PROMPT,
-      labels: [APP_PROMPT_LABEL],
-      appLabel: APP_PROMPT_LABEL,
-      compileSmokeVars: {
-        context: PROMPT_SMOKE_CONTEXT,
-        job_title: 'Engineer',
-      },
-      config: {
-        description:
-          'Job description analysis prompt (vars: context, job_title)',
       },
     },
   ];

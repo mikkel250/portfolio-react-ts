@@ -7,12 +7,10 @@
  *
  * Prompt Naming Convention: lowercase, hyphenated
  *   - portfolio-chat-system    → Chat system prompt (type: text)
- *   - portfolio-jd-analysis    → JD analysis prompt (type: text)
  */
 
 import { LangfuseClient } from '@langfuse/client';
 import { CHAT_SYSTEM_PROMPT } from './chat-prompt';
-import { JD_ANALYSIS_SYSTEM_PROMPT } from './jd-prompt';
 
 // ---------------------------------------------------------------------------
 // Init (lazy singleton — reused across requests within a warm function)
@@ -45,11 +43,6 @@ const PROMPT_REGISTRY = {
     local: CHAT_SYSTEM_PROMPT,
     type: 'text' as const,
     description: 'Chat system prompt for the AI recruiting assistant',
-  },
-  'portfolio-jd-analysis': {
-    local: JD_ANALYSIS_SYSTEM_PROMPT,
-    type: 'text' as const,
-    description: 'Job description analysis prompt',
   },
 };
 

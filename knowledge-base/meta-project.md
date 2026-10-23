@@ -29,7 +29,7 @@ You're currently interacting with an AI recruiting assistant Mikkel built to ser
 - Simple keyword-based RAG (retrieval-augmented generation)
 - Rate limiting with two in-memory server maps (client IP and session id): 15 messages per hour and a burst of 3 per second. The session id lives in React state for the visit and is cleared on refresh.
 - Environment-based configuration
-- **Production LLM observability with LangSmith and Langfuse.** LangSmith records each LLM call when `LANGSMITH_TRACING=true`. Langfuse records step timings on `chat_request` and can serve the system prompt when `LANGFUSE_TRACING=true` and both keys are set. Short-circuit replies never call the model. Chat and analyze-jd schedule those flushes with Next.js `after()` after the response is sent. Each flush gives up after about two seconds.
+- **Production LLM observability with LangSmith and Langfuse.** LangSmith records each LLM call when `LANGSMITH_TRACING=true`. Langfuse records step timings on `chat_request` and can serve the system prompt when `LANGFUSE_TRACING=true` and both keys are set. Short-circuit replies never call the model. Chat schedules those flushes with Next.js `after()` after the response is sent. Each flush gives up after about two seconds.
 
 **Knowledge Base:**
 - Structured markdown files (experience, projects, skills, career story)
@@ -57,7 +57,7 @@ You're currently interacting with an AI recruiting assistant Mikkel built to ser
 - When `AI_MODEL` and `AI_MODEL_FALLBACKS` are unset, the code default chain is Google, then DeepSeek, then Anthropic. OpenAI is used only when it is listed in `AI_MODEL_FALLBACKS`. Completions are returned whole (no streaming). Model ids stay in the fallback-chain code.
 - HTTP 400 aborts the fallback chain. Quota, rate limits, 401, 403, 5xx, network errors, and unknown errors advance to the next provider.
 - Environment-based model selection
-- **LangSmith and Langfuse.** LangSmith records the LLM call when `LANGSMITH_TRACING=true`. Langfuse records step timings and prompt versions when it is enabled. Short-circuit replies are not LLM traces. Chat and analyze-jd schedule the LangSmith flush and the Langfuse flush with `after()` when each tracer is enabled. The response is not held for that work.
+- **LangSmith and Langfuse.** LangSmith records the LLM call when `LANGSMITH_TRACING=true`. Langfuse records step timings and prompt versions when it is enabled. Short-circuit replies are not LLM traces. Chat schedules the LangSmith flush and the Langfuse flush with `after()` when each tracer is enabled. The response is not held for that work.
 
 **Demonstrates:** Advanced system design, cost optimization, and understanding of API differences. This demonstrates not just technical capability but also cost-conscious architecture and understanding of different API patterns. The abstraction layer makes it trivial to add new providers or switch models based on performance data. LangSmith and Langfuse are there so model choice and latency are decided from traces, not from a hunch after a slow reply.
 
@@ -212,7 +212,7 @@ The assistant demonstrates advanced technical capability through its multi-provi
 This project showcases senior-level engineering thinking: understanding not just HOW to build, but WHAT to build, WHY to build it, and WHEN to optimize vs ship. Mikkel chose simple keyword retrieval over full vector database RAG - recognizing that his knowledge base is small and sophisticated infrastructure would be premature optimization. The MVP strategy prioritizes shipping quickly and iterating based on real usage data.
 
 **Production Observability:**
-When `LANGSMITH_TRACING=true`, LangSmith records each LLM call. When Langfuse is enabled (`LANGFUSE_TRACING=true` and both keys), it records a `chat_request` span with step timings for filter, retrieval, prompt, and the model, plus prompt versions. Replies the short-circuit router handles never call the model, so they are not LLM traces. Chat and analyze-jd schedule those flushes with `after()` (Vercel `waitUntil`) so a cold exit does not throw away the traces, and the visitor is not waiting on the export. He uses that split to decide whether a slow reply is the model or the pipeline before changing providers. Observability was in place before there was scale to look at.
+When `LANGSMITH_TRACING=true`, LangSmith records each LLM call. When Langfuse is enabled (`LANGFUSE_TRACING=true` and both keys), it records a `chat_request` span with step timings for filter, retrieval, prompt, and the model, plus prompt versions. Replies the short-circuit router handles never call the model, so they are not LLM traces. Chat schedules those flushes with `after()` (Vercel `waitUntil`) so a cold exit does not throw away the traces, and the visitor is not waiting on the export. He uses that split to decide whether a slow reply is the model or the pipeline before changing providers. Observability was in place before there was scale to look at.
 
 **Meta-Awareness:**
 The assistant is designed with intentional meta-awareness - it can explain its own technical implementation and design decisions. This recursion adds another dimension to the demonstration, allowing users to experience both the functionality AND the technical sophistication simultaneously.

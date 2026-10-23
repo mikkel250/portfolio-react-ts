@@ -4,7 +4,6 @@ import {
   salaryExpectationReply,
 } from '@/lib/input-filter';
 import { CHAT_SYSTEM_PROMPT } from '../chat-prompt';
-import { JD_ANALYSIS_SYSTEM_PROMPT } from '../jd-prompt';
 import { compileLocalTemplate, compilePrompt } from '../langfuse-prompts';
 
 describe('compileLocalTemplate', () => {
@@ -43,19 +42,6 @@ describe('compileLocalTemplate', () => {
     expect(out).toContain(
       'Do not include any booking link that is not already present in the exact reply.',
     );
-  });
-
-  it('injects JD context once', () => {
-    const kb = 'B'.repeat(40_000);
-    const out = compileLocalTemplate(JD_ANALYSIS_SYSTEM_PROMPT, {
-      context: kb,
-      job_title: 'Staff Engineer',
-    });
-
-    expect(out.length).toBeLessThan(kb.length * 2);
-    expect(out.split(kb)).toHaveLength(2);
-    expect(out).toContain('Staff Engineer');
-    expect(out).toContain('{CONTEXT}');
   });
 });
 
