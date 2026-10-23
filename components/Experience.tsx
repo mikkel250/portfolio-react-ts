@@ -9,7 +9,7 @@ import { BsCheck2 } from "react-icons/bs";
 import Image from "next/image";
 
 export const Experience = () => {
-  let [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [activeWorkExperience, setActiveWorkExperience] = useState(
     workExperience[0]
   );

@@ -25,7 +25,6 @@
 //     is scheduled.
 // ---------------------------------------------------------------------------
 
-/* eslint-disable import/first */
 export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
 import { checkRateLimit, resolveClientIp } from '../lib/rate-limit';
@@ -43,7 +42,6 @@ import {
 import { ensureLangfuseTracing, isLangfuseTracingEnabled } from '../lib/langfuse';
 import { scheduleTracingFlush } from '../lib/schedule-tracing-flush';
 import { propagateAttributes, startActiveObservation } from '@langfuse/tracing';
-/* eslint-disable import/first */
 
 const MAX_MESSAGES = 50;
 const MAX_MESSAGE_CHARS = 32_768;

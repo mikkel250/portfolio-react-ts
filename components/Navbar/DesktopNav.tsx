@@ -6,7 +6,7 @@ import Link from "next/link";
 import React, { useState } from "react";
 
 export const DesktopNav = ({ navItems }: any) => {
-  let [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   return (
     <div className="flex flex-row space-x-8 items-center antialiased border px-4 py-2 rounded-2xl border-zinc-700/60 bg-zinc-800 ">
       <Logo />

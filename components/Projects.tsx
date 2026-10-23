@@ -13,7 +13,7 @@ export const Projects = ({
 }: {
   items?: ProjectItem[];
 }) => {
-  let [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   return (
     <div className="max-w-5xl mx-auto px-8">
