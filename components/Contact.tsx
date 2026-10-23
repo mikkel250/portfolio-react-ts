@@ -6,7 +6,7 @@ export const Contact = () => {
   const [open, setOpen] = useState(false);
   const [success, setSuccess] = useState<string | null>("");
   const [error, setError] = useState<string | null>("");
-  const [loading, setLoading] = useState<Boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   
   useEffect(() => {
     if (open) {
@@ -77,7 +77,7 @@ export const Contact = () => {
   };
 
   const onChangeHandler = (field: any, value: any) => {
-    let state = {
+    const state = {
       [field]: {
         value,
         error: null,
@@ -87,10 +87,10 @@ export const Contact = () => {
   };
 
   const handleSubmit = async () => {
-    let { email, message } = formState;
+    const { email, message } = formState;
     console.log("email", email, "message", message);
-    let updatedState = { ...formState };
-    let regex =
+    const updatedState = { ...formState };
+    const regex =
       /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     if (!email.value) {
       updatedState.email.error = `Oops! Email cannot be empty.`;

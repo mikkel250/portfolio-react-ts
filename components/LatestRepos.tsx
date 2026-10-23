@@ -11,9 +11,9 @@ export const LatestRepos = ({
   showMore = false,
 }: {
   repos: Repository[];
-  showMore?: Boolean;
+  showMore?: boolean;
 }) => {
-  let [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   return (
     <div className="max-w-5xl mx-auto px-8 relative mb-20 overflow-hidden">

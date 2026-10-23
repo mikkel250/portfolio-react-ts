@@ -7,7 +7,7 @@
     "build": "npx tsx scripts/check-calendly-link.ts && next build && npm run migrate:prompts:sync",
     "analyze": "npx tsx scripts/check-calendly-link.ts && ANALYZE=true next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
@@ -59,11 +59,14 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.7",
     "@next/bundle-analyzer": "15.5.7",
     "@playwright/test": "^1.61.1",
     "@types/node-fetch": "^2.6.13",
     "@types/uuid": "^10.0.0",
     "dotenv": "^17.2.3",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^15.5.28",
     "vitest": "^4.1.11"
   },
   "overrides": {
