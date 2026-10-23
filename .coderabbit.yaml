@@ -146,8 +146,7 @@ reviews:
         - `knowledge-base/workingDocs/` added to `KB_CONFIG`
 
         TYPESCRIPT (second line of defense)
-        `strict` lives in tsconfig. `npm run lint` is `eslint .` (flat
-        config). Do not
+        `strict` lives in tsconfig. `npm run lint` is `next lint`. Do not
         restate those as primary findings. Flag remaining fake type safety
         they cannot see: `as SomeType` / `as unknown as` / `as never` on
         external JSON (chat bodies, provider payloads) instead of

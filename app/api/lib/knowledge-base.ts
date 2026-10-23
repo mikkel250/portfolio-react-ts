@@ -123,8 +123,7 @@ function isMetaQuery(query: string): boolean {
  * "Qualifications:", "Must Have:", etc. Requiring ≥2 matches prevents triggering
  * on messages that casually mention one of these terms.
  *
- * When detected: loads ALL KB context files (need full background for matching),
- * and the JD analysis endpoint may be more appropriate than the chat endpoint.
+ * When detected: loads ALL KB context files (need full background for matching).
  */
 function isJobDescriptionQuery(query: string): boolean {
   // Only the most obvious JD structural indicators
