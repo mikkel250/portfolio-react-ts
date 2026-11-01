@@ -5,6 +5,8 @@ const MARKERS = {
   experience: 'Jefferson Health',
   career: 'Career Transition & Background Story',
   meta: 'About This AI Recruiting Assistant',
+  projects: 'Technical Projects',
+  skills: 'NEVER SAY (Critical - Prevent Hallucinations)',
 } as const;
 
 const SAMPLE_JD = `Software Engineer - Full Stack
@@ -26,6 +28,8 @@ describe('getRelevantContext', () => {
     expect(context).toContain(MARKERS.experience);
     expect(context).toContain(MARKERS.career);
     expect(context).toContain(MARKERS.meta);
+    expect(context).toContain(MARKERS.projects);
+    expect(context).toContain(MARKERS.skills);
     expect(context.length).toBeGreaterThan(100_000);
   });
 
@@ -67,5 +71,35 @@ describe('getRelevantContext', () => {
     expect(context).not.toContain(MARKERS.career);
     expect(context).not.toContain(MARKERS.meta);
     expect(/TypeScript/i.test(context)).toBe(true);
+  });
+
+  it('loads projects.md for side-project questions', () => {
+    const context = getRelevantContext(
+      'What side projects has he shipped outside of work?',
+    );
+
+    expect(context).toContain(MARKERS.projects);
+    expect(context).not.toContain(MARKERS.career);
+    expect(context).not.toContain(MARKERS.meta);
+  });
+
+  it('loads projects.md for GitHub-only questions', () => {
+    const context = getRelevantContext(
+      'Which repositories does he publish on GitHub?',
+    );
+
+    expect(context).toContain(MARKERS.projects);
+    expect(context).not.toContain(MARKERS.career);
+    expect(context).not.toContain(MARKERS.meta);
+  });
+
+  it('loads skills.md alone for a stack proficiency question', () => {
+    const context = getRelevantContext(
+      'Which TypeScript frameworks is he proficient with?',
+    );
+
+    expect(context).toContain(MARKERS.skills);
+    expect(context).not.toContain(MARKERS.career);
+    expect(context).not.toContain(MARKERS.projects);
   });
 });

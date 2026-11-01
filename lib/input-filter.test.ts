@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   filterInput,
   filterJobCriteria,
+  httpsBookingLink,
   SALARY_EXPECTATION_REPLY_TEMPLATE,
   salaryExpectationReply,
 } from './input-filter';
@@ -42,6 +43,21 @@ describe('filterInput short-circuit router', () => {
       expect(result.shouldCallAPI).toBe(true);
       expect(result.reason).not.toBe('salary_query');
       expect(result.reason).not.toBe('work_arrangement_query');
+    });
+
+    it('structured JD heuristics send medium-length pastes to the LLM without FAQ canned replies', () => {
+      let structuredJd =
+        "Requirements:\n- TypeScript\nQualifications:\n- Communication\n\nWhat's his salary expectation?";
+      while (structuredJd.length <= 150) {
+        structuredJd = `Role context line ${structuredJd.length}.\n${structuredJd}`;
+      }
+      expect(structuredJd.length).toBeGreaterThan(150);
+      expect(structuredJd.length).toBeLessThanOrEqual(200);
+
+      const result = filterInput(structuredJd, []);
+      expect(result.shouldCallAPI).toBe(true);
+      expect(result.reason).toBe('role_share_or_long_paste');
+      expect(FAQ_REASONS.has(result.reason ?? '')).toBe(false);
     });
   });
 
@@ -289,6 +305,29 @@ describe('filterInput short-circuit router', () => {
 
 const SALARY_EXPECTATION_BASE =
   "Mikkel would be happy to discuss compensation expectations once there's a conversation about the role and opportunity. His absolute minimum expectation is that the pay is equivalent to a living wage for someone living in San Francisco.";
+
+describe('httpsBookingLink', () => {
+  it('returns a trimmed https URL when the hostname is present', () => {
+    expect(httpsBookingLink('  https://calendly.com/mikkel  ')).toBe(
+      'https://calendly.com/mikkel',
+    );
+  });
+
+  it('rejects values that would fail the production build gate', () => {
+    for (const invalid of [
+      undefined,
+      '',
+      '   ',
+      'http://calendly.com/mikkel',
+      'javascript:alert(1)',
+      'not a url',
+      'https://',
+      'ftp://calendly.com/mikkel',
+    ]) {
+      expect(httpsBookingLink(invalid)).toBeUndefined();
+    }
+  });
+});
 
 describe('salary expectation reply', () => {
   it('keeps one template with a calendly placeholder', () => {
