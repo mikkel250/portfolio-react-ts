@@ -73,9 +73,19 @@ describe('getRelevantContext', () => {
     expect(/TypeScript/i.test(context)).toBe(true);
   });
 
-  it('loads projects.md for side-project and GitHub questions', () => {
+  it('loads projects.md for side-project questions', () => {
     const context = getRelevantContext(
-      'What side projects has he shipped on GitHub outside of work?',
+      'What side projects has he shipped outside of work?',
+    );
+
+    expect(context).toContain(MARKERS.projects);
+    expect(context).not.toContain(MARKERS.career);
+    expect(context).not.toContain(MARKERS.meta);
+  });
+
+  it('loads projects.md for GitHub-only questions', () => {
+    const context = getRelevantContext(
+      'Which repositories does he publish on GitHub?',
     );
 
     expect(context).toContain(MARKERS.projects);

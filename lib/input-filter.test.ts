@@ -47,7 +47,7 @@ describe('filterInput short-circuit router', () => {
 
     it('structured JD heuristics send medium-length pastes to the LLM without FAQ canned replies', () => {
       let structuredJd =
-        'Requirements:\n- TypeScript\nQualifications:\n- Communication';
+        "Requirements:\n- TypeScript\nQualifications:\n- Communication\n\nWhat's his salary expectation?";
       while (structuredJd.length <= 150) {
         structuredJd = `Role context line ${structuredJd.length}.\n${structuredJd}`;
       }
@@ -57,6 +57,7 @@ describe('filterInput short-circuit router', () => {
       const result = filterInput(structuredJd, []);
       expect(result.shouldCallAPI).toBe(true);
       expect(result.reason).toBe('role_share_or_long_paste');
+      expect(FAQ_REASONS.has(result.reason ?? '')).toBe(false);
     });
   });
 
