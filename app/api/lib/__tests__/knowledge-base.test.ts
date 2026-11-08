@@ -52,6 +52,17 @@ describe('getRelevantContext', () => {
     expect(context).toContain(MARKERS.experience);
   });
 
+  it('does not load full KB for a long role intro without JD headers', () => {
+    const roleIntro = `This is for a role described as: ${'Senior engineer building APIs. '.repeat(20)}`;
+    expect(roleIntro.length).toBeGreaterThan(200);
+
+    const context = getRelevantContext(roleIntro);
+
+    expect(context).not.toContain(MARKERS.career);
+    expect(context).not.toContain(MARKERS.meta);
+    expect(context).toContain(MARKERS.experience);
+  });
+
   it('loads meta-project content for questions about this assistant', () => {
     const context = getRelevantContext('How does this chatbot work under the hood?');
 
