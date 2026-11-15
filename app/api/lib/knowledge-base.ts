@@ -71,7 +71,8 @@ function loadKBFile(fileName: string): string {
  * Triggers loading experience.md (professional roles, companies, metrics).
  */
 function isExperienceQuery(query: string): boolean {
-  const experienceKeywords = /experience|work|job|role|position|company|companies|employer|career|professional|worked at|job history|background/i;
+  // `work` is whole-word only so "frameworks" stays a skills query.
+  const experienceKeywords = /experience|\bwork(?:ing|ed|s)?\b|job|role|position|company|companies|employer|career|professional|worked at|job history|background/i;
   return experienceKeywords.test(query);
 }
 
