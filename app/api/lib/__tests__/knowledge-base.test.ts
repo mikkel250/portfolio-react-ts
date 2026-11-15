@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { getRelevantContext } from '../knowledge-base';
 
 const MARKERS = {
-  experience: 'Jefferson Health',
+  experience: 'FACT-CHECK GUIDE (For AI Responses)',
   career: 'Career Transition & Background Story',
   meta: 'About This AI Recruiting Assistant',
   projects: 'Technical Projects',
@@ -99,6 +99,7 @@ describe('getRelevantContext', () => {
     );
 
     expect(context).toContain(MARKERS.skills);
+    expect(context).not.toContain(MARKERS.experience);
     expect(context).not.toContain(MARKERS.career);
     expect(context).not.toContain(MARKERS.projects);
   });
