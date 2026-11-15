@@ -23,13 +23,26 @@ Qualifications:
 
 describe('getRelevantContext', () => {
   it('loads every KB section for a pasted job description', () => {
-    const context = getRelevantContext(SAMPLE_JD);
+    const sections = getRelevantContext(SAMPLE_JD).split('\n\n--\n\n');
 
-    expect(context).toContain(MARKERS.experience);
-    expect(context).toContain(MARKERS.career);
-    expect(context).toContain(MARKERS.meta);
-    expect(context).toContain(MARKERS.projects);
-    expect(context).toContain(MARKERS.skills);
+    expect(sections.map((section) => section.split('\n')[0])).toEqual([
+      '# Professional Experience',
+      '# Technical Skills & Expertise',
+      '# Technical Projects',
+      '# Career Transition & Background Story',
+      '# About This AI Recruiting Assistant',
+    ]);
+
+    expect(sections[0]).toContain(MARKERS.experience);
+    expect(sections[0]).toContain('## Core Competencies & Specializations');
+    expect(sections[1]).toContain(MARKERS.skills);
+    expect(sections[1]).toContain('## Guidance for Discussing Skills');
+    expect(sections[2]).toContain(MARKERS.projects);
+    expect(sections[2]).toContain('## Project Themes & Technical Breadth');
+    expect(sections[3]).toContain(MARKERS.career);
+    expect(sections[3]).toContain('## Personal Interests & Culture Fit');
+    expect(sections[4]).toContain(MARKERS.meta);
+    expect(sections[4]).toContain('## Why This Project Matters');
   });
 
   it('does not treat short recruiter outreach as a full job description', () => {
@@ -111,6 +124,17 @@ describe('getRelevantContext', () => {
     );
 
     expect(context).toContain(MARKERS.projects);
+    expect(context).not.toContain(MARKERS.career);
+    expect(context).not.toContain(MARKERS.meta);
+  });
+
+  it('loads experience and skills together for mixed stack-and-history questions', () => {
+    const context = getRelevantContext(
+      'How much React experience does he have across his roles?',
+    );
+
+    expect(context).toContain(MARKERS.experience);
+    expect(context).toContain(MARKERS.skills);
     expect(context).not.toContain(MARKERS.career);
     expect(context).not.toContain(MARKERS.meta);
   });

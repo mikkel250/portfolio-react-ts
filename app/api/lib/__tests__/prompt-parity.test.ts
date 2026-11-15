@@ -20,6 +20,18 @@ describe('assertSalaryExactReplyCompiles', () => {
       /SALARY_EXPECTATION_REPLY_TEMPLATE/,
     );
   });
+
+  it('rejects a prompt that baked the Calendly URL into the salary template', () => {
+    const bakedCalendly = CHAT_SYSTEM_PROMPT.replace(
+      SALARY_EXPECTATION_REPLY_TEMPLATE,
+      SALARY_EXPECTATION_REPLY_TEMPLATE.split('{{calendly_link}}').join(
+        'https://baked.example/old',
+      ),
+    );
+    expect(() => assertSalaryExactReplyCompiles(bakedCalendly)).toThrow(
+      /sentinel Calendly URL/i,
+    );
+  });
 });
 
 describe('compiledPromptDiff', () => {
