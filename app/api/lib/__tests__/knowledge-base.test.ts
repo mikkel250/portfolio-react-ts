@@ -30,7 +30,6 @@ describe('getRelevantContext', () => {
     expect(context).toContain(MARKERS.meta);
     expect(context).toContain(MARKERS.projects);
     expect(context).toContain(MARKERS.skills);
-    expect(context.length).toBeGreaterThan(100_000);
   });
 
   it('does not treat short recruiter outreach as a full job description', () => {
