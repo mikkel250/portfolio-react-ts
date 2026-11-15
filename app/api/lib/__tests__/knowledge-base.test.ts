@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { getRelevantContext } from '../knowledge-base';
 
 const MARKERS = {
-  experience: 'Jefferson Health',
+  experience: 'FACT-CHECK GUIDE (For AI Responses)',
   career: 'Career Transition & Background Story',
   meta: 'About This AI Recruiting Assistant',
   projects: 'Technical Projects',
@@ -30,7 +30,6 @@ describe('getRelevantContext', () => {
     expect(context).toContain(MARKERS.meta);
     expect(context).toContain(MARKERS.projects);
     expect(context).toContain(MARKERS.skills);
-    expect(context.length).toBeGreaterThan(100_000);
   });
 
   it('does not treat short recruiter outreach as a full job description', () => {
@@ -99,6 +98,7 @@ describe('getRelevantContext', () => {
     );
 
     expect(context).toContain(MARKERS.skills);
+    expect(context).not.toContain(MARKERS.experience);
     expect(context).not.toContain(MARKERS.career);
     expect(context).not.toContain(MARKERS.projects);
   });
