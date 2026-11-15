@@ -93,6 +93,17 @@ describe('getRelevantContext', () => {
     expect(context).not.toContain(MARKERS.meta);
   });
 
+  it('loads experience and skills together for mixed stack-and-history questions', () => {
+    const context = getRelevantContext(
+      'How much React experience does he have across his roles?',
+    );
+
+    expect(context).toContain(MARKERS.experience);
+    expect(context).toContain(MARKERS.skills);
+    expect(context).not.toContain(MARKERS.career);
+    expect(context).not.toContain(MARKERS.meta);
+  });
+
   it('loads skills.md alone for a stack proficiency question', () => {
     const context = getRelevantContext(
       'Which TypeScript frameworks is he proficient with?',

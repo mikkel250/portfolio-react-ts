@@ -45,6 +45,37 @@ describe('filterInput short-circuit router', () => {
       expect(result.reason).not.toBe('work_arrangement_query');
     });
 
+    it('treats messages over 200 characters as role-share even when a salary ask is embedded', () => {
+      const long =
+        `${'Recruiter context. '.repeat(12)}What's his salary expectation?`;
+      expect(long.length).toBeGreaterThan(200);
+
+      const result = filterInput(long, []);
+      expect(result.shouldCallAPI).toBe(true);
+      expect(result.reason).toBe('role_share_or_long_paste');
+      expect(result.reason).not.toBe('salary_query');
+    });
+
+    it('treats multi-line recruiter pastes as role-share without FAQ short-circuits', () => {
+      let paste = [
+        'Hi Mikkel — reaching out about a senior engineering role on our platform team.',
+        'We use TypeScript and React across the stack.',
+        'The team is hybrid in San Francisco.',
+        "What's his salary expectation?",
+      ].join('\n');
+      while (paste.length < 121) {
+        paste += ' Additional employer context.';
+      }
+      expect(paste.length).toBeGreaterThan(120);
+      expect(paste.length).toBeLessThanOrEqual(200);
+      expect((paste.match(/\n/g) || []).length).toBeGreaterThanOrEqual(3);
+
+      const result = filterInput(paste, []);
+      expect(result.shouldCallAPI).toBe(true);
+      expect(result.reason).toBe('role_share_or_long_paste');
+      expect(result.reason).not.toBe('salary_query');
+    });
+
     it('structured JD heuristics send medium-length pastes to the LLM without FAQ canned replies', () => {
       let structuredJd =
         "Requirements:\n- TypeScript\nQualifications:\n- Communication\n\nWhat's his salary expectation?";
