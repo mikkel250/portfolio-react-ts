@@ -68,6 +68,18 @@ describe('getRelevantContext', () => {
     expect(context).toContain(MARKERS.meta);
   });
 
+  it('loads meta and projects together when one question asks for both', () => {
+    const context = getRelevantContext(
+      'How does this chatbot operate, and which projects has he built?',
+    );
+
+    expect(context).toContain(MARKERS.meta);
+    expect(context).toContain(MARKERS.projects);
+    expect(context).not.toContain(MARKERS.career);
+    expect(context).not.toContain(MARKERS.skills);
+    expect(context).not.toContain(MARKERS.experience);
+  });
+
   it('loads career-story content for transition questions', () => {
     const context = getRelevantContext('Why did you switch to software engineering?');
 
