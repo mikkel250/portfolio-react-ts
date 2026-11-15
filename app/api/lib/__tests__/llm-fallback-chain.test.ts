@@ -102,6 +102,7 @@ describe('isRetryableError', () => {
       }),
     ).toBe(true);
     expect(isRetryableError({ status: 400, message: 'reason: API_KEY_INVALID' })).toBe(true);
+    expect(isRetryableError({ status: 400, message: 'API key expired' })).toBe(true);
   });
 
   it('advances on 5xx and network error codes', () => {

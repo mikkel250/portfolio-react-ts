@@ -59,6 +59,41 @@ describe('filterInput short-circuit router', () => {
       expect(result.reason).toBe('role_share_or_long_paste');
       expect(FAQ_REASONS.has(result.reason ?? '')).toBe(false);
     });
+
+    it('pastes longer than ROLE_SHARE_LENGTH bypass FAQ short-circuits', () => {
+      const longPaste = `${'Recruiter outreach without JD headers. '.repeat(12)}Where is Mikkel based?`;
+      expect(longPaste.length).toBeGreaterThan(200);
+
+      const result = filterInput(longPaste, []);
+      expect(result.shouldCallAPI).toBe(true);
+      expect(result.reason).toBe('role_share_or_long_paste');
+      expect(result.reason).not.toBe('location_query');
+    });
+
+    it('long "this is for a role" intros route to the LLM even when under ROLE_SHARE_LENGTH', () => {
+      const roleIntro = `This is for a role described as: ${'Senior engineer on platform APIs. '.repeat(3)}`;
+      expect(roleIntro.length).toBeGreaterThan(100);
+      expect(roleIntro.length).toBeLessThanOrEqual(200);
+
+      const result = filterInput(roleIntro, []);
+      expect(result.shouldCallAPI).toBe(true);
+      expect(result.reason).toBe('role_share_or_long_paste');
+    });
+
+    it('multi-line pastes with several newlines route to the LLM without FAQ canned replies', () => {
+      const multiline = [
+        'Hiring update from the client — full-stack platform team in SF.',
+        'Team: platform engineering with platform-wide ownership.',
+        'Stack: TypeScript, React, Node, and distributed systems.',
+        'Can he do C2C?',
+      ].join('\n');
+      expect(multiline.length).toBeGreaterThan(120);
+
+      const result = filterInput(multiline, []);
+      expect(result.shouldCallAPI).toBe(true);
+      expect(result.reason).toBe('role_share_or_long_paste');
+      expect(result.reason).not.toBe('work_arrangement_query');
+    });
   });
 
   describe('true-positive short FAQ asks (AE3, AE4)', () => {
